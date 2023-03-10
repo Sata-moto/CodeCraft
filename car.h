@@ -1,4 +1,5 @@
-using namespace std;
+#pragma once
+
 struct Car{
 	int workbench,goods;//所处工作台编号，携带物品编号 
 	double timerate,hitrate;//时间价值系数，碰撞价值系数 

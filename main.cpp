@@ -9,6 +9,19 @@ Desk desk[52];
 int	money;			//金钱数
 int frame_number;	//帧序号
 
+int destination[5]; //小车在当前时间的目的地
+int buy[5];			//1 为 buy,0 为 sel
+
+//Sel 是让小车去卖东西，Buy 是买
+void Sel(int car_num, int desk_num)
+{
+	destination[car_num] = desk_num, buy[car_num] = 0;
+}
+void Buy(int car_num, int desk_num)
+{
+	destination[car_num] = desk_num, buy[car_num] = 1;
+}
+
 int main()
 {
 	for (int k = 1; k <= 100; k++)
@@ -56,8 +69,21 @@ int main()
 		}
 		char is_OK[10];
 		scanf("%s", is_OK);
-		
+
 		//Decision();
+
+		for (int k = 0; k < 4; k++)
+		{
+			pair <int, int > temp;
+			temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
+			printf("forward %d %lf\n", k, temp.first);
+			printf("rotate %d %lf\n", k, temp.second);
+			if (car[k].workbench == destination[k])
+				if (buy[k]) printf("buy %d\n", k);
+				else printf("sell %d\n", k);
+		}
+		printf("OK\n");
+		fflush(stdout);
 	}
 
 	return 0;

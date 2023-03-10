@@ -1,8 +1,6 @@
-#include<cstdio>
-#include<iostream>
-#include<cmath>
-#include"car.h"
-using namespace std;
+#include "Global.h"
+#include "car.h"
+
 const double eps=1e-5;
 const double Pi=3.1415926536;
 Car::Car(double xx=0.0,double yy=0.0):x(xx),y(yy){}
