@@ -2,24 +2,24 @@
 #include "car.h"
 #include "desk.h"
 
-char map[N][N];		//µØÍ¼
+char map[N][N]; // åœ°å›¾
 Car car[5];
 Desk desk[52];
 
-int	money;			//½ğÇ®Êı
-int frame_number;	//Ö¡ĞòºÅ
+int money;        // é‡‘é’±æ•°
+int frame_number; // å¸§åºå·
 
-int destination[5]; //Ğ¡³µÔÚµ±Ç°Ê±¼äµÄÄ¿µÄµØ
-int buy[5];			//1 Îª buy,0 Îª sel
+int destination[5]; // å°è½¦åœ¨å½“å‰æ—¶é—´çš„ç›®çš„åœ°
+int buy[5];         // 1 ä¸º buy,0 ä¸º sel
 
-//Sel ÊÇÈÃĞ¡³µÈ¥Âô¶«Î÷£¬Buy ÊÇÂò
+// Sel æ˜¯è®©å°è½¦å»å–ä¸œè¥¿ï¼ŒBuy æ˜¯ä¹°
 void Sel(int car_num, int desk_num)
 {
-	destination[car_num] = desk_num, buy[car_num] = 0;
+    destination[car_num] = desk_num, buy[car_num] = 0;
 }
 void Buy(int car_num, int desk_num)
 {
-	destination[car_num] = desk_num, buy[car_num] = 1;
+    destination[car_num] = desk_num, buy[car_num] = 1;
 }
 
 int main()
@@ -43,53 +43,53 @@ int main()
 					desk[cnt_desk].x = i / 2.0 - 0.25;
 					desk[cnt_desk].y = 50.0 - k / 2.0 + 0.25;
 				}*/
-				//ºóÃæ»á¸ø³öÃ¿¸ö¹¤×÷Ì¨ºÍ³µµÄ×´Ì¬£¬ÕâÀïËÆºõÃ»±ØÒª³õÊ¼»¯
+				//åé¢ä¼šç»™å‡ºæ¯ä¸ªå·¥ä½œå°å’Œè½¦çš„çŠ¶æ€ï¼Œè¿™é‡Œä¼¼ä¹æ²¡å¿…è¦åˆå§‹åŒ–
 
-	printf("OK\n");
-	fflush(stdout);
+    printf("OK\n");
+    fflush(stdout);
 
+    while (scanf("%d %d", &frame_number, &money))
+    {
+        printf("%d\n", frame_number);
+        int cnt_desk;
+        scanf("%d", &cnt_desk);
+        for (register int k = 1; k <= cnt_desk; k++)
+        {
+            scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
+            int input, input_cnt = 1, output;
+            scanf("%d %d", &input, &output);
+            while (input)
+            {
+                if (input % 2)
+                    desk[k].input_status[input_cnt] = 1;
+                input >>= 1, input_cnt++;
+            }
+            desk[k].output_status = output;
+        } // åˆå§‹åŒ–å·¥ä½œå°
+        for (register int k = 0; k < 4; k++)
+        {
+            scanf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf",
+                  &car[k].workbench, &car[k].goods, &car[k].timerate, &car[k].hitrate,
+                  &car[k].w, &car[k].vx, &car[k].vy, &car[k].ang, &car[k].x, &car[k].y);
+        }
+        char is_OK[10];
+        scanf("%s", is_OK);
 
+        for (int k = 0; k < 4; k++)
+        {
+            pair<double, double> temp;
+            temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
+            printf("forward %d %lf\n", k, temp.first);
+            printf("rotate %d %lf\n", k, temp.second);
+            if (car[k].workbench == destination[k])
+                if (buy[k])
+                    printf("buy %d\n", k);
+                else
+                    printf("sell %d\n", k);
+        }
+        printf("OK\n");
+        fflush(stdout);
+    }
 
-	while (scanf("%d %d", &frame_number, &money))
-	{
-		printf("%d\n", frame_number);
-		int cnt_desk;
-		scanf("%d", &cnt_desk);
-		for (register int k = 1; k <= cnt_desk; k++)
-		{
-			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
-			int input, input_cnt = 1, output;
-			scanf("%d %d", &input, &output);
-			while (input)
-			{
-				if (input % 2)
-					desk[k].input_status[input_cnt] = 1;
-				input >>= 1, input_cnt++;
-			}
-			desk[k].output_status = output;
-		}//³õÊ¼»¯¹¤×÷Ì¨
-		for (register int k = 0; k < 4; k++)
-		{
-			scanf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf",
-				&car[k].workbench, &car[k].goods, &car[k].timerate, &car[k].hitrate,
-				&car[k].w, &car[k].vx, &car[k].vy, &car[k].ang, &car[k].x, &car[k].y);
-		}
-		char is_OK[10];
-		scanf("%s", is_OK);
-
-		for (int k = 0; k < 4; k++)
-		{
-			pair <double, double > temp;
-			temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
-			printf("forward %d %lf\n", k, temp.first);
-			printf("rotate %d %lf\n", k, temp.second);
-			if (car[k].workbench == destination[k])
-				if (buy[k]) printf("buy %d\n", k);
-				else printf("sell %d\n", k);
-		}
-		printf("OK\n");
-		fflush(stdout);
-	}
-
-	return 0;
+    return 0;
 }
