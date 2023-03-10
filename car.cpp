@@ -2,15 +2,16 @@
 #include "car.h"
 
 const double eps=1e-5;
+const double epss=0.015;
 const double Pi=3.1415926536;
 pair<double,double> Car::mov(double nx,double ny){
-	if(fabs(vx)>eps||fabs(vy)>eps)return pair<double,double>(0,0);
 	double forwar=0,rot;
 	double DeltaAng=atan2(ny-y,nx-x)-ang;
 	double I=0.5*(goods==0? 0.04100625:0.07890481)*Pi*20,B=50.0/I;
 	if(DeltaAng>=Pi)DeltaAng-=Pi;
 	if(DeltaAng<=-Pi)DeltaAng+=Pi;
-	if(fabs(DeltaAng)<=eps){
+	if((fabs(vx)>eps||fabs(vy)>eps)&&fabs(DeltaAng)>epss)return pair<double,double>(0,0);
+	if(fabs(DeltaAng)<=epss){
 		if(fabs(w)<=eps)rot=0;
 		else if(w>0)rot=-Pi;
 		else if(w<0)rot=Pi;
