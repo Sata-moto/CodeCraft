@@ -22,14 +22,6 @@ void Buy(int car_num, int desk_num)
 	destination[car_num] = desk_num, buy[car_num] = 1;
 }
 
-void Decision()
-{
-	Buy(1, 1);
-	Buy(2, 2);
-	Buy(3, 4);
-	Buy(0, 3);
-}
-
 int main()
 {
 	for (int k = 1; k <= 100; k++)
@@ -61,14 +53,15 @@ int main()
 		for (register int k = 1; k <= cnt_desk; k++)
 		{
 			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
-			int input, input_cnt = 1;
-			scanf("%d %d", &input, &desk[k].output_status);
+			int input, input_cnt = 1, output;
+			scanf("%d %d", &input, &output);
 			while (input)
 			{
 				if (input % 2)
 					desk[k].input_status[input_cnt] = 1;
-				input /= 2, input_cnt++;
+				input >>= 1, input_cnt++;
 			}
+			desk[k].output_status = output;
 		}//初始化工作台
 		for (register int k = 0; k < 4; k++)
 		{
@@ -78,8 +71,6 @@ int main()
 		}
 		char is_OK[10];
 		scanf("%s", is_OK);
-
-		Decision();
 
 		for (int k = 0; k < 4; k++)
 		{
