@@ -53,7 +53,7 @@ int main()
 	printf("OK\n");
 	fflush(stdout);
 
-	while (scanf("%d %d", &frame_number, money))
+	while (scanf("%d %d", &frame_number, &money))
 	{
 		printf("%d\n", frame_number);
 		int cnt_desk;
