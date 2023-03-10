@@ -24,7 +24,7 @@ void Buy(int car_num, int desk_num)
 
 int main()
 {
-	for (int k = 1; k <= 100; k++)
+	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	/*	int cnt_car = 0, cnt_desk = 0;
 		for (int k = 1; k <= 100; k++)
@@ -44,6 +44,8 @@ int main()
 
 	printf("OK\n");
 	fflush(stdout);
+
+
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
