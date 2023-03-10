@@ -5,6 +5,5 @@ struct Car{
 	double timerate,hitrate;//时间价值系数，碰撞价值系数 
 	double vx,vy,w;//二维线速度向量，角速度 
 	double ang,x,y;//朝向角度，坐标 
-	Car(double,double);
 	pair<double,double> mov(double,double);
 };

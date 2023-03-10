@@ -3,7 +3,6 @@
 
 const double eps=1e-5;
 const double Pi=3.1415926536;
-Car::Car(double xx=0.0,double yy=0.0):x(xx),y(yy){}
 pair<double,double> Car::mov(double nx,double ny){
 	if(fabs(vx)>eps||fabs(vy)>eps)return pair<double,double>(0,0);
 	double forwar,rot;
