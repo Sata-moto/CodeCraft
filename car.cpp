@@ -5,7 +5,6 @@ using namespace std;
 const double eps=1e-5;
 const double epss=0.015;
 const double Pi=3.1415926536;
-Car::Car(double xx=0.0,double yy=0.0):x(xx),y(yy){}
 pair<double,double> Car::mov(double nx,double ny){
 	
 	double forwar=0,rot;
