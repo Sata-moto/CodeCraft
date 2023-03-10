@@ -1,4 +1,4 @@
-﻿#include "Global.h"
+#include "Global.h"
 #include "car.h"
 
 using namespace std;
