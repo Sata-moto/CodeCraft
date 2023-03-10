@@ -22,6 +22,14 @@ void Buy(int car_num, int desk_num)
 	destination[car_num] = desk_num, buy[car_num] = 1;
 }
 
+void Decision()
+{
+	Buy(1, 1);
+	Buy(2, 2);
+	Buy(3, 4);
+	Buy(0, 3);
+}
+
 int main()
 {
 	for (int k = 1; k <= 100; k++)
@@ -47,6 +55,7 @@ int main()
 
 	while (scanf("%d %d", &frame_number, money))
 	{
+		printf("%d\n", frame_number);
 		int cnt_desk;
 		scanf("%d", &cnt_desk);
 		for (register int k = 1; k <= cnt_desk; k++)
@@ -70,11 +79,11 @@ int main()
 		char is_OK[10];
 		scanf("%s", is_OK);
 
-		//Decision();
+		Decision();
 
 		for (int k = 0; k < 4; k++)
 		{
-			pair <int, int > temp;
+			pair <double, double > temp;
 			temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
 			printf("forward %d %lf\n", k, temp.first);
 			printf("rotate %d %lf\n", k, temp.second);
