@@ -24,6 +24,9 @@ void Buy(int car_num, int desk_num)
 
 int main()
 {
+	Buy(1, 1);
+	Buy(2, 3);
+	Buy(3, 3);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	/*	int cnt_car = 0, cnt_desk = 0;
