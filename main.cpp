@@ -17,15 +17,15 @@ queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 
 // Sel 是让小车去卖东西，Buy 是买
 void Sel(int car_num, int desk_num)
 {
-	destination[car_num] = desk_num, buy[car_num] = 0;
+	total_destination[car_num].push(desk_num), total_buy[car_num].push(0);
 }
 void Buy(int car_num, int desk_num)
 {
-	destination[car_num] = desk_num, buy[car_num] = 1;
+	total_destination[car_num].push(desk_num), total_buy[car_num].push(1);
 }
 
-//一次决策会产生
-void make_decision()
+//一次决策会产生一组指令，使用 Sel,Buy 构造它们
+void make_decision(int car_num)
 {
 
 }
@@ -68,6 +68,17 @@ int main()
 		scanf("%s", is_OK);
 		// 初始化完毕
 
+		if (frame_number == 1)
+			for (int k = 0; k < 4; k++)
+			{
+				make_decision(k);
+				destination[k] = total_destination[k].front();
+				total_destination[k].pop();
+				buy[k] = total_buy[k].front();
+				total_buy[k].pop();
+			}
+		//第一帧初始化决策
+
 		for (int k = 0; k < 4; k++)
 		{
 			if (car[k].workbench == destination[k])
@@ -80,7 +91,7 @@ int main()
 
 				//从指令组中导入新的指令,如果指令组为空就新构指令
 				if (total_destination[k].empty())
-					make_decision();
+					make_decision(k);
 				destination[k] = total_destination[k].front();
 				total_destination[k].pop();
 				buy[k] = total_buy[k].front();
