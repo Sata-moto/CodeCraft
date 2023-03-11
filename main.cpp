@@ -5,6 +5,7 @@
 char map[N][N]; // 地图
 Car car[5];
 Desk desk[52];
+int cnt_desk;	// 一共有多少工作台
 
 int money;        // 金钱数
 int frame_number; // 帧序号
@@ -24,10 +25,33 @@ void Buy(int car_num, int desk_num)
 	total_destination[car_num].push(desk_num), total_buy[car_num].push(1);
 }
 
+vector <int > availalbe_desk[10];//各种工作台当前有哪些空闲的
+
 //一次决策会产生一组指令，使用 Sel,Buy 构造它们
 void make_decision(int car_num)
 {
-	//贪心决策
+	//贪心决策：不考虑机器人之间的关系，所有决策看作：
+	//从某个工作台上制作商品 A，从某些工作台上拿取 A
+	//的原料，最终卖到 8/9 工作台。（即假设不会把物品
+	//卖到某个工作台上直到结束）
+
+	for (int k = 1; k <= 9; k++)
+		availalbe_desk[k].clear();
+	for (int k = 1; k <= cnt_desk; k++)
+		if (desk[k].remain_time == -1)
+			availalbe_desk[desk[k].type].push_back(k);
+	//初始化工作台
+
+	double max_earning = 0;
+	int max_earning_desk_num = 0;
+
+	if (max_earning_desk_num)
+	{
+
+	}
+	else
+
+
 }
 
 int main()
@@ -43,7 +67,6 @@ int main()
 	while (scanf("%d %d", &frame_number, &money))
 	{
 		printf("%d\n", frame_number);
-		int cnt_desk;
 		scanf("%d", &cnt_desk);
 		for (register int k = 1; k <= cnt_desk; k++)
 		{
@@ -92,10 +115,13 @@ int main()
 				//从指令组中导入新的指令,如果指令组为空就新构指令
 				if (total_destination[k].empty())
 					make_decision(k);
-				destination[k] = total_destination[k].front();
-				total_destination[k].pop();
-				buy[k] = total_buy[k].front();
-				total_buy[k].pop();
+				if (!total_destination[k].empty())
+				{
+					destination[k] = total_destination[k].front();
+					total_destination[k].pop();
+					buy[k] = total_buy[k].front();
+					total_buy[k].pop();
+				}
 			}
 
 			pair<double, double> temp;
