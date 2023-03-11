@@ -45,7 +45,7 @@ int main()
 		printf("%d\n", frame_number);
 		int cnt_desk;
 		scanf("%d", &cnt_desk);
-		for (register int k = 1; k <= cnt_desk; k++)
+		for (register int k = 0; k < cnt_desk; k++)
 		{
 			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
 			int input, input_cnt = 1, output;
