@@ -9,87 +9,93 @@ Desk desk[52];
 int money;        // 金钱数
 int frame_number; // 帧序号
 
-int destination[5]; // 小车在当前时间的目的地
-int buy[5];         // 1 为 buy,0 为 sel
+int destination[5];                 // 小车在当前时间的目的地
+queue <int > total_destination[5];  // 小车经过上次决策后产生的目的地组
+int buy[5];                         // 1 为 buy,0 为 sel
+queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 组
 
 // Sel 是让小车去卖东西，Buy 是买
 void Sel(int car_num, int desk_num)
 {
-    destination[car_num] = desk_num, buy[car_num] = 0;
+	destination[car_num] = desk_num, buy[car_num] = 0;
 }
 void Buy(int car_num, int desk_num)
 {
-    destination[car_num] = desk_num, buy[car_num] = 1;
+	destination[car_num] = desk_num, buy[car_num] = 1;
+}
+
+//一次决策会产生
+void make_decision()
+{
+
 }
 
 int main()
 {
-	Buy(1, 1);
-	Buy(2, 3);
-	Buy(3, 3);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
-	/*	int cnt_car = 0, cnt_desk = 0;
-		for (int k = 1; k <= 100; k++)
-			for (int i = 1; i <= 100; i++)
-				if (map[k][i] == 'A')
-				{
-					car[++cnt_car].x = i / 2.0 - 0.25;
-					car[cnt_car].y = 50.0 - k / 2.0 + 0.25;
-				}
-				else if (map[k][i] >= '1' && map[k][i] <= '9')
-				{
-					desk[++cnt_desk].type = map[k][i] - '0';
-					desk[cnt_desk].x = i / 2.0 - 0.25;
-					desk[cnt_desk].y = 50.0 - k / 2.0 + 0.25;
-				}*/
-				//后面会给出每个工作台和车的状态，这里似乎没必要初始化
+	//地图没有用，101行是因为最后一行 OK
 
-    printf("OK\n");
-    fflush(stdout);
+	printf("OK\n");
+	fflush(stdout);
+	//预处理
 
-    while (scanf("%d %d", &frame_number, &money))
-    {
-        printf("%d\n", frame_number);
-        int cnt_desk;
-        scanf("%d", &cnt_desk);
-        for (register int k = 1; k <= cnt_desk; k++)
-        {
-            scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
-            int input, input_cnt = 1, output;
-            scanf("%d %d", &input, &output);
-            while (input)
-            {
-                if (input % 2)
-                    desk[k].input_status[input_cnt] = 1;
-                input >>= 1, input_cnt++;
-            }
-            desk[k].output_status = output;
-        } // 初始化工作台
-        for (register int k = 0; k < 4; k++)
-        {
-            scanf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf",
-                  &car[k].workbench, &car[k].goods, &car[k].timerate, &car[k].hitrate,
-                  &car[k].w, &car[k].vx, &car[k].vy, &car[k].ang, &car[k].x, &car[k].y);
-        }
-        char is_OK[10];
-        scanf("%s", is_OK);
+	while (scanf("%d %d", &frame_number, &money))
+	{
+		printf("%d\n", frame_number);
+		int cnt_desk;
+		scanf("%d", &cnt_desk);
+		for (register int k = 1; k <= cnt_desk; k++)
+		{
+			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
+			int input, input_cnt = 1, output;
+			scanf("%d %d", &input, &output);
+			while (input)
+			{
+				if (input % 2)
+					desk[k].input_status[input_cnt] = 1;
+				input >>= 1, input_cnt++;
+			}
+			desk[k].output_status = output;
+		} // 初始化工作台
+		for (register int k = 0; k < 4; k++)
+		{
+			scanf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf",
+				&car[k].workbench, &car[k].goods, &car[k].timerate, &car[k].hitrate,
+				&car[k].w, &car[k].vx, &car[k].vy, &car[k].ang, &car[k].x, &car[k].y);
+		} // 初始化小车
+		char is_OK[10];
+		scanf("%s", is_OK);
+		// 初始化完毕
 
-        for (int k = 0; k < 4; k++)
-        {
-            pair<double, double> temp;
-            temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
-            printf("forward %d %lf\n", k, temp.first);
-            printf("rotate %d %lf\n", k, temp.second);
-            if (car[k].workbench == destination[k])
-                if (buy[k])
-                    printf("buy %d\n", k);
-                else
-                    printf("sell %d\n", k);
-        }
-        printf("OK\n");
-        fflush(stdout);
-    }
+		for (int k = 0; k < 4; k++)
+		{
+			if (car[k].workbench == destination[k])
+			{
+				if (buy[k])
+					printf("buy %d\n", k);
+				else
+					printf("sell %d\n", k);
+				//对每个小车，如果已经到了目的地，输出 buy,sell
 
-    return 0;
+				//从指令组中导入新的指令,如果指令组为空就新构指令
+				if (total_destination[k].empty())
+					make_decision();
+				destination[k] = total_destination[k].front();
+				total_destination[k].pop();
+				buy[k] = total_buy[k].front();
+				total_buy[k].pop();
+			}
+
+			pair<double, double> temp;
+			temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
+			printf("forward %d %lf\n", k, temp.first);
+			printf("rotate %d %lf\n", k, temp.second);
+			//每个小车朝当前的目的地前进
+		}
+		printf("OK\n");
+		fflush(stdout);
+	}
+
+	return 0;
 }
