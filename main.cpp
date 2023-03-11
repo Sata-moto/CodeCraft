@@ -27,7 +27,7 @@ void Buy(int car_num, int desk_num)
 //一次决策会产生一组指令，使用 Sel,Buy 构造它们
 void make_decision(int car_num)
 {
-
+	//贪心决策
 }
 
 int main()
