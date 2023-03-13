@@ -14,30 +14,111 @@ int destination[5];                 // 小车在当前时间的目的地
 queue <int > total_destination[5];  // 小车经过上次决策后产生的目的地组
 int buy[5];                         // 1 为 buy,0 为 sel
 queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 组
+int check[5];						// 小车当前是否 check 一下是否有商品
+queue <int > total_check[5];		// 小车总的 check 组
 
 // Sel 是让小车去卖东西，Buy 是买
-void Sel(int car_num, int desk_num)
+void Sel(int car_num, int desk_num, int Check = 0)
 {
-	total_destination[car_num].push(desk_num), total_buy[car_num].push(0);
+	total_destination[car_num].push(desk_num), total_buy[car_num].push(0), total_check[car_num].push(Check);
 }
-void Buy(int car_num, int desk_num)
+void Buy(int car_num, int desk_num, int Check = 0)
 {
-	total_destination[car_num].push(desk_num), total_buy[car_num].push(1);
+	total_destination[car_num].push(desk_num), total_buy[car_num].push(1), total_check[car_num].push(Check);
 }
 
 vector <int > availalbe_desk[10];//各种工作台当前有哪些空闲的
 
-//一次决策会产生一组指令，使用 Sel,Buy 构造它们
+double dis(double x1, double y1, double x2, double y2)
+{
+	return sqrt(pow(y2 - y1, 2) + pow(x2 - x1, 2));
+}
+
+double dddis(int desk1, int desk2)
+{
+	return dis(desk[desk1].x, desk[desk1].y, desk[desk2].x, desk[desk2].y)
+}
+
+double cddis(int car1, int desk1)
+{
+	return dis(car[car1].x, car[car1].y, desk[desk1].x, desk[desk1].y);
+}
+
+//决策参数列表
+namespace parameter
+{
+	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
+	double fun1(int remain)
+	{
+		return 1.0 / sqrt(remain * 1.0);
+	}
+	double fun2(bool output_is_ready, int output_is_doing)
+	{
+		if (output_is_ready) return 1.2;
+		else return 1 + output_is_doing / 2500.0;
+	}
+	double fun3(int current_frame)
+	{
+		return 1;
+		//还没想好
+	}
+	double fun4(int current_frame, int distance)
+	{
+		if (current_frame > 8500)
+			return distance;
+		else return 1;
+	}
+	double fun5(bool is_7, bool is_empty, bool is_done, int is_doing)
+	{
+		if (!is_7) return 1;
+		else if (!is_empty) return 0;
+		else
+			if (is_done) return 1.3;
+			else if (is_doing) return 1.1 + is_doing / 5000.0;
+			else return 1.1;
+	}
+	double fun6(int number_of_exists)
+	{
+		return 1 + number_of_exists / 10.0;
+	}
+}
+
+// 决策生产 4/5/6 中的谁
 void make_decision(int car_num)
 {
-	//贪心决策：不考虑机器人之间的关系，所有决策看作：
-	//从某个工作台上制作商品 A，从某些工作台上拿取 A
-	//的原料，最终卖到 8/9 工作台。（即假设不会把物品
-	//卖到某个工作台上直到结束）
-	//任何一次决策后将该决策重复一次从而并行。并行的部
-	//份是上一次的等待和这一次的原料获取。
-	//完成子项目的顺序不影响最终时间
+	// 贪心决策
+	// 思路：1，2，3 种物品的生产视为不需要决策的，每个机器人独立决策当前
+	// 生产 4/5/6，生产哪一个根据 生产利润/（生产它需要的距离/速度
+	// ）* fun1(该种物品的场上剩余数目) * fun2（该种物品的目的工作
+	// 台的产品格上是否有物品了，或者正在做）* fun3（时间选择系数）决定，
+	// 选择权重大的那个，如果目的地工作台上已经有了物品，则将其卖出。
+	// 卖出的地点是 7/8，权重是 出售它需要的距离  * fun4（当前时间）
+	// * fun5（是否是 7 并且该格子空着并且有没有输出） * fun6（是 
+	// 7 的话工作台上已经有了几种物品） 
 
+	for (int k = 1; k <= 9; k++)
+		availalbe_desk[k].clear();
+	for (int k = 0; k < cnt_desk; k++)
+		if (desk[k].remain_time == -1)
+			availalbe_desk[desk[k].type].push_back(k);
+	//初始化工作台
+
+	double max_earning = 0;
+	int max_earning_desk_num = -1;
+	int son_desk1 = -1, son_desk2 = -1;
+
+	if (max_earning_desk_num != -1)
+	{
+		Buy(car_num, son_desk1);
+		Sel(car_num, max_earning_desk_num);
+		Buy(car_num, son_desk2);
+		Sel(car_num, max_earning_desk_num, 1);
+	}
+}
+
+// 决策 4/5/6 卖到哪去
+void make_decision_to_7(int car_num, int goods)
+{
 	for (int k = 1; k <= 9; k++)
 		availalbe_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
@@ -49,13 +130,37 @@ void make_decision(int car_num)
 	int max_earning_desk_num = -1;
 
 	if (max_earning_desk_num != -1)
-	{
+		Sel(car_num, max_earning_desk_num, 2);
+}
 
-	}
-	else
-	{
+// 决策把 7 号物品卖到哪去，直接就进就可以了
+void make_decision_to_8(int car_num)
+{
+	for (int k = 1; k <= 9; k++)
+		availalbe_desk[k].clear();
+	for (int k = 0; k < cnt_desk; k++)
+		if (desk[k].remain_time == -1)
+			availalbe_desk[desk[k].type].push_back(k);
+	//初始化工作台
 
+	double cloest_distance = 9999999999;
+	int cloest_desk = -1;
+
+	for (register int k = 8; k <= 9; k++)
+	{
+		for (int i = 0; i < (int)availalbe_desk[k].size(); i++)
+		{
+			int now = availalbe_desk[k][i];
+			if (cddis(car_num, now) < cloest_distance)
+			{
+				cloest_desk = now;
+				cloest_distance = cddis(car_num, now);
+			}
+		}
 	}
+
+	if (cloest_desk != -1)
+		Sel(car_num, cloest_desk);
 }
 
 int main()
@@ -103,6 +208,8 @@ int main()
 				total_destination[k].pop();
 				buy[k] = total_buy[k].front();
 				total_buy[k].pop();
+				check[k] = total_check[k].front();
+				total_check[k].pop();
 			}
 		//第一帧初始化决策
 
@@ -110,11 +217,25 @@ int main()
 		{
 			if (car[k].workbench == destination[k])
 			{
+				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
 				if (buy[k] && desk[destination[k]].output_status == 1)
 					printf("buy %d\n", k);
 				else if (!buy[k] && (desk[destination[k]].input_status[car[k].goods] == 1))
+				{
 					printf("sell %d\n", k);
-				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
+					//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
+					//如果有 output，那就决策把这个送到哪去
+					if (check[k] == 1 && desk[destination[k]].output_status)
+					{
+						printf("buy %d\n", k);
+						make_decision_to_7(k, desk[destination[k]].type);
+					}
+					else if (check[k] == 2 && desk[destination[k]].output_status)
+					{
+						printf("buy %d\n", k);
+						make_decision_to_8(k);
+					}
+				}
 				else continue;
 				//如果因为挤占导致指令无法执行，就跳过决策并且等待。
 
@@ -127,6 +248,8 @@ int main()
 					total_destination[k].pop();
 					buy[k] = total_buy[k].front();
 					total_buy[k].pop();
+					check[k] = total_check[k].front();
+					total_check[k].pop();
 				}
 			}
 
