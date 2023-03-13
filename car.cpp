@@ -4,7 +4,7 @@
 using namespace std;
 const double eps = 1e-2;
 const double Pi = 3.1415926536;
-double Car::CalcAng(double nx, double ny) {
+double Car::CalcAng(double nx, double ny){
 	double res = atan2(ny - y, nx - x) - ang;
 	if (res >= Pi)
 		res -= 2 * Pi;
@@ -12,20 +12,46 @@ double Car::CalcAng(double nx, double ny) {
 		res += 2 * Pi;
 	return res;
 }
+double Car::CalcRotate(double nx,double ny,double DeltaAng) {
+	//è®¡ç®—è½¬åŠ¨æƒ¯é‡å’Œè§’åŠ é€Ÿåº¦
+	double I = 0.5 * (goods == 0 ? 0.04100625 : 0.07890481) * Pi * 20, B = 50.0 / I;
+	//åˆ¤æ–­å½“å‰æœå‘ç›´è¡Œæ˜¯å¦èƒ½åˆ°ç›®æ ‡ç‚¹
+	bool Check = (fabs(DeltaAng) < 1.56) &&
+		(tan(fabs(DeltaAng)) * sqrt((nx - x) * (nx - x) + (ny - y) * (ny - y)) <= 0.4 - eps);
+	//æ ¹æ®å½“å‰åå‘è§’å’Œè§’é€Ÿåº¦å†³å®šåŠ é€Ÿæ—‹è½¬æˆ–å‡é€Ÿæ—‹è½¬
+	double res = 0;
+	if (Check)
+		res = 0;
+	else if (DeltaAng > 0)//æ˜¯å¦å­˜åœ¨DeltaAng*w<0çš„æƒ…å†µï¼Œå½±å“æ˜¯ä»€ä¹ˆ
+	{
+		if (w * w / B * 0.5 < DeltaAng - eps)
+			res = Pi;//è¿™è¾¹å¯ä»¥æ ¹æ®wä¸DeltaAngçš„å¤§å°å…³ç³»é€‚å½“è°ƒæ•´rot
+		else
+			res = 0;
+	}
+	else if (DeltaAng < 0)
+	{
+		if (w * w / B * 0.5 < fabs(DeltaAng) - eps)
+			res = -Pi;
+		else
+			res = 0;
+	}
+	return res;
+}
 double Car::CalcForward(double DeltaAng) {
-	return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);//¿ÉÒÔµ÷ÕûÕâÀïÊ¹ÓÃµÄº¯Êı
+	return cos(DeltaAng)* (fabs(DeltaAng) > Pi / 2 ? 0 : 6);//å¯ä»¥è°ƒæ•´è¿™é‡Œä½¿ç”¨çš„å‡½æ•°
 }
 void Car::MarginCheck(double& forwar) {
-	//¼ÆËãÖÊÁ¿ºÍ¼ÓËÙ¶È
+	//è®¡ç®—è´¨é‡å’ŒåŠ é€Ÿåº¦
 	double M = (goods == 0 ? 0.2025 : 0.2809) * Pi * 20, A = 250.0 / M, Ax, Ay;
-	//¼ÓËÙ¶ÈÊ¸Á¿·Ö½â
+	//åŠ é€Ÿåº¦çŸ¢é‡åˆ†è§£
 	if (fabs(vx) <= 0)
 		Ax = 0, Ay = A;
 	else if (fabs(vy) <= 0)
 		Ax = A, Ay = 0;
 	else
 		Ax = A / sqrt(vx * vx + vy * vy) * fabs(vx), Ay = A / sqrt(vx * vx + vy * vy) * fabs(vy);
-	//ÅĞ¶ÏÊÇ·ñ¿ÉÄÜ×²Ç½²¢Éè¶¨ËÙ¶È
+	//åˆ¤æ–­æ˜¯å¦å¯èƒ½å‘ç”Ÿè¾¹ç•Œç¢°æ’å¹¶ä¿®æ”¹é€Ÿåº¦è®¾å®šå€¼
 	double Margin = 0.2 + (goods == 0 ? 0.45 : 0.53);
 	if (vx > 0 && vx * vx / Ax * 0.5 > 50 - x - Margin)
 		forwar = 0;
@@ -38,29 +64,11 @@ void Car::MarginCheck(double& forwar) {
 }
 pair<double, double> Car::mov(double nx, double ny)
 {
-	double DeltaAng = CalcAng(nx, ny);//¼ÆËãµ±Ç°³¯ÏòÓëÄ¿±êµãµÄÆ«Ïò½Ç
-	double forwar = CalcForward(DeltaAng), rot;//ËÙ¶ÈÓë½ÇËÙ¶ÈµÄÉè¶¨Öµ
-	double I = 0.5 * (goods == 0 ? 0.04100625 : 0.07890481) * Pi * 20, B = 50.0 / I;//¼ÆËã×ª¶¯¹ßÁ¿ºÍ½Ç¼ÓËÙ¶È
-	bool Check = (fabs(DeltaAng) < 1.56) &&
-		(tan(fabs(DeltaAng)) * sqrt((nx - x) * (nx - x) + (ny - y) * (ny - y)) <= 0.4 - eps);//ÅĞ¶Ïµ±Ç°³¯ÏòÖ±ĞĞÊÇ·ñÄÜµ½Ä¿±êµã
-	//Éè¶¨rotate
-	if (Check)
-		rot = 0;
-	else if (DeltaAng > 0)//ÊÇ·ñ´æÔÚDeltaAng*w<0µÄÇé¿ö£¬Ó°ÏìÊÇÊ²Ã´
-	{
-		if (w * w / B * 0.5 < DeltaAng - eps)
-			rot = Pi;//Õâ±ß¿ÉÒÔ¸ù¾İwÓëDeltaAngµÄ´óĞ¡¹ØÏµÊÊµ±µ÷Õûrot
-		else
-			rot = 0;
-	}
-	else if (DeltaAng < 0)
-	{
-		if (w * w / B * 0.5 < fabs(DeltaAng) - eps)
-			rot = -Pi;
-		else
-			rot = 0;
-	}
-	//×²Ç½ÅĞ¶¨
+	//è®¡ç®—å½“å‰æœå‘ä¸ç›®æ ‡ç‚¹çš„åå‘è§’
+	double DeltaAng = CalcAng(nx, ny);
+	//è®¡ç®—é€Ÿåº¦ä¸è§’é€Ÿåº¦çš„è®¾å®šå€¼
+	double rot = CalcRotate(nx, ny, DeltaAng), forwar = CalcForward(DeltaAng);
+	//è¾¹ç•Œç¢°æ’åˆ¤å®š
 	if (fabs(vx) > eps || fabs(vy) > eps)
 		MarginCheck(forwar);
 	return pair<double, double>(forwar, rot);
