@@ -1,9 +1,13 @@
 #pragma once
 
-struct Car{
-	int workbench,goods;//Ëù´¦¹¤×÷Ì¨±àºÅ£¬Ğ¯´øÎïÆ·±àºÅ 
-	double timerate,hitrate;//Ê±¼ä¼ÛÖµÏµÊı£¬Åö×²¼ÛÖµÏµÊı 
-	double vx,vy,w;//¶şÎ¬ÏßËÙ¶ÈÏòÁ¿£¬½ÇËÙ¶È 
-	double ang,x,y;//³¯Ïò½Ç¶È£¬×ø±ê 
-	pair<double,double> mov(double,double);
+struct Car
+{
+	int workbench, goods;	                 // æ‰€å¤„å·¥ä½œå°ç¼–å·ï¼Œæºå¸¦ç‰©å“ç¼–å·
+	double timerate, hitrate;                // æ—¶é—´ä»·å€¼ç³»æ•°ï¼Œç¢°æ’ä»·å€¼ç³»æ•°
+	double vx, vy, w;		                 // äºŒç»´çº¿é€Ÿåº¦å‘é‡ï¼Œè§’é€Ÿåº¦
+	double ang, x, y;		                 // æœå‘è§’åº¦ï¼Œåæ ‡
+	double CalcAng(double, double);          // è®¡ç®—å½“å‰æœå‘ä¸ç›®æ ‡ç‚¹çš„åå‘è§’
+	double CalcForward(double);              // æ ¹æ®åå‘è§’è®¡ç®—å‰è¿›é€Ÿåº¦
+	void MarginCheck(double&);                      // 
+	pair<double, double> mov(double, double);// å°†å°è½¦å‘ç›®æ ‡ç‚¹ç§»åŠ¨
 };
