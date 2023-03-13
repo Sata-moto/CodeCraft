@@ -104,7 +104,7 @@ void make_decision(int car_num)
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time <= 0 && !occupied[k][0])
+		if (desk[k].remain_time <= 0 && !occupied[k][0] || desk[k].type <= 3)
 			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
@@ -142,7 +142,10 @@ void make_decision(int car_num)
 
 			int exist_count = 0;
 			for (int j = 0; j < (int)available_desk[k].size(); j++)
+			{
 				exist_count += desk[available_desk[k][j]].output_status;
+				if (desk[available_desk[k][j]].remain_time != -1) exist_count++;
+			}
 			for (int j = 0; j < (int)available_desk[7].size(); j++)
 				exist_count += desk[available_desk[7][j]].input_status[k];
 			for (int j = 0; j < 3; j++)
@@ -179,7 +182,7 @@ void make_decision_to_7(int car_num, int goods)
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time <= 0 && !occupied[k][goods])
+		if (desk[k].remain_time <= 0 && !occupied[k][0])
 			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
@@ -270,11 +273,11 @@ int main()
 		for (register int k = 0; k < cnt_desk; k++)
 		{
 			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
-			int input, input_cnt = 1, output;
+			int input, input_cnt = 0, output;
 			scanf("%d %d", &input, &output);
 			while (input)
 			{
-				if (input % 2)
+				if (input % 2 == 1)
 					desk[k].input_status[input_cnt] = 1;
 				input >>= 1, input_cnt++;
 			}
@@ -316,7 +319,7 @@ int main()
 				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
 				if (buy[k] && desk[destination[k]].output_status == 1)
 					printf("buy %d\n", k);
-				else if (!buy[k] && (desk[destination[k]].input_status[car[k].goods] == 1))
+				else if (!buy[k] && (desk[destination[k]].input_status[car[k].goods] == 0))
 				{
 					printf("sell %d\n", k);
 					//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
