@@ -52,13 +52,13 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
-		return 1.0 / sqrt(remain * 1.0);
+		return pow(2.718, -remain);
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
 		if (output_is_ready) return 1.2;
 		else if (output_is_doing > 500) return 1;
-		else return 1 + output_is_doing / 2500.0;
+		else return 0.8 + output_is_doing / 1250.0;
 	}
 	double fun3(int current_frame)
 	{
@@ -75,9 +75,9 @@ namespace parameter
 	{
 		if (!is_7) return 0.8;
 		else if (!is_empty) return 0;
-		else if (is_done) return 1.1;
+		else if (is_done) return 1.2;
 		else if (is_doing > 1000) return 1;
-		else if (is_doing) return 1 + is_doing / 10000.0;
+		else if (is_doing) return 0.8 + is_doing / 2500.0;
 		else return 1;
 	}
 	double fun6(int number_of_exists)
@@ -286,6 +286,7 @@ int main()
 			scanf("%d %lf %lf %d", &desk[k].type, &desk[k].x, &desk[k].y, &desk[k].remain_time);
 			int input, input_cnt = 0, output;
 			scanf("%d %d", &input, &output);
+			for (int i = 0; i < 9; i++) desk[k].input_status[i] = 0;
 			while (input)
 			{
 				if (input % 2 == 1)
@@ -304,7 +305,7 @@ int main()
 		scanf("%s", is_OK);
 		// 初始化完毕
 
-	if (frame_number == 1)
+		if (frame_number == 1)
 			for (int k = 0; k < 4; k++)
 			{
 				make_decision(k);
@@ -394,10 +395,11 @@ int main()
 				}
 				else if (check[k] == 2)
 				{
+					occupied[destination[k]][car[k].goods] = 0;
+
 					//如果有输出了，就拿走
 					if (desk[destination[k]].output_status)
 					{
-						occupied[destination[k]][car[k].goods] = 0;
 						printf("buy %d\n", k);
 						md_9[k] = 1;
 						wait[k] = 0;
@@ -406,7 +408,6 @@ int main()
 					else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
 						wait[k] = 1;
 					//否则就是刚填完一组，那么接触占用自己去做决策。
-					else occupied[destination[k]][car[k].goods] = 0;
 				}
 				//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
 				//如果有 output，那就决策把这个送到哪去
