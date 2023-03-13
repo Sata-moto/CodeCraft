@@ -2,13 +2,14 @@
 #include "car.h"
 #include "desk.h"
 
-char map[N][N]; // 地图
+char map[N][N];						// 地图
 Car car[5];
 Desk desk[52];
-int cnt_desk;	// 一共有多少工作台
+int cnt_desk;						// 一共有多少工作台
+int occupied[52][10];				// 工作台是否被占用
 
-int money;        // 金钱数
-int frame_number; // 帧序号
+int money;							// 金钱数
+int frame_number;					// 帧序号
 
 int destination[5];                 // 小车在当前时间的目的地
 queue <int > total_destination[5];  // 小车经过上次决策后产生的目的地组
@@ -27,7 +28,7 @@ void Buy(int car_num, int desk_num, int Check = 0)
 	total_destination[car_num].push(desk_num), total_buy[car_num].push(1), total_check[car_num].push(Check);
 }
 
-vector <int > availalbe_desk[10];//各种工作台当前有哪些空闲的
+vector <int > available_desk[10];//各种工作台当前有哪些空闲的
 
 double dis(double x1, double y1, double x2, double y2)
 {
@@ -36,7 +37,7 @@ double dis(double x1, double y1, double x2, double y2)
 
 double dddis(int desk1, int desk2)
 {
-	return dis(desk[desk1].x, desk[desk1].y, desk[desk2].x, desk[desk2].y)
+	return dis(desk[desk1].x, desk[desk1].y, desk[desk2].x, desk[desk2].y);
 }
 
 double cddis(int car1, int desk1)
@@ -55,6 +56,7 @@ namespace parameter
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
 		if (output_is_ready) return 1.2;
+		else if (output_is_doing > 500) return 1;
 		else return 1 + output_is_doing / 2500.0;
 	}
 	double fun3(int current_frame)
@@ -62,20 +64,20 @@ namespace parameter
 		return 1;
 		//还没想好
 	}
-	double fun4(int current_frame, int distance)
+	double fun4(int current_frame, double distance)
 	{
 		if (current_frame > 8500)
-			return distance;
+			return 1.0 / distance;
 		else return 1;
 	}
-	double fun5(bool is_7, bool is_empty, bool is_done, int is_doing)
+	double fun5(bool is_7, bool is_empty, bool is_done, double is_doing)
 	{
-		if (!is_7) return 1;
+		if (!is_7) return 0.8;
 		else if (!is_empty) return 0;
-		else
-			if (is_done) return 1.3;
-			else if (is_doing) return 1.1 + is_doing / 5000.0;
-			else return 1.1;
+		else if (is_done) return 1.1;
+		else if (is_doing > 1000) return 1;
+		else if (is_doing) return 1 + is_doing / 10000.0;
+		else return 1;
 	}
 	double fun6(int number_of_exists)
 	{
@@ -83,32 +85,87 @@ namespace parameter
 	}
 }
 
+int son[10][2];
+double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
+
 // 决策生产 4/5/6 中的谁
 void make_decision(int car_num)
 {
 	// 贪心决策
 	// 思路：1，2，3 种物品的生产视为不需要决策的，每个机器人独立决策当前
-	// 生产 4/5/6，生产哪一个根据 生产利润/（生产它需要的距离/速度
-	// ）* fun1(该种物品的场上剩余数目) * fun2（该种物品的目的工作
+	// 生产 4/5/6，生产哪一个根据 生产利润/生产它需要的距离
+	// * fun1(该种物品的场上剩余数目) * fun2（该种物品的目的工作
 	// 台的产品格上是否有物品了，或者正在做）* fun3（时间选择系数）决定，
 	// 选择权重大的那个，如果目的地工作台上已经有了物品，则将其卖出。
-	// 卖出的地点是 7/8，权重是 出售它需要的距离  * fun4（当前时间）
+	// 卖出的地点是 7/9，权重是 出售它需要的距离  * fun4（当前时间）
 	// * fun5（是否是 7 并且该格子空着并且有没有输出） * fun6（是 
 	// 7 的话工作台上已经有了几种物品） 
 
 	for (int k = 1; k <= 9; k++)
-		availalbe_desk[k].clear();
+		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time == -1)
-			availalbe_desk[desk[k].type].push_back(k);
+		if (desk[k].remain_time <= 0 && !occupied[k][0])
+			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
 	double max_earning = 0;
 	int max_earning_desk_num = -1;
 	int son_desk1 = -1, son_desk2 = -1;
 
+	for (register int k = 4; k <= 6; k++)
+	{
+		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		{
+			int now = available_desk[k][i];
+			int son_Desk1 = -1, son_Desk2 = -1;
+			double weight = 0, min_distance = 999999999;
+
+			for (int p = 0; p < (int)available_desk[son[k][0]].size(); p++)
+				for (int q = 0; q < (int)available_desk[son[k][1]].size(); q++)
+				{
+					int son_DESK1 = available_desk[son[k][0]][p];
+					int son_DESK2 = available_desk[son[k][1]][q];
+					double DIS = min(cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2,
+						cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
+					if (DIS < min_distance)
+					{
+						min_distance = DIS;
+						son_Desk1 = son_DESK1;
+						son_Desk2 = son_DESK2;
+						if (cddis(car_num, son_Desk1) + dddis(son_Desk1, now) + dddis(now, son_Desk2) * 2 != DIS)
+							swap(son_Desk1, son_Desk2);
+					}
+				}
+			//计算最小距离
+
+			if (son_Desk1 == -1) continue;
+
+			int exist_count = 0;
+			for (int j = 0; j < (int)available_desk[k].size(); j++)
+				exist_count += desk[available_desk[k][j]].output_status;
+			for (int j = 0; j < (int)available_desk[7].size(); j++)
+				exist_count += desk[available_desk[7][j]].input_status[k];
+			for (int j = 0; j < 3; j++)
+				exist_count += (car[j].goods == k ? 1 : 0);
+			//计算当前物品场上存在的数量
+
+			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
+				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time)
+				* parameter::fun3(frame_number);
+
+			if (weight > max_earning)
+			{
+				max_earning = weight;
+				max_earning_desk_num = now;
+				son_desk1 = son_Desk1;
+				son_desk2 = son_Desk2;
+			}
+		}
+	}
+
 	if (max_earning_desk_num != -1)
 	{
+		occupied[max_earning_desk_num][0] = 1;
 		Buy(car_num, son_desk1);
 		Sel(car_num, max_earning_desk_num);
 		Buy(car_num, son_desk2);
@@ -120,27 +177,49 @@ void make_decision(int car_num)
 void make_decision_to_7(int car_num, int goods)
 {
 	for (int k = 1; k <= 9; k++)
-		availalbe_desk[k].clear();
+		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time == -1)
-			availalbe_desk[desk[k].type].push_back(k);
+		if (desk[k].remain_time <= 0 && !occupied[k][goods])
+			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
 	double max_earning = 0;
 	int max_earning_desk_num = -1;
+	for (register int k = 7; k <= 9; k++)
+	{
+		if (k == 8) continue;
+		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		{
+			int now = available_desk[k][i];
+			double weight = 0;
+
+			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now))
+				* parameter::fun5(k == 7 ? 1 : 0, desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time)
+				* parameter::fun6(desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
+
+			if (weight > max_earning)
+			{
+				max_earning = weight;
+				max_earning_desk_num = now;
+			}
+		}
+	}
 
 	if (max_earning_desk_num != -1)
+	{
 		Sel(car_num, max_earning_desk_num, 2);
+		occupied[max_earning_desk_num][goods] = 1;
+	}
 }
 
-// 决策把 7 号物品卖到哪去，直接就进就可以了
+// 决策把 7 号物品卖到哪去，直接就近就可以了
 void make_decision_to_8(int car_num)
 {
 	for (int k = 1; k <= 9; k++)
-		availalbe_desk[k].clear();
+		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time == -1)
-			availalbe_desk[desk[k].type].push_back(k);
+		if (desk[k].remain_time <= 0)
+			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
 	double cloest_distance = 9999999999;
@@ -148,9 +227,9 @@ void make_decision_to_8(int car_num)
 
 	for (register int k = 8; k <= 9; k++)
 	{
-		for (int i = 0; i < (int)availalbe_desk[k].size(); i++)
+		for (int i = 0; i < (int)available_desk[k].size(); i++)
 		{
-			int now = availalbe_desk[k][i];
+			int now = available_desk[k][i];
 			if (cddis(car_num, now) < cloest_distance)
 			{
 				cloest_desk = now;
@@ -163,11 +242,22 @@ void make_decision_to_8(int car_num)
 		Sel(car_num, cloest_desk);
 }
 
+void init()
+{
+	son[4][0] = 1, son[4][1] = 2;
+	son[5][0] = 1, son[5][1] = 3;
+	son[6][0] = 2, son[6][1] = 3;
+}
+
+bool begin_flag;
+
 int main()
 {
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	//地图没有用，101行是因为最后一行 OK
+
+	init();
 
 	printf("OK\n");
 	fflush(stdout);
@@ -200,17 +290,23 @@ int main()
 		scanf("%s", is_OK);
 		// 初始化完毕
 
-		if (frame_number == 1)
+		if (!begin_flag)
+		{
+			begin_flag = 1;
 			for (int k = 0; k < 4; k++)
 			{
 				make_decision(k);
-				destination[k] = total_destination[k].front();
-				total_destination[k].pop();
-				buy[k] = total_buy[k].front();
-				total_buy[k].pop();
-				check[k] = total_check[k].front();
-				total_check[k].pop();
+				if (!total_destination[k].empty())
+				{
+					destination[k] = total_destination[k].front();
+					total_destination[k].pop();
+					buy[k] = total_buy[k].front();
+					total_buy[k].pop();
+					check[k] = total_check[k].front();
+					total_check[k].pop();
+				}
 			}
+		}
 		//第一帧初始化决策
 
 		for (int k = 0; k < 4; k++)
@@ -225,15 +321,23 @@ int main()
 					printf("sell %d\n", k);
 					//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
 					//如果有 output，那就决策把这个送到哪去
-					if (check[k] == 1 && desk[destination[k]].output_status)
+					if (check[k] == 1)
 					{
-						printf("buy %d\n", k);
-						make_decision_to_7(k, desk[destination[k]].type);
+						occupied[destination[k]][0] = 0;
+						if (desk[destination[k]].output_status)
+						{
+							printf("buy %d\n", k);
+							make_decision_to_7(k, desk[destination[k]].type);
+						}
 					}
-					else if (check[k] == 2 && desk[destination[k]].output_status)
+					else if (check[k] == 2)
 					{
-						printf("buy %d\n", k);
-						make_decision_to_8(k);
+						occupied[destination[k]][car[k].goods] = 0;
+						if (desk[destination[k]].output_status)
+						{
+							printf("buy %d\n", k);
+							make_decision_to_8(k);
+						}
 					}
 				}
 				else continue;
