@@ -104,7 +104,7 @@ void make_decision(int car_num)
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time <= 0 && !occupied[k][0] || desk[k].type <= 3)
+		if (desk[k].remain_time < 0 && !occupied[k][0] || desk[k].type <= 3)
 			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
