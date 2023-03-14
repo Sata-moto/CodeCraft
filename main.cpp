@@ -5,11 +5,6 @@
 
 #define Stop_frame 8800
 
-int seed = 0;
-int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
-int seed_MOD = 998244353;
-//种子
-
 int num_desk_7;
 int num_desk_9;
 
