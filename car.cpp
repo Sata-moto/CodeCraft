@@ -36,7 +36,7 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	//计算转动惯量和角加速度
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I;
 	//判断当前朝向直行是否能到目标点
-	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.4 - eps);
+	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng) * Dist(nx, ny, x, y) <= 0.4 - eps));
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
 	double res = 0;
 	if (Check)
