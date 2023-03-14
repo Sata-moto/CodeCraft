@@ -14,7 +14,6 @@ int num_desk_7;
 int num_desk_9;
 
 char map[N][N];						// 地图
-Car car[5];
 Desk desk[52];
 int cnt_desk;						// 一共有多少工作台
 int occupied[52][10];				// 工作台是否被占用
@@ -63,6 +62,7 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
+		if (num_desk_7 == 0) return 1;
 		if (seed == seeds[1]) return pow(2.718, -remain);
 		else if (seed == seeds[3]) return 1 / log(remain + 1);
 		else return 1.0 / (remain + 1);
@@ -221,7 +221,8 @@ void make_decision_to_7(int car_num, int goods)
 	if (max_earning_desk_num != -1)
 	{
 		Sel(car_num, max_earning_desk_num, 2);
-		occupied[max_earning_desk_num][goods] = 1;
+		if (desk[max_earning_desk_num].type == 7)
+			occupied[max_earning_desk_num][goods] = 1;
 	}
 }
 
