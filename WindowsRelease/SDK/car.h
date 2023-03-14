@@ -19,4 +19,8 @@ struct Car
 	void MarginCheck(double&);                   // 边界碰撞判断并修改前进速度 
 	pair<double, double> mov(double, double);    // 将小车向目标点移动
 };
+<<<<<<< HEAD
 extern Car car[5];
+=======
+extern Car car[5];
+>>>>>>> 6cb5cf973f8ba906006b5bae05433831a67f9223

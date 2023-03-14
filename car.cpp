@@ -36,7 +36,7 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	//计算转动惯量和角加速度
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I;
 	//判断当前朝向直行是否能到目标点
-	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng) * Dist(nx, ny, x, y) <= 0.4 - eps));
+	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.4 - eps);
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
 	double res = 0;
 	if (Check)
@@ -59,65 +59,6 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 }
 double Car::CalcForward(double DeltaAng) {
 	return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);//可以调整这里使用的函数
-}
-void Car::CarCrashCheck(double& forwar, double& rot) {
-	//定义警戒范围
-	double AlertRange = 5;
-	//判定与每个小车的相交情况
-	for (int i = 0; i < 4; i++) {
-		//判定是否是同一辆车
-		if (car[i].x == x && car[i].y == y)continue;
-		//判定该小车是否进入警戒范围
-		double dis = Dist(car[i].x, car[i].y, x, y);
-		if (dis > AlertRange)continue;
-		//计算两个小车速度夹角的正弦和余弦值
-		double SinAng = Cross(vx, vy, car[i].vx, car[i].vy) / (CombineV(car[i].vx, car[i].vy) * CombineV(vx, vy));
-		double CosAng = Dot(vx, vy, car[i].vx, car[i].vy) / (CombineV(car[i].vx, car[i].vy) * CombineV(vx, vy));
-		//似平行情况判定
-		if (fabs(SinAng) < sin(Pi / 60)) {
-			//路径不重合判定（点到直线距离）
-			if (fabs(Cross(x - car[i].x, y - car[i].y, car[i].vx, car[i].vy)) / CombineV(car[i].vx, car[i].vy) > 0.5 + GetR(goods) + GetR(car[i].goods))
-				continue;
-			else {
-				//对碰判定
-				if (CosAng < 0) {
-					rot = -Pi / 3;
-				}
-				//追及判定
-				else {
-					if (Sign(Dot(car[i].x - x, car[i].y - y, vx, vy)) > 0 && Dist(x, y, car[i].x, car[i].y) <= AlertRange / 1.5)
-						forwar = max(CombineV(car[i].vx, car[i].vy) - 1, 0.0);
-				}
-			}
-		}
-		//相交情况判定
-		else {
-			//求解交点
-			double ux = x + vx - car[i].x - car[i].vx, uy = y + vy - car[i].y - car[i].vy;
-			double T = Cross(ux, uy, car[i].vx, car[i].vy) / Cross(vx, vy, car[i].vx, car[i].vy);
-			double tx = x + vx - T * vx, ty = y + vy - T * vy;
-			//交点在地图外
-			if (tx < 0 || tx>50 || ty < 0 || ty>50)
-				continue;
-			//交点在一定范围外
-			if (Dist(x, y, tx, ty) >= AlertRange * 3 && Dist(car[i].x, car[i].y, tx, ty) >= AlertRange * 3)
-				continue;
-			//计算抵达交点所需时间
-			double TimeCost1 = Dist(x, y, tx, ty) / CombineV(vx, vy) * Sign(Dot(tx - x, ty - y, vx, vy));
-			double TimeCost2 = Dist(car[i].x, car[i].y, tx, ty) / CombineV(car[i].vx, car[i].vy) * Sign(Dot(tx - car[i].x, car[i].y - y, car[i].vx, car[i].vy));
-			//交点在反方向
-			if (TimeCost1 <= eps || TimeCost2 <= eps)
-				continue;
-			//抵达交点时间差较大
-			if (fabs(TimeCost1 - TimeCost2) > 0.5 + 2 * fabs(CosAng))
-				continue;
-			//当前小车先到达交点
-			if (TimeCost1 < TimeCost2)
-				continue;
-			//当前小车后到达交点
-			forwar = 0;
-		}
-	}
 }
 void Car::CarCrashCheck(double& forwar, double& rot) {
 	//定义警戒范围
