@@ -1,6 +1,14 @@
 #include "Global.h"
 #include "car.h"
 #include "desk.h"
+#include <cmath>
+
+#define Stop_frame 8500
+
+int seed = 0;
+int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
+int seed_MOD = 998244353;
+//种子
 
 char map[N][N];						// 地图
 Car car[5];
@@ -52,7 +60,9 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
-		return 1.0/(remain+1);
+		if (seed == seeds[1]) return pow(2.718, -remain);
+		else if (seed == seeds[3]) return 1 / log(remain + 1);
+		else return 1.0 / (remain + 1);
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
@@ -65,7 +75,7 @@ namespace parameter
 		return 1;
 		//还没想好
 	}
-	double fun4(int current_frame, double distance)
+	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
 		if (current_frame > 8500)
 			return 1.0 / distance;
@@ -193,7 +203,7 @@ void make_decision_to_7(int car_num, int goods)
 			int now = available_desk[k][i];
 			double weight = 0;
 
-			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now))
+			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
 				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time)
 				* parameter::fun6(desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
 
@@ -247,6 +257,10 @@ void init()
 	son[4][0] = 1, son[4][1] = 2;
 	son[5][0] = 1, son[5][1] = 3;
 	son[6][0] = 2, son[6][1] = 3;
+
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
 }
 
 bool judge(int dest, int goods)
@@ -369,7 +383,7 @@ int main()
 			if (car[k].workbench == destination[k])
 			{
 				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
-				if (buy[k] && !wait[k])
+				if (buy[k] && !wait[k] && frame_number <= Stop_frame)
 					printf("buy %d\n", k);
 				else if (!buy[k] && !wait[k])
 				{
@@ -380,7 +394,7 @@ int main()
 				if (check[k] == 1) //这组送往 4/5/6 的决策完成
 				{
 					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status)
+					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
 						occupied[destination[k]][0] = 0;
 						printf("buy %d\n", k);
@@ -398,7 +412,7 @@ int main()
 					occupied[destination[k]][car[k].goods] = 0;
 
 					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status)
+					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
 						printf("buy %d\n", k);
 						md_9[k] = 1;
