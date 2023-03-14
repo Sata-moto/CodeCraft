@@ -2,11 +2,6 @@
 #include "car.h"
 #include "desk.h"
 
-int seed = 0;
-int seeds[5] = { 0,350833046,350103816,350589690,352312592 };
-int seed_MOD = 998244353;
-//种子
-
 char map[N][N];						// 地图
 Car car[5];
 Desk desk[52];
@@ -57,9 +52,7 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
-		if (seed == seeds[1]) return pow(2.718, -remain);
-		else if(seed == seeds[2]) return 1.0 / remain;
-		else return 1.0 / (remain + 1);
+		return 1.0/(remain+1);
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
@@ -254,10 +247,6 @@ void init()
 	son[4][0] = 1, son[4][1] = 2;
 	son[5][0] = 1, son[5][1] = 3;
 	son[6][0] = 2, son[6][1] = 3;
-
-	for (int k = 1; k <= 100; k++)
-		for (int i = 1; i <= 100; i++)
-			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
 }
 
 bool judge(int dest, int goods)
