@@ -10,6 +10,9 @@ int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
 int seed_MOD = 998244353;
 //种子
 
+int num_desk_7;
+int num_desk_9;
+
 char map[N][N];						// 地图
 Car car[5];
 Desk desk[52];
@@ -285,7 +288,12 @@ int main()
 {
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
-	//地图没有用，101行是因为最后一行 OK
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			if (map[k][i] == '7')
+				num_desk_7++;
+			else if (map[k][i] == '9')
+				num_desk_9++;
 
 	init();
 
@@ -374,8 +382,10 @@ int main()
 					total_buy[k].pop();
 					check[k] = total_check[k].front();
 					total_check[k].pop();
+					md_7[k] = false;
+					wait[k] = 0;
 				}
-				md_7[k] = false;
+				else check[k] = -1, wait[k] = 1;
 			}
 			if (md[k])
 			{
@@ -389,6 +399,7 @@ int main()
 					check[k] = total_check[k].front();
 					total_check[k].pop();
 				}
+				else wait[k] = 1;
 				md[k] = false;
 			}
 
@@ -402,6 +413,9 @@ int main()
 					printf("sell %d\n", k);
 					if (car[k].goods >= 4 && car[k].goods <= 6)
 						occupied_goods[car[k].goods]--;
+					if (occupied_goods[car[k].goods] < 0)
+						exit(-1);
+					//错误跳出点 1
 				}
 				if (check[k] == 1) //这组送往 4/5/6 的决策完成
 				{
@@ -421,18 +435,18 @@ int main()
 				}
 				else if (check[k] == 2)
 				{
-					occupied[destination[k]][car[k].goods] = 0;
-
 					//如果有输出了，就拿走
 					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
+						occupied[destination[k]][car[k].goods] = 0;
 						printf("buy %d\n", k);
 						md_9[k] = 1;
 						wait[k] = 0;
 					}
 					//如果正在做并且输入填满了，要等待输出
 					else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
-						wait[k] = 1;
+						occupied[destination[k]][car[k].goods] = 0, wait[k] = 1;
+					else occupied[destination[k]][car[k].goods] = 0;
 					//否则就是刚填完一组，那么接触占用自己去做决策。
 				}
 				//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
