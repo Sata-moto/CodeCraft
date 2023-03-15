@@ -187,8 +187,8 @@ void make_decision(int car_num)
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
 
 			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
-				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time)d;
-			s
+				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time);
+			
 			if (weight > max_earning)
 			{
 				max_earning = weight;
