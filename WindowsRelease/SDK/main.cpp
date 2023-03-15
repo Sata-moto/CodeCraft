@@ -17,6 +17,7 @@ char map[N][N];						// 地图
 Desk desk[52];
 int cnt_desk;						// 一共有多少工作台
 int occupied[52][10];				// 工作台是否被占用
+int sol_occupied[52][10];				// 工作台是否被占用
 int occupied_goods[10];				// 某个物品是否在被生产
 
 int money;							// 金钱数
@@ -111,7 +112,7 @@ namespace parameter
 	double fun5(bool is_7, bool is_empty, bool is_done, double is_doing)
 	{
 		if (!is_7) return 0.8;
-		else if (!is_empty) return 0;
+		else if (!is_empty) return -0.01;
 		else if (is_done) return 1.2;
 		else if (is_doing > 1000) return 1;
 		else if (is_doing) return 0.8 + is_doing / 2500.0;
@@ -220,7 +221,7 @@ void make_decision_to_7(int car_num, int goods)
 			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
-	double max_earning = 0;
+	double max_earning = 0.000000000001;
 	int max_earning_desk_num = -1;
 	for (register int k = 7; k <= 9; k++)
 	{
@@ -310,9 +311,20 @@ bool wait_until_spare_7[4] = { 0,0,0,0 };
 
 bool init_dc;
 
+void reload_occupied()
+{
+	for (int k = 0; k < cnt_desk; k++)
+		for (int i = 0; i <= 9; i++)
+			if (sol_occupied[k][i])
+			{
+				occupied[k][i] = 0;
+				sol_occupied[k][i] = 0;
+			}
+}
+
 bool check_spare_7(int type)
 {
-	return true;
+	//return true;//取消先等待再拿的决策
 	if (num_desk_9 != 0) return true;
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();
@@ -347,6 +359,7 @@ int main()
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
+		reload_occupied();
 		printf("%d\n", frame_number);
 		scanf("%d", &cnt_desk);
 		for (register int k = 0; k < cnt_desk; k++)
@@ -468,7 +481,7 @@ int main()
 					{
 						if (check_spare_7(desk[destination[k]].type))
 						{
-							occupied[destination[k]][0] = 0;
+							sol_occupied[destination[k]][0] = 1;
 							printf("buy %d\n", k);
 							md_7[k] = 1;
 							wait[k] = 0;
@@ -480,11 +493,11 @@ int main()
 					else if (desk[destination[k]].remain_time != -1 && desk[destination[k]].input_status != 0)
 						wait[k] = 1;
 					//否则就是刚填完一组，那么接触占用自己去做决策。
-					else occupied[destination[k]][0] = 0;
+					else sol_occupied[destination[k]][0] = 1;
 				}
 				else if (check[k] == 2)
 				{
-					occupied[destination[k]][car[k].goods] = 0;
+					sol_occupied[destination[k]][car[k].goods] = 1;
 					//如果有输出了，就拿走
 					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
