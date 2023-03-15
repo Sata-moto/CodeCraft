@@ -3,7 +3,6 @@
 
 using namespace std;
 const double eps = 1e-2;
-const double Pi = 3.1415926536;
 Car car[5];
 double Car::Sign(double k) {
 	if (fabs(k) < eps)return 0;
