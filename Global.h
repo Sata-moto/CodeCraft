@@ -11,4 +11,4 @@
 using namespace std;
 const int N = 102;
 
-
+const double Pi = 3.1415926536;

@@ -73,10 +73,34 @@ namespace parameter
 		else if (output_is_doing > 500) return 1;
 		else return 0.8 + output_is_doing / 1250.0;
 	}
-	double fun3(int current_frame)
+	// 只考虑了到第一个工作台时的角度
+	double fun3(int car_num, int desk_num, int type)
 	{
-		return 1;
-		//还没想好
+		double min_theta = 9999999;
+		for (int k = 0; k < 4; k++)
+		{
+			if (k == car_num) continue;
+			double ay = car[car_num].y, ax = car[car_num].x;
+			double by = car[k].y, bx = car[k].x;
+			double cy = desk[desk_num].y, cx = desk[desk_num].x;
+			double theta1 = atan2(by - ay, bx - ax);
+			double theta2 = atan2(cy - ay, cx - ax);
+			if (theta1 < 0) theta1 += 2 * Pi;
+			if (theta2 < 0) theta2 += 2 * Pi;
+			double angle_between = fabs(theta1 - theta2);
+			if (min_theta > angle_between)
+				min_theta = angle_between;
+		}
+		if (type == 2)
+		{
+			if (min_theta > Pi / 3) return 1.2;
+			return 1.2 - cos(min_theta * 3 / 2) / 2.5;
+		}
+		else
+		{
+			if (min_theta > Pi / 3) return 1;
+			return 1 + cos(min_theta * 3 / 2);
+		}
 	}
 	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
@@ -140,14 +164,15 @@ void make_decision(int car_num)
 				{
 					int son_DESK1 = available_desk[son[k][0]][p];
 					int son_DESK2 = available_desk[son[k][1]][q];
-					double DIS = min(cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2,
-						cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
+					double DIS1 = (cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2);
+					double DIS2 = (cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
+					double DIS = min(DIS1, DIS2);
 					if (DIS < min_distance)
 					{
 						min_distance = DIS;
 						son_Desk1 = son_DESK1;
 						son_Desk2 = son_DESK2;
-						if (cddis(car_num, son_Desk1) + dddis(son_Desk1, now) + dddis(now, son_Desk2) * 2 != DIS)
+						if (DIS != DIS1)
 							swap(son_Desk1, son_Desk2);
 					}
 				}
@@ -162,8 +187,7 @@ void make_decision(int car_num)
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
 
 			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
-				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time)
-				* parameter::fun3(frame_number);
+				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time);
 
 			if (weight > max_earning)
 			{

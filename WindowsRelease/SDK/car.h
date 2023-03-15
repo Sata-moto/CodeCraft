@@ -1,3 +1,5 @@
+#pragma once
+
 struct Car
 {
 	int workbench, goods;                        // 所处工作台编号，携带物品编号
