@@ -5,11 +5,6 @@
 
 #define Stop_frame 8800
 
-int seed = 0;
-int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
-int seed_MOD = 998244353;
-//种子
-
 int num_desk_7;
 int num_desk_9;
 
@@ -71,7 +66,7 @@ namespace parameter
 	{
 		if (output_is_ready) return 1.2;
 		else if (output_is_doing > 500) return 1;
-		else return 0.8 + output_is_doing / 1250.0;
+		else return 0.4 + output_is_doing / 625.0;
 	}
 	double fun3(int current_frame)
 	{
