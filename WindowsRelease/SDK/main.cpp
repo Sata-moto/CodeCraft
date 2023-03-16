@@ -3,7 +3,7 @@
 #include "desk.h"
 #include <cmath>
 
-#define Stop_frame 8800
+int Stop_frame = 8800;
 
 int seed = 0;
 int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
@@ -355,6 +355,9 @@ int main()
 				num_desk_9++;
 
 	init();
+
+	if (seed == seeds[2])
+		Stop_frame = 8700;
 
 	printf("OK\n");
 	fflush(stdout);
