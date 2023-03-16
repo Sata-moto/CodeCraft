@@ -327,7 +327,7 @@ void reload_occupied()
 //加入方法：注释掉 return true 即可。
 bool check_spare_7(int type)
 {
-	return true;//取消先等待再拿的决策
+	//return true;//取消先等待再拿的决策
 	if (num_desk_9 != 0) return true;
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();

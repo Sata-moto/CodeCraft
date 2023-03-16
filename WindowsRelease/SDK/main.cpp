@@ -322,6 +322,9 @@ void reload_occupied()
 			}
 }
 
+//该函数投入使用时，因为碰撞问题导致了效果不如不加。
+//如果优化了碰撞，可以尝试加入该函数
+//加入方法：注释掉 return true 即可。
 bool check_spare_7(int type)
 {
 	//return true;//取消先等待再拿的决策
