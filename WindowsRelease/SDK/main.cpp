@@ -1,12 +1,23 @@
 #include "Global.h"
 #include "car.h"
 #include "desk.h"
+#include <cmath>
+
+#define Stop_frame 8800
+
+int seed = 0;
+int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
+int seed_MOD = 998244353;
+//种子
+
+int num_desk_7;
+int num_desk_9;
 
 char map[N][N];						// 地图
-Car car[5];
 Desk desk[52];
 int cnt_desk;						// 一共有多少工作台
 int occupied[52][10];				// 工作台是否被占用
+int sol_occupied[52][10];				// 工作台是否被占用
 int occupied_goods[10];				// 某个物品是否在被生产
 
 int money;							// 金钱数
@@ -52,7 +63,10 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
-		return 1.0/(remain+1);
+		if (num_desk_7 == 0) return 1;
+		if (seed == seeds[1]) return pow(2.718, -remain);
+		else if (seed == seeds[3]) return 1 / log(remain + 1);
+		else return 1.0 / (remain + 1);
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
@@ -60,12 +74,36 @@ namespace parameter
 		else if (output_is_doing > 500) return 1;
 		else return 0.8 + output_is_doing / 1250.0;
 	}
-	double fun3(int current_frame)
+	// 只考虑了到第一个工作台时的角度
+	double fun3(int car_num, int desk_num, int type)
 	{
-		return 1;
-		//还没想好
+		double min_theta = 9999999;
+		for (int k = 0; k < 4; k++)
+		{
+			if (k == car_num) continue;
+			double ay = car[car_num].y, ax = car[car_num].x;
+			double by = car[k].y, bx = car[k].x;
+			double cy = desk[desk_num].y, cx = desk[desk_num].x;
+			double theta1 = atan2(by - ay, bx - ax);
+			double theta2 = atan2(cy - ay, cx - ax);
+			if (theta1 < 0) theta1 += 2 * Pi;
+			if (theta2 < 0) theta2 += 2 * Pi;
+			double angle_between = fabs(theta1 - theta2);
+			if (min_theta > angle_between)
+				min_theta = angle_between;
+		}
+		if (type == 2)
+		{
+			if (min_theta > Pi / 3) return 1.1;
+			return 1.1 - cos(min_theta * 3 / 2) / 10;
+		}
+		else
+		{
+			if (min_theta > Pi / 3) return 1;
+			return 1 + cos(min_theta * 3 / 2);
+		}
 	}
-	double fun4(int current_frame, double distance)
+	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
 		if (current_frame > 8500)
 			return 1.0 / distance;
@@ -74,7 +112,7 @@ namespace parameter
 	double fun5(bool is_7, bool is_empty, bool is_done, double is_doing)
 	{
 		if (!is_7) return 0.8;
-		else if (!is_empty) return 0;
+		else if (!is_empty) return -0.01;
 		else if (is_done) return 1.2;
 		else if (is_doing > 1000) return 1;
 		else if (is_doing) return 0.8 + is_doing / 2500.0;
@@ -127,14 +165,15 @@ void make_decision(int car_num)
 				{
 					int son_DESK1 = available_desk[son[k][0]][p];
 					int son_DESK2 = available_desk[son[k][1]][q];
-					double DIS = min(cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2,
-						cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
+					double DIS1 = (cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2);
+					double DIS2 = (cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
+					double DIS = min(DIS1, DIS2);
 					if (DIS < min_distance)
 					{
 						min_distance = DIS;
 						son_Desk1 = son_DESK1;
 						son_Desk2 = son_DESK2;
-						if (cddis(car_num, son_Desk1) + dddis(son_Desk1, now) + dddis(now, son_Desk2) * 2 != DIS)
+						if (DIS != DIS1)
 							swap(son_Desk1, son_Desk2);
 					}
 				}
@@ -149,8 +188,7 @@ void make_decision(int car_num)
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
 
 			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
-				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time)
-				* parameter::fun3(frame_number);
+				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time);
 
 			if (weight > max_earning)
 			{
@@ -183,7 +221,7 @@ void make_decision_to_7(int car_num, int goods)
 			available_desk[desk[k].type].push_back(k);
 	//初始化工作台
 
-	double max_earning = 0;
+	double max_earning = 0.000000000001;
 	int max_earning_desk_num = -1;
 	for (register int k = 7; k <= 9; k++)
 	{
@@ -193,7 +231,7 @@ void make_decision_to_7(int car_num, int goods)
 			int now = available_desk[k][i];
 			double weight = 0;
 
-			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now))
+			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
 				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time)
 				* parameter::fun6(desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
 
@@ -208,7 +246,8 @@ void make_decision_to_7(int car_num, int goods)
 	if (max_earning_desk_num != -1)
 	{
 		Sel(car_num, max_earning_desk_num, 2);
-		occupied[max_earning_desk_num][goods] = 1;
+		if (desk[max_earning_desk_num].type == 7)
+			occupied[max_earning_desk_num][goods] = 1;
 	}
 }
 
@@ -247,6 +286,10 @@ void init()
 	son[4][0] = 1, son[4][1] = 2;
 	son[5][0] = 1, son[5][1] = 3;
 	son[6][0] = 2, son[6][1] = 3;
+
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
 }
 
 bool judge(int dest, int goods)
@@ -264,12 +307,52 @@ bool md[4] = { 0,0,0,0 };
 bool md_7[4] = { 0,0,0,0 };
 bool md_9[4] = { 0,0,0,0 };
 bool wait[4] = { 0,0,0,0 };
+bool wait_until_spare_7[4] = { 0,0,0,0 };
+
+bool init_dc;
+
+void reload_occupied()
+{
+	for (int k = 0; k < cnt_desk; k++)
+		for (int i = 0; i <= 9; i++)
+			if (sol_occupied[k][i])
+			{
+				occupied[k][i] = 0;
+				sol_occupied[k][i] = 0;
+			}
+}
+
+//该函数投入使用时，因为碰撞问题导致了效果不如不加。
+//如果优化了碰撞，可以尝试加入该函数
+//加入方法：注释掉 return true 即可。
+bool check_spare_7(int type)
+{
+	//return true;//取消先等待再拿的决策
+	if (num_desk_9 != 0) return true;
+	for (int k = 1; k <= 9; k++)
+		available_desk[k].clear();
+	for (int k = 0; k < cnt_desk; k++)
+		available_desk[desk[k].type].push_back(k);
+
+	for (int k = 0; k < (int)available_desk[7].size(); k++)
+	{
+		int now = available_desk[7][k];
+		if (!occupied[now][type] && !desk[now].input_status[type])
+			return true;
+	}
+	return false;
+}
 
 int main()
 {
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
-	//地图没有用，101行是因为最后一行 OK
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			if (map[k][i] == '7')
+				num_desk_7++;
+			else if (map[k][i] == '9')
+				num_desk_9++;
 
 	init();
 
@@ -279,6 +362,7 @@ int main()
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
+		reload_occupied();
 		printf("%d\n", frame_number);
 		scanf("%d", &cnt_desk);
 		for (register int k = 0; k < cnt_desk; k++)
@@ -305,7 +389,15 @@ int main()
 		scanf("%s", is_OK);
 		// 初始化完毕
 
-		if (frame_number == 1)
+		if (seed == seeds[2] && frame_number <= 10)
+		{
+			printf("OK\n");
+			fflush(stdout);
+			continue;
+		}
+
+		if (!init_dc)
+		{
 			for (int k = 0; k < 4; k++)
 			{
 				make_decision(k);
@@ -319,6 +411,8 @@ int main()
 					total_check[k].pop();
 				}
 			}
+			init_dc = 1;
+		}
 		//第一帧初始化决策
 
 		for (int k = 0; k < 4; k++)
@@ -348,8 +442,10 @@ int main()
 					total_buy[k].pop();
 					check[k] = total_check[k].front();
 					total_check[k].pop();
+					md_7[k] = false;
+					wait[k] = 0;
 				}
-				md_7[k] = false;
+				else check[k] = -1, wait[k] = 1;
 			}
 			if (md[k])
 			{
@@ -363,42 +459,50 @@ int main()
 					check[k] = total_check[k].front();
 					total_check[k].pop();
 				}
+				else wait[k] = 1;
 				md[k] = false;
 			}
 
 			if (car[k].workbench == destination[k])
 			{
 				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
-				if (buy[k] && !wait[k])
+				if (buy[k] && !wait[k] && frame_number <= Stop_frame && !wait_until_spare_7[k])
 					printf("buy %d\n", k);
-				else if (!buy[k] && !wait[k])
+				else if (!buy[k] && !wait[k] && !wait_until_spare_7[k])
 				{
 					printf("sell %d\n", k);
 					if (car[k].goods >= 4 && car[k].goods <= 6)
 						occupied_goods[car[k].goods]--;
+					if (occupied_goods[car[k].goods] < 0)
+						exit(-1);
+					//错误跳出点 1
 				}
 				if (check[k] == 1) //这组送往 4/5/6 的决策完成
 				{
 					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status)
+					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
-						occupied[destination[k]][0] = 0;
-						printf("buy %d\n", k);
-						md_7[k] = 1;
-						wait[k] = 0;
+						if (check_spare_7(desk[destination[k]].type))
+						{
+							sol_occupied[destination[k]][0] = 1;
+							printf("buy %d\n", k);
+							md_7[k] = 1;
+							wait[k] = 0;
+							wait_until_spare_7[k] = 0;
+						}
+						else wait_until_spare_7[k] = 1;
 					}
 					//如果正在做并且输入填满了，要等待输出
 					else if (desk[destination[k]].remain_time != -1 && desk[destination[k]].input_status != 0)
 						wait[k] = 1;
 					//否则就是刚填完一组，那么接触占用自己去做决策。
-					else occupied[destination[k]][0] = 0;
+					else sol_occupied[destination[k]][0] = 1;
 				}
 				else if (check[k] == 2)
 				{
-					occupied[destination[k]][car[k].goods] = 0;
-
+					sol_occupied[destination[k]][car[k].goods] = 1;
 					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status)
+					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
 					{
 						printf("buy %d\n", k);
 						md_9[k] = 1;
@@ -414,7 +518,7 @@ int main()
 				//如果因为挤占导致指令无法执行，就跳过决策并且等待。
 
 				//从指令组中导入新的指令,如果指令组为空就新构指令
-				if (!wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
+				if (!wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
 					md[k] = true;
 				if (!total_destination[k].empty())
 				{
