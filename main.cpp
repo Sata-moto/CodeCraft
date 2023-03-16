@@ -17,7 +17,7 @@ char map[N][N];						// 地图
 Desk desk[52];
 int cnt_desk;						// 一共有多少工作台
 int occupied[52][10];				// 工作台是否被占用
-int sol_occupied[52][10];				// 工作台是否被占用
+int sol_occupied[52][10];			// 工作台是否被占用
 int occupied_goods[10];				// 某个物品是否在被生产
 
 int money;							// 金钱数
