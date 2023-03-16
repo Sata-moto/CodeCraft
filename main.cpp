@@ -63,7 +63,7 @@ namespace parameter
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
-		if (num_desk_7 == 0) return 1;
+		///if (num_desk_7 == 0) return 1;
 		if (seed == seeds[1]) return pow(2.718, -remain);
 		else if (seed == seeds[3]) return 1 / log(remain + 1);
 		else return 1.0 / (remain + 1);
