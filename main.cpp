@@ -30,6 +30,18 @@ queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 
 int check[5];						// 小车当前是否 check 一下是否有商品
 queue <int > total_check[5];		// 小车总的 check 组
 
+bool judge(int dest, int goods)
+{
+	if (goods == 4 && desk[dest].input_status[5] && desk[dest].input_status[6])
+		return true;
+	if (goods == 5 && desk[dest].input_status[4] && desk[dest].input_status[6])
+		return true;
+	if (goods == 6 && desk[dest].input_status[4] && desk[dest].input_status[5])
+		return true;
+	return false;
+}
+
+
 // Sel 是让小车去卖东西，Buy 是买
 void Sel(int car_num, int desk_num, int Check = 0)
 {
@@ -109,18 +121,20 @@ namespace parameter
 			return 1.0 / distance;
 		else return 1;
 	}
-	double fun5(bool is_7, bool is_empty, bool is_done, double is_doing)
+	double fun5(bool is_7, bool is_empty, bool is_done, double is_doing, int desk_num, int goods)
 	{
-		if (!is_7) return 0.8;
+		if (!is_7) return 0.5;
 		else if (!is_empty) return -0.01;
-		else if (is_done) return 1.2;
+		else if (is_done) return 1.5;
+		else if (!judge(desk_num, goods)) return 1;
 		else if (is_doing > 1000) return 1;
-		else if (is_doing) return 0.8 + is_doing / 2500.0;
+		else if (is_doing) return 0.8 + is_doing / 1250.0;
 		else return 1;
 	}
-	double fun6(int number_of_exists)
+	double fun6(int desk_num, int number_of_exists)
 	{
-		return 1 + number_of_exists / 10.0;
+		//return 1 + number_of_exists / 10.0; //注释掉这一行后，程序会更优先做 7 号，具体见文档
+		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6] - 1) / 5.0;
 	}
 }
 
@@ -232,8 +246,8 @@ void make_decision_to_7(int car_num, int goods)
 			double weight = 0;
 
 			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
-				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time)
-				* parameter::fun6(desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
+				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time, now, goods)
+				* parameter::fun6(now, desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
 
 			if (weight > max_earning)
 			{
@@ -290,17 +304,6 @@ void init()
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)
 			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
-}
-
-bool judge(int dest, int goods)
-{
-	if (goods == 4 && desk[dest].input_status[5] && desk[dest].input_status[6])
-		return true;
-	if (goods == 5 && desk[dest].input_status[4] && desk[dest].input_status[6])
-		return true;
-	if (goods == 6 && desk[dest].input_status[4] && desk[dest].input_status[5])
-		return true;
-	return false;
 }
 
 bool md[4] = { 0,0,0,0 };
