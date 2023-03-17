@@ -134,6 +134,7 @@ namespace parameter
 	double fun6(int desk_num, int number_of_exists)
 	{
 		//return 1 + number_of_exists / 10.0; //注释掉这一行后，程序会更优先做 7 号，具体见文档
+		if (desk[desk_num].type != 7) return 1;
 		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6] - 1) / 5.0;
 	}
 }

@@ -126,14 +126,15 @@ namespace parameter
 		if (!is_7) return 0.5;
 		else if (!is_empty) return -0.01;
 		else if (is_done) return 1.5;
-		else if (!judge(desk_num, goods)) return 1;
 		else if (is_doing > 1000) return 1;
+		else if (is_doing && !judge(desk_num, goods)) return max(1.0, 0.8 + is_doing / 1250.0);
 		else if (is_doing) return 0.8 + is_doing / 1250.0;
 		else return 1;
 	}
 	double fun6(int desk_num, int number_of_exists)
 	{
 		//return 1 + number_of_exists / 10.0; //注释掉这一行后，程序会更优先做 7 号，具体见文档
+		if (desk[desk_num].type != 7) return 1;
 		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6] - 1) / 5.0;
 	}
 }
