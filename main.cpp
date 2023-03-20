@@ -126,7 +126,7 @@ namespace parameter
 		if (!is_7) return 0.5;
 		else if (!is_empty) return -0.01;
 		else if (is_done) return 1.5;
-		else if (is_doing > 1000) return 1;
+		else if (is_doing > 1000) return 1.3;
 		else if (is_doing && !judge(desk_num, goods)) return max(1.0, 0.8 + is_doing / 1250.0);
 		else if (is_doing) return 0.8 + is_doing / 1250.0;
 		else return 1;
@@ -135,7 +135,7 @@ namespace parameter
 	{
 		//return 1 + number_of_exists / 10.0; //注释掉这一行后，程序会更优先做 7 号，具体见文档
 		if (desk[desk_num].type != 7) return 1;
-		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6] - 1) / 5.0;
+		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6]) / 5.0;
 	}
 }
 
@@ -199,6 +199,9 @@ void make_decision(int car_num)
 			int exist_count = occupied_goods[k];
 			for (int j = 0; j < (int)available_desk[7].size(); j++)
 				exist_count += desk[available_desk[7][j]].input_status[k];
+			for (int j = 0; j < (int)available_desk[k].size(); j++)
+				exist_count -= desk[available_desk[k][j]].output_status;
+
 			//计算当前物品场上存在的数量
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
 
@@ -311,6 +314,7 @@ bool md[4] = { 0,0,0,0 };
 bool md_7[4] = { 0,0,0,0 };
 bool md_9[4] = { 0,0,0,0 };
 bool wait[4] = { 0,0,0,0 };
+bool wait_until_spare_3[4] = { 0,0,0,0 };
 bool wait_until_spare_7[4] = { 0,0,0,0 };
 
 bool init_dc;
@@ -360,9 +364,6 @@ int main()
 
 	init();
 
-	if (seed == seeds[2])
-		Stop_frame = 8700;
-
 	printf("OK\n");
 	fflush(stdout);
 	//预处理
@@ -395,13 +396,6 @@ int main()
 		char is_OK[10];
 		scanf("%s", is_OK);
 		// 初始化完毕
-
-		if (seed == seeds[2] && frame_number <= 10)
-		{
-			printf("OK\n");
-			fflush(stdout);
-			continue;
-		}
 
 		if (!init_dc)
 		{
@@ -474,8 +468,12 @@ int main()
 			{
 				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
 				if (buy[k] && !wait[k] && frame_number <= Stop_frame && !wait_until_spare_7[k])
+				{
 					printf("buy %d\n", k);
-				else if (!buy[k] && !wait[k] && !wait_until_spare_7[k])
+					if (wait_until_spare_3[k] && desk[destination[k]].output_status)
+						wait_until_spare_3[k] = 0;
+				}
+				if (!buy[k] && !wait[k] && !wait_until_spare_7[k])
 				{
 					printf("sell %d\n", k);
 					if (car[k].goods >= 4 && car[k].goods <= 6)
@@ -484,6 +482,8 @@ int main()
 						exit(-1);
 					//错误跳出点 1
 				}
+				if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
+					wait_until_spare_3[k] = 1;
 				if (check[k] == 1) //这组送往 4/5/6 的决策完成
 				{
 					//如果有输出了，就拿走
@@ -525,9 +525,9 @@ int main()
 				//如果因为挤占导致指令无法执行，就跳过决策并且等待。
 
 				//从指令组中导入新的指令,如果指令组为空就新构指令
-				if (!wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
+				if (!wait_until_spare_3[k] && !wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
 					md[k] = true;
-				if (!total_destination[k].empty())
+				if (!wait_until_spare_3[k] && !total_destination[k].empty())
 				{
 					destination[k] = total_destination[k].front();
 					total_destination[k].pop();
