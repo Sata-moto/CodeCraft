@@ -81,7 +81,7 @@ namespace parameter
 	double Time_Upscale = 1.2;
 	double Earning_Upscale = 1.2;
 	double End_frame = 8950;
-	double fun1_desk_exist_num_downscale = 0.5;
+	double fun1_desk_exist_num_downscale = 0;//0 - 未减权   1 - 所有工作台上的 4/5/6 产品不考虑
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(double remain)
