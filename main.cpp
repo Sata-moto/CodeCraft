@@ -84,7 +84,7 @@ namespace parameter
 	double fun1_desk_exist_num_downscale = 0.5;
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
-	double fun1(int remain)
+	double fun1(double remain)
 	{
 		///if (num_desk_7 == 0) return 1;
 		if (seed == seeds[1]) return pow(2.718, -remain);
@@ -208,7 +208,7 @@ void make_decision(int car_num)
 
 			if (son_Desk1 == -1) continue;
 
-			int exist_count = occupied_goods[k];
+			double exist_count = occupied_goods[k];
 			for (int j = 0; j < (int)available_desk[7].size(); j++)
 				exist_count += desk[available_desk[7][j]].input_status[k];
 			for (int j = 0; j < (int)available_desk[k].size(); j++)

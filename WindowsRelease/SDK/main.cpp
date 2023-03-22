@@ -79,8 +79,9 @@ namespace parameter
 {
 	int Stop_frame = 8500;
 	double Time_Upscale = 1.2;
-	double Earning_Upscale = 1.0;
-	double End_frame = 8975;
+	double Earning_Upscale = 1.2;
+	double End_frame = 8950;
+	double fun1_desk_exist_num_downscale = 0.5;
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
@@ -211,7 +212,7 @@ void make_decision(int car_num)
 			for (int j = 0; j < (int)available_desk[7].size(); j++)
 				exist_count += desk[available_desk[7][j]].input_status[k];
 			for (int j = 0; j < (int)available_desk[k].size(); j++)
-				exist_count -= desk[available_desk[k][j]].output_status;
+				exist_count -= desk[available_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
 
 			//计算当前物品场上存在的数量
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
