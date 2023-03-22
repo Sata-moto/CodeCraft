@@ -83,7 +83,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 	//定义警戒范围
 	double AlertRange = 5, AlertTime = 3;
 	int numID = -1;
-	double SinAng, CosAng, vecux, vecuy, ux, uy, vecv, v, d, vecv2, v2, d2, Setforwar = forwar;
+	double SinAng, CosAng, ux, uy, v, d, v2, d2, Setforwar = forwar;
 	double v1x, v1y, v2x, v2y, AddAng, PredAng1, PredAng2, PredAng3, newd1, newd2, newd3;
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I;
 	pair<double, double>Vecp;
@@ -101,63 +101,30 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		//判定该小车是否进入警戒范围
 		if (Dist(car[i].x, car[i].y, x, y) > AlertRange)continue;
 		//计算两小车到彼此路径直线的距离
-		Vecp = getVec(ang);
-		vecv = CombineV(Vecp); v = CombineV(vx, vy);
-		v1x = Vecp.first; v1y = Vecp.second;
-		d = fabs(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) / vecv;
-
-		Vecp = getVec(car[i].ang);
-		vecv2 = CombineV(Vecp); v2 = CombineV(car[i].vx, car[i].vy);
-		v2x = Vecp.first; v2y = Vecp.second;
-		d2 = fabs(Cross(x - car[i].x, y - car[i].y, v2x, v2y)) / vecv2;
+		Vecp = getVec(ang); v = CombineV(Vecp); v1x = Vecp.first; v1y = Vecp.second;
+		d = fabs(Cross(car[i].x - x, car[i].y - y, Vecp.first, Vecp.second)) / v;
+		Vecp = getVec(car[i].ang); v2 = CombineV(Vecp); v2x = Vecp.first; v2y = Vecp.second;
+		d2 = fabs(Cross(x - car[i].x, y - car[i].y, Vecp.first, Vecp.second)) / v2;
 		//计算两个小车速度方向的正弦和余弦值
-		SinAng = fabs(Cross(v2x, v2y, v1x, v1y)) / (vecv2 * vecv);
-		CosAng = Dot(v1x, v1y, v2x, v2y) / (vecv2 * vecv);
+		SinAng = fabs(Cross(v2x, v2y, v1x, v1y)) / (v2 * v);
+		CosAng = Dot(v1x, v1y, v2x, v2y) / (v2 * v);
 		//沿着当前小车速度方向分解另一小车的速度
 		ux = v2 * CosAng;//ux为正表示同向，为负表示反向
 		uy = v2 * SinAng;//uy为正表示靠近，为负表示远离
-
-		vecux = vecv2 * CosAng;
-		vecuy = vecv2 * SinAng;
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
-			uy *= -1, vecuy *= -1;
+			uy *= -1;
 		//永远不会处在路径直线上（d/uy大于某一值或uy<0）
 		if ((d >= GetR(goods) + GetR(car[i].goods) + 1 && uy < eps) ||
 			(uy >= eps && max(d - GetR(goods) - GetR(car[i].goods) - 1, 0.0) / uy >= AlertTime))
 			continue;
 		//前方180+“一定角度”度视角内无车
-		if (Dot(car[i].x - x, car[i].y - y, v1x, v1y) / (vecv * CombineV(car[i].x - x, car[i].y - y)) < 0)continue;
+		if (Dot(car[i].x - x, car[i].y - y, v1x, v1y) / (v * CombineV(car[i].x - x, car[i].y - y)) < 0)continue;
 		//已经处在路径直线上但不会发生碰撞
 		//已经处在路径直线上并会发生碰撞
 		if (d < GetR(goods) + GetR(car[i].goods) + 1) {
-			if (vecux >= 0) {
-				if (Dist(x, y, car[i].x, car[i].y) > AlertRange / 1.2)continue;//微调高级紧急范围
-				if (Sign(Dot(car[i].x - x, car[i].y - y, v1x, v1y)) >= 0 && Sign(Dot(x - car[i].x, y - car[i].y, v2x, v2y)) >= 0) {
-					double vcx, vcy, T, tx, ty, RestLen1, RestLen2;
-					vcx = x + v1x - car[i].x - v2x;
-					vcy = y + v1y - car[i].y - v2y;
-					if (fabs(Cross(v1x, v1y, v2x, v2y)) < eps) {
-						if (Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0)
-							tx = car[i].x, ty = car[i].y;
-						else tx = x, ty = y;
-					}
-					else {
-						T = Cross(vcx, vcy, v2x, v2y) / Cross(v1x, v1y, v2x, v2y);
-						tx = x + v1x - T * v1x;
-						ty = y + v1y - T * v1y;
-					}
-					RestLen1 = Dist(car[i].x, car[i].y, tx, ty);
-					RestLen2 = Dist(tx, ty, x, y);
-					if (fabs(RestLen1 - RestLen2) < 1) {
-						if (goods > car[i].goods || (goods == car[i].goods && numID > i))forwar = 6;
-						else forwar = min(forwar, max(ux - 3, 0.0));
-					}
-					else if (RestLen1 > RestLen2)forwar = 6;
-					else forwar = min(forwar, max(ux - 3, 0.0));
-				}
-				else if (Sign(Dot(car[i].x - x, car[i].y - y, v1x, v1y)) > 0 && Sign(Dot(x - car[i].x, y - car[i].y, v2x, v2y)) < 0) {
-					forwar = min(forwar, max(ux - 3, 0.0));//追及问题可以调参
-				}
+			if (v * ux >= 0) {
+				if (Sign(Dot(car[i].x - x, car[i].y - y, v1x, v1y)) > 0 && Dist(x, y, car[i].x, car[i].y) <= AlertRange / 1.2)//微调高级紧急范围
+					forwar = min(forwar, max(ux - 1, 0.0));
 			}
 			else {
 				//forwar应乘进速度夹角参数
@@ -210,7 +177,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 						else if (newd1 <= GetR(goods) + GetR(car[i].goods) && newd2 > GetR(goods) + GetR(car[i].goods))rot = 0;
 						else rot = Sign(w) * Pi;
 					}
-					else if (Ang1 >= 0)
+					if (Ang1 >= 0)
 						rot = -Pi;
 					else
 						rot = Pi;
@@ -226,7 +193,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		}
 		//即将处在路径直线上但不会发生碰撞
 		//即将处在路径直线上并会发生碰撞
-		else {
+		else if (d2 < GetR(goods) + GetR(car[i].goods) + 1) {
 			if (goods > car[i].goods || (goods == car[i].goods && numID > i))
 				continue;
 			rot = 0;
@@ -234,9 +201,9 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		}
 		/*
 		else if (uy >= eps && (d - GetR(goods) - GetR(car[i].goods) - 1) / uy < AlertTime) {
-			double vcx = x + v1x - car[i].x - v2x, vcy = y + v1y - car[i].y - v2y;
-			double T = Cross(vcx, vcy, v2x, v2y) / Cross(v1x, v1y, v2x, v2y);
-			double tx = x + v1x - T * v1x, ty = y + v1y - T * v1y;
+			double vcx = x + v1x - car[i].x - car[i].v1x, vcy = y + vy - car[i].y - car[i].vy;
+			double T = Cross(vcx, vcy, car[i].v1x, car[i].vy) / Cross(vcx, vcy, car[i].v1x, car[i].vy);
+			double tx = x + v1x - T * v1x, ty = y + vy - T * vy;
 			double RestLen1 = Dist(car[i].x, car[i].y, tx, ty);
 			double RestLen2 = Dist(tx, ty, x, y);
 			double RestTime1 = (RestLen1 - GetR(goods) - GetR(car[i].goods)) / v2;

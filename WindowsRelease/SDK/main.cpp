@@ -3,8 +3,6 @@
 #include "desk.h"
 #include <cmath>
 
-int Stop_frame = 8800;
-
 int seed = 0;
 int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
 int seed_MOD = 998244353;
@@ -20,6 +18,9 @@ int occupied[52][10];				// 工作台是否被占用
 int sol_occupied[52][10];			// 工作台是否被占用
 int occupied_goods[10];				// 某个物品是否在被生产
 
+int occupied_stop_frame[52][10];
+int sol_occupied_stop_frame[52][10];
+
 int money;							// 金钱数
 int frame_number;					// 帧序号
 
@@ -29,6 +30,10 @@ int buy[5];                         // 1 为 buy,0 为 sel
 queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 组
 int check[5];						// 小车当前是否 check 一下是否有商品
 queue <int > total_check[5];		// 小车总的 check 组
+
+bool available_car[4] = { 0,0,0,0 };
+
+vector <int > father[10];
 
 bool judge(int dest, int goods)
 {
@@ -72,6 +77,11 @@ double cddis(int car1, int desk1)
 //决策参数列表
 namespace parameter
 {
+	int Stop_frame = 8500;
+	double Time_Upscale = 1.2;
+	double Earning_Upscale = 1.2;
+	double End_frame = 8950;
+
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
 	{
@@ -117,6 +127,7 @@ namespace parameter
 	}
 	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
+		return 1;// fun4 不起作用
 		if (current_frame > 8500)
 			return 1.0 / distance;
 		else return 1;
@@ -308,14 +319,23 @@ void init()
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)
 			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
+
+	for (int k = 1; k <= 7; k++) father[k].push_back(9);
+	for (int k = 4; k <= 6; k++) father[k].push_back(7);
+	father[1].push_back(4), father[1].push_back(5);
+	father[2].push_back(4), father[2].push_back(6);
+	father[3].push_back(5), father[3].push_back(6);
+	father[7].push_back(8);
 }
 
 bool md[4] = { 0,0,0,0 };
 bool md_7[4] = { 0,0,0,0 };
 bool md_9[4] = { 0,0,0,0 };
+bool md_stop_frame[4] = { 0,0,0,0 };
 bool wait[4] = { 0,0,0,0 };
 bool wait_until_spare_3[4] = { 0,0,0,0 };
 bool wait_until_spare_7[4] = { 0,0,0,0 };
+bool wait_stop_frame[4] = { 0,0,0,0 };
 
 bool init_dc;
 
@@ -327,6 +347,13 @@ void reload_occupied()
 			{
 				occupied[k][i] = 0;
 				sol_occupied[k][i] = 0;
+			}
+	for (int k = 0; k < cnt_desk; k++)
+		for (int i = 0; i <= 9; i++)
+			if (sol_occupied_stop_frame[k][i])
+			{
+				occupied_stop_frame[k][i] = 0;
+				sol_occupied_stop_frame[k][i] = 0;
 			}
 }
 
@@ -349,6 +376,258 @@ bool check_spare_7(int type)
 			return true;
 	}
 	return false;
+}
+
+void clear_decision(int k)
+{
+	if (!total_destination[k].empty())
+	{
+		total_destination[k].pop();
+		total_buy[k].pop();
+		total_check[k].pop();
+	}
+}
+
+void decision_before_stop_frame(int k)
+{
+	if (md_9[k])
+	{
+		make_decision_to_8(k);
+		if (!total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+		}
+		md_9[k] = false;
+	}
+	if (md_7[k])
+	{
+		make_decision_to_7(k, car[k].goods);
+		if (!total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+			md_7[k] = false;
+			wait[k] = 0;
+		}
+		else check[k] = -1, wait[k] = 1;
+	}
+	if (md[k])
+	{
+		make_decision(k);
+		if (!total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+		}
+		else wait[k] = 1;
+		md[k] = false;
+	}
+
+	if (car[k].workbench == destination[k])
+	{
+		//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
+		if (buy[k] && !wait[k] && !wait_until_spare_7[k])
+		{
+			printf("buy %d\n", k);
+			if (wait_until_spare_3[k] && desk[destination[k]].output_status)
+				wait_until_spare_3[k] = 0;
+		}
+		if (!buy[k])
+		{
+			printf("sell %d\n", k);
+			if (frame_number >= parameter::Stop_frame)
+			{
+				available_car[k] = 1;
+				clear_decision(k);
+				return;
+			}
+			if (car[k].goods >= 4 && car[k].goods <= 6)
+				occupied_goods[car[k].goods]--;
+			if (occupied_goods[car[k].goods] < 0)
+				exit(-1);
+			//错误跳出点 1
+		}
+		if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
+			wait_until_spare_3[k] = 1;
+		if (check[k] == 1) //这组送往 4/5/6 的决策完成
+		{
+			//如果有输出了，就拿走
+			if (desk[destination[k]].output_status && frame_number <= parameter::Stop_frame)
+			{
+				if (check_spare_7(desk[destination[k]].type))
+				{
+					sol_occupied[destination[k]][0] = 1;
+					printf("buy %d\n", k);
+					md_7[k] = 1;
+					wait[k] = 0;
+					wait_until_spare_7[k] = 0;
+				}
+				else wait_until_spare_7[k] = 1;
+			}
+			//如果正在做并且输入填满了，要等待输出
+			else if (desk[destination[k]].remain_time != -1 && desk[destination[k]].input_status != 0)
+				wait[k] = 1;
+			//否则就是刚填完一组，那么接触占用自己去做决策。
+			else sol_occupied[destination[k]][0] = 1;
+		}
+		else if (check[k] == 2)
+		{
+			sol_occupied[destination[k]][car[k].goods] = 1;
+			//如果有输出了，就拿走
+			if (desk[destination[k]].output_status)
+			{
+				printf("buy %d\n", k);
+				md_9[k] = 1;
+				wait[k] = 0;
+			}
+			//如果正在做并且输入填满了，要等待输出
+			else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
+				wait[k] = 1;
+			//否则就是刚填完一组，那么接触占用自己去做决策。
+		}
+		//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
+		//如果有 output，那就决策把这个送到哪去
+		//如果因为挤占导致指令无法执行，就跳过决策并且等待。
+
+		//从指令组中导入新的指令,如果指令组为空就新构指令
+		if (!wait_until_spare_3[k] && !wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
+			md[k] = true;
+		if (!wait_until_spare_3[k] && !total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+		}
+	}
+
+	pair<double, double> temp;
+	temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
+	printf("forward %d %lf\n", k, temp.first);
+	printf("rotate %d %lf\n", k, temp.second);
+	//每个小车朝当前的目的地前进
+}
+
+void make_decision_stop_frame(int car_num)
+{
+	for (int k = 1; k <= 9; k++)
+		available_desk[k].clear();
+	for (int k = 0; k < cnt_desk; k++)
+		available_desk[desk[k].type].push_back(k);
+
+	double max_weight = -1;
+	int buy_desk = -1, sell_desk = -1;
+
+	for (int k = 1; k <= 7; k++)
+	{
+		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		{
+			int now = available_desk[k][i];
+			if (!desk[now].output_status || occupied_stop_frame[now][0])
+				continue;
+			for (int j = 0; j < (int)father[k].size(); j++)
+			{
+				for (int t = 0; t < (int)available_desk[father[k][j]].size(); t++)
+				{
+					int to = available_desk[father[k][j]][t];
+					if (desk[to].input_status[k])
+						continue;
+					if (father[k][j] <= 7 && occupied_stop_frame[to][k])
+						continue;
+					
+					double dis = cddis(car_num, now) + dddis(now, to);
+					if (dis / 6 * parameter::Time_Upscale * 50 + frame_number > parameter::End_frame)
+						continue;
+					double weight = pow(Earning[k], parameter::Earning_Upscale) / dis;
+					if (weight > max_weight)
+					{
+						max_weight = weight;
+						buy_desk = now;
+						sell_desk = to;
+					}
+				}
+			}
+		}
+	}
+
+	if (buy_desk != -1)
+	{
+		Buy(car_num, buy_desk);
+		Sel(car_num, sell_desk);
+		occupied_stop_frame[buy_desk][0] = 1;
+		occupied_stop_frame[sell_desk][desk[buy_desk].type] = 1;
+	}
+}
+
+void decision_after_stop_frame(int k)
+{
+	if (md_stop_frame[k])
+	{
+		make_decision_stop_frame(k);
+		if (!total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+		}
+		md_stop_frame[k] = false;
+	}
+
+	if (car[k].workbench == destination[k])
+	{
+		//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
+		if (buy[k])
+		{
+			if (desk[destination[k]].output_status)
+			{
+				printf("buy %d\n", k);
+				sol_occupied_stop_frame[destination[k]][0] = 1;
+				wait_stop_frame[k] = 0;
+			}
+			else wait_stop_frame[k] = 1;
+		}
+		else if (car[k].goods)
+		{
+			printf("sell %d\n", k);
+			sol_occupied_stop_frame[destination[k]][car[k].goods] = 1;
+		}
+
+		if (!wait_stop_frame[k] && total_destination[k].empty())
+			md_stop_frame[k] = true;
+		if (!wait_stop_frame[k] && !total_destination[k].empty())
+		{
+			destination[k] = total_destination[k].front();
+			total_destination[k].pop();
+			buy[k] = total_buy[k].front();
+			total_buy[k].pop();
+			check[k] = total_check[k].front();
+			total_check[k].pop();
+		}
+	}
+
+	pair<double, double> temp;
+	temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
+	printf("forward %d %lf\n", k, temp.first);
+	printf("rotate %d %lf\n", k, temp.second);
+	//每个小车朝当前的目的地前进
 }
 
 int main()
@@ -417,133 +696,11 @@ int main()
 		//第一帧初始化决策
 
 		for (int k = 0; k < 4; k++)
-		{
-			if (md_9[k])
-			{
-				make_decision_to_8(k);
-				if (!total_destination[k].empty())
-				{
-					destination[k] = total_destination[k].front();
-					total_destination[k].pop();
-					buy[k] = total_buy[k].front();
-					total_buy[k].pop();
-					check[k] = total_check[k].front();
-					total_check[k].pop();
-				}
-				md_9[k] = false;
-			}
-			if (md_7[k])
-			{
-				make_decision_to_7(k, car[k].goods);
-				if (!total_destination[k].empty())
-				{
-					destination[k] = total_destination[k].front();
-					total_destination[k].pop();
-					buy[k] = total_buy[k].front();
-					total_buy[k].pop();
-					check[k] = total_check[k].front();
-					total_check[k].pop();
-					md_7[k] = false;
-					wait[k] = 0;
-				}
-				else check[k] = -1, wait[k] = 1;
-			}
-			if (md[k])
-			{
-				make_decision(k);
-				if (!total_destination[k].empty())
-				{
-					destination[k] = total_destination[k].front();
-					total_destination[k].pop();
-					buy[k] = total_buy[k].front();
-					total_buy[k].pop();
-					check[k] = total_check[k].front();
-					total_check[k].pop();
-				}
-				else wait[k] = 1;
-				md[k] = false;
-			}
+			if (!available_car[k])
+				decision_before_stop_frame(k);
+			else
+				decision_after_stop_frame(k);
 
-			if (car[k].workbench == destination[k])
-			{
-				//对每个小车，如果已经到了目的地，并且可以做 buy/sell 指令，输出 buy,sell
-				if (buy[k] && !wait[k] && frame_number <= Stop_frame && !wait_until_spare_7[k])
-				{
-					printf("buy %d\n", k);
-					if (wait_until_spare_3[k] && desk[destination[k]].output_status)
-						wait_until_spare_3[k] = 0;
-				}
-				if (!buy[k] && !wait[k] && !wait_until_spare_7[k])
-				{
-					printf("sell %d\n", k);
-					if (car[k].goods >= 4 && car[k].goods <= 6)
-						occupied_goods[car[k].goods]--;
-					if (occupied_goods[car[k].goods] < 0)
-						exit(-1);
-					//错误跳出点 1
-				}
-				if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
-					wait_until_spare_3[k] = 1;
-				if (check[k] == 1) //这组送往 4/5/6 的决策完成
-				{
-					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
-					{
-						if (check_spare_7(desk[destination[k]].type))
-						{
-							sol_occupied[destination[k]][0] = 1;
-							printf("buy %d\n", k);
-							md_7[k] = 1;
-							wait[k] = 0;
-							wait_until_spare_7[k] = 0;
-						}
-						else wait_until_spare_7[k] = 1;
-					}
-					//如果正在做并且输入填满了，要等待输出
-					else if (desk[destination[k]].remain_time != -1 && desk[destination[k]].input_status != 0)
-						wait[k] = 1;
-					//否则就是刚填完一组，那么接触占用自己去做决策。
-					else sol_occupied[destination[k]][0] = 1;
-				}
-				else if (check[k] == 2)
-				{
-					sol_occupied[destination[k]][car[k].goods] = 1;
-					//如果有输出了，就拿走
-					if (desk[destination[k]].output_status && frame_number <= Stop_frame)
-					{
-						printf("buy %d\n", k);
-						md_9[k] = 1;
-						wait[k] = 0;
-					}
-					//如果正在做并且输入填满了，要等待输出
-					else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
-						wait[k] = 1;
-					//否则就是刚填完一组，那么接触占用自己去做决策。
-				}
-				//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
-				//如果有 output，那就决策把这个送到哪去
-				//如果因为挤占导致指令无法执行，就跳过决策并且等待。
-
-				//从指令组中导入新的指令,如果指令组为空就新构指令
-				if (!wait_until_spare_3[k] && !wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
-					md[k] = true;
-				if (!wait_until_spare_3[k] && !total_destination[k].empty())
-				{
-					destination[k] = total_destination[k].front();
-					total_destination[k].pop();
-					buy[k] = total_buy[k].front();
-					total_buy[k].pop();
-					check[k] = total_check[k].front();
-					total_check[k].pop();
-				}
-			}
-
-			pair<double, double> temp;
-			temp = car[k].mov(desk[destination[k]].x, desk[destination[k]].y);
-			printf("forward %d %lf\n", k, temp.first);
-			printf("rotate %d %lf\n", k, temp.second);
-			//每个小车朝当前的目的地前进
-		}
 		printf("OK\n");
 		fflush(stdout);
 	}
