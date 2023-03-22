@@ -79,8 +79,8 @@ namespace parameter
 {
 	int Stop_frame = 8500;
 	double Time_Upscale = 1.2;
-	double Earning_Upscale = 1.2;
-	double End_frame = 8950;
+	double Earning_Upscale = 1.0;
+	double End_frame = 8975;
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(int remain)
