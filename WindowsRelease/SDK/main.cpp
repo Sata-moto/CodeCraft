@@ -4,7 +4,7 @@
 #include <cmath>
 
 int seed = 0;
-int seeds[5] = { 0,350833046,350103816,350589960,352312592 };
+int seeds[5] = { 0,352354535,350895017,351758063,350804994 };
 int seed_MOD = 998244353;
 //种子
 
@@ -81,15 +81,14 @@ namespace parameter
 	double Time_Upscale = 1.2;
 	double Earning_Upscale = 1.2;
 	double End_frame = 8950;
-	double fun1_desk_exist_num_downscale = 0;//0 - 未减权   1 - 所有工作台上的 4/5/6 产品不考虑
+	double fun1_desk_exist_num_downscale = 0;//1 - 未减权   0 - 所有工作台上的 4/5/6 产品不考虑
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(double remain)
 	{
-		///if (num_desk_7 == 0) return 1;
-		if (seed == seeds[1]) return pow(2.718, -remain);
-		else if (seed == seeds[3]) return 1 / log(remain + 1);
-		else return 1.0 / (remain + 1);
+		if (num_desk_7 == 0) return 1;
+		if (seed == seeds[2]) return 1.0 / (remain + 1);
+		else return pow(2.718, -remain);
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
@@ -327,6 +326,8 @@ void init()
 	father[2].push_back(4), father[2].push_back(6);
 	father[3].push_back(5), father[3].push_back(6);
 	father[7].push_back(8);
+	
+	if (seed == seeds[2]) parameter::fun1_desk_exist_num_downscale = 1;
 }
 
 bool md[4] = { 0,0,0,0 };
@@ -446,7 +447,7 @@ void decision_before_stop_frame(int k)
 			if (wait_until_spare_3[k] && desk[destination[k]].output_status)
 				wait_until_spare_3[k] = 0;
 		}
-		if (!buy[k])
+		if (!buy[k] && !wait[k] && !wait_until_spare_7[k])
 		{
 			printf("sell %d\n", k);
 			if (frame_number >= parameter::Stop_frame)
