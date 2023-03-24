@@ -35,14 +35,14 @@ double Car::CombineV(double p, double q) {
 double Car::CombineV(pair<double, double>SpeedVec) {
 	return sqrt(SpeedVec.first * SpeedVec.first + SpeedVec.second * SpeedVec.second);
 }
-double Car::CalcAng(double nx, double ny) {
+double Car::CalcAng(double nx, double ny){
 	double res = atan2(ny - y, nx - x) - ang;
 	AdjuAng(res);
 	return res;
 }
-double Car::CalcRotate(double nx, double ny, double DeltaAng) {
+double Car::CalcRotate(double nx,double ny,double DeltaAng) {
 	//计算转动惯量和角加速度
-	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I;
+	double I = 0.5 * pow(GetR(goods),4) * Pi * 20, B = 50.0 / I;
 	//判断当前朝向直行是否能到目标点
 	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.4 - eps);
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
@@ -78,7 +78,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 	//找寻当前小车
 	for (int i = 0; i < 4; i++)
 		if (car[i].x == x && car[i].y == y) {
-			numID = i; break;
+			numID = i;break;
 		}
 	forwar = 7;//用于判断速度是否被修改（有没有更好的方式）
 	for (int i = 0; i < 4; i++) {
