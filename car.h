@@ -6,8 +6,8 @@ struct Car
 	double timerate, hitrate;                         // 时间价值系数，碰撞价值系数
 	double vx, vy, w;                                 // 二维线速度向量，角速度
 	double ang, x, y;                                 // 朝向角度，坐标
+	bool AgainstWall;                                 // 判断小车是否在回避撞墙
 	pair<double, double> getVec(double);              // 得到指向对应角度的单位向量
-	bool JudgeCross(double, double, double, double);  // 判断区间相交
 	double Sign(double);                              // 提取输入参数的符号
 	double Dot(double, double, double, double);       // 点积
 	double Cross(double, double, double, double);     // 叉积
