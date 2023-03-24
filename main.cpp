@@ -85,6 +85,7 @@ namespace parameter
 	double Earning_Upscale = 1.2;
 	double End_frame = 8950;
 	double fun1_desk_exist_num_downscale = 0;//1 - 未减权   0 - 所有工作台上的 4/5/6 产品不考虑
+	double dis_pow_downscale = 5;
 
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(double remain)
@@ -263,7 +264,7 @@ void make_decision_to_7(int car_num, int goods)
 			int now = available_desk[k][i];
 			double weight = 0;
 
-			weight = Earning[goods] / cddis(car_num, now) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
+			weight = Earning[goods] / pow(cddis(car_num, now),1 / parameter::dis_pow_downscale) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
 				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time, now, goods)
 				* parameter::fun6(now, desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
 
