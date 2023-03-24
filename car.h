@@ -18,7 +18,7 @@ struct Car
 	double CombineV(pair<double, double>);            // 计算合速度
 	double CalcAng(double, double);                   // 计算当前朝向与目标点的偏向角
 	double CalcRotate(double, double, double);        // 根据偏向角计算角速度
-	double CalcForward(double);                       // 根据偏向角计算前进速度
+	double CalcForward(double, double, double);       // 根据偏向角计算前进速度
 	void CarCrashCheck(double&, double&);             // 小车碰撞判断并修改速度与角速度
 	void MarginCheck(double&);                        // 边界碰撞判断并修改前进速度 
 	pair<double, double> mov(double, double);         // 将小车向目标点移动

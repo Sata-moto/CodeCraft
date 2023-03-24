@@ -96,6 +96,12 @@ namespace parameter
 	}
 	double fun2(bool output_is_ready, int output_is_doing)
 	{
+		if (seed == seeds[1])
+		{
+			if (output_is_ready) return 1.5;
+			else if (output_is_doing > 500) return 0.8;
+			else return 1.1 + output_is_doing / 1250.0;
+		}
 		if (output_is_ready) return 1.2;
 		else if (output_is_doing > 500) return 1;
 		else return 0.8 + output_is_doing / 1250.0;
