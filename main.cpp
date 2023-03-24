@@ -2,6 +2,7 @@
 #include "car.h"
 #include "desk.h"
 #include <cmath>
+#include <cstring>
 
 int seed = 0;
 int seeds[5] = { 0,352354535,350895017,351758063,350804994 };
@@ -20,6 +21,8 @@ int occupied_goods[10];				// 某个物品是否在被生产
 
 int occupied_stop_frame[52][10];
 int sol_occupied_stop_frame[52][10];
+
+int current_occupied[52][10];
 
 int money;							// 金钱数
 int frame_number;					// 帧序号
@@ -326,8 +329,6 @@ void init()
 	father[2].push_back(4), father[2].push_back(6);
 	father[3].push_back(5), father[3].push_back(6);
 	father[7].push_back(8);
-
-	if (seed == seeds[2]) parameter::fun1_desk_exist_num_downscale = 1;
 }
 
 bool md[4] = { 0,0,0,0 };
@@ -357,6 +358,7 @@ void reload_occupied()
 				occupied_stop_frame[k][i] = 0;
 				sol_occupied_stop_frame[k][i] = 0;
 			}
+	memset(current_occupied, 0, sizeof(current_occupied));
 }
 
 //该函数投入使用时，因为碰撞问题导致了效果不如不加。
@@ -374,8 +376,11 @@ bool check_spare_7(int type)
 	for (int k = 0; k < (int)available_desk[7].size(); k++)
 	{
 		int now = available_desk[7][k];
-		if (!occupied[now][type] && !desk[now].input_status[type])
+		if (!occupied[now][type] && !desk[now].input_status[type] && !current_occupied[now][type])
+		{
+			current_occupied[now][type] = 1;
 			return true;
+		}
 	}
 	return false;
 }
