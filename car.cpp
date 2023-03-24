@@ -201,14 +201,11 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 			}
 		}
 		//从当前小车视角来看，他与另一小车不处于同一直线上
-		/*
 		else {
 			if (goods > car[i].goods || (goods == car[i].goods && numID > i))
-				continue;//小车90度碰撞修改这里
-			rot = 0;
+				continue;
 			forwar = 6;
 		}
-		*/
 	}
 	if (forwar == 7)
 		forwar = Setforwar;
