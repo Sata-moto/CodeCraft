@@ -15,6 +15,8 @@ int seed_MOD = 998244353;
 int num_desk_7;
 int num_desk_9;
 
+double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
+
 char map[N][N];						// 地图
 Desk desk[52];
 int cnt_desk;						// 一共有多少工作台
@@ -92,6 +94,32 @@ namespace parameter
 	double fun1_desk_exist_num_downscale = 1;//1 - 未减权   0 - 所有工作台上的 4/5/6 产品不考虑
 	double dis_pow_downscale = 5;
 
+	void adjust_fun()
+	{
+		if (num_desk_7 != 0)
+		{
+			Earning[1] = Earning[3] = Earning[2];
+			Earning[4] = Earning[6] = Earning[5];
+		}
+
+		if (seed == seeds[1])
+		{
+			Stop_frame = 8350;
+		}
+		else if (seed == seeds[2])
+		{
+
+		}
+		else if (seed == seeds[3])
+		{
+
+		}
+		else if (seed == seeds[4])
+		{
+
+		}
+	}
+
 	//fun1 - 根据当前某种物品的剩余量计算生产它的权重衰减
 	double fun1(double remain)
 	{
@@ -112,6 +140,7 @@ namespace parameter
 		else if (is_begin_now) return max(1.0, 0.8 + output_is_doing / 1250.0);
 		else return 0.8 + output_is_doing / 1250.0;
 	}
+	/*
 	// 只考虑了到第一个工作台时的角度
 	double fun3(int car_num, int desk_num, int type)
 	{
@@ -140,7 +169,29 @@ namespace parameter
 			if (min_theta > Pi / 3) return 1;
 			return 1 + cos(min_theta * 3 / 2);
 		}
+	}*/
+	double fun3(bool is_begin)
+	{
+		if (is_begin) return 1;
+		else return 1.3;
 	}
+	double fun_extra(int desk_num)
+	{
+		// 这个参数的目的是平衡等待，但是效果不好，不投入使用。
+		return 1;
+		if (num_desk_7 == 0) return 1;
+		int type = desk[desk_num].type;
+		for (int k = 0; k < (int)available_desk[7].size(); k++)
+		{
+			int now = available_desk[7][k];
+			if (!desk[now].input_status[type] && !occupied[now][type])
+				return 1;
+		}
+		if (desk[desk_num].output_status) return 0.8;
+		if (desk[desk_num].remain_time == -1) return 1;
+		return 0.8 + desk[desk_num].remain_time / 2500.0;
+	}
+
 	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
 		return 1;// fun4 不起作用
@@ -167,7 +218,7 @@ namespace parameter
 }
 
 int son[10][2];
-double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
+
 
 // 决策生产 4/5/6 中的谁
 void make_decision(int car_num)
@@ -247,7 +298,8 @@ void make_decision(int car_num)
 			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
 
 			weight = Earning[k] / min_distance
-				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, is_begin_now) * (is_begin_now? 1 : 1.3);
+				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, is_begin_now)
+				* parameter::fun3(is_begin_now) * parameter::fun_extra(now);
 
 			if (weight > max_earning)
 			{
@@ -355,6 +407,8 @@ void init()
 	father[2].push_back(4), father[2].push_back(6);
 	father[3].push_back(5), father[3].push_back(6);
 	father[7].push_back(8);
+
+	parameter::adjust_fun();
 }
 
 bool md[4] = { 0,0,0,0 };
@@ -984,9 +1038,9 @@ int main()
 
 		for (int k = 0; k < 4; k++)
 			if (!available_car[k])
-				if(num_desk_7)
+				if (num_desk_7)
 					decision_before_stop_frame(k);
-				else 
+				else
 					decision_before_stop_frame_without_7(k);
 			else
 				decision_after_stop_frame(k);
