@@ -764,6 +764,7 @@ void make_decision_without_7(int car_num)
 	// 7 的话工作台上已经有了几种物品） 
 	// 注意：送第二次原料时保证第一次生产完毕并拿走。
 
+
 	for (int k = 1; k <= 9; k++)
 		available_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
@@ -839,6 +840,16 @@ void make_decision_without_7(int car_num)
 
 void decision_before_stop_frame_without_7(int k)
 {
+	if (frame_number >= parameter::Stop_frame)
+	{
+		if (wait_until_spare_3[k] || wait[k] || wait_until_spare_7[k])
+		{
+			available_car[k] = 1;
+			clear_decision(k);
+			return;
+		}
+	}
+
 	if (md_9[k])
 	{
 		make_decision_to_8(k);
