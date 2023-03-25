@@ -484,6 +484,16 @@ bool check_wait(int desk_num, int goods)
 
 void decision_before_stop_frame(int k)
 {
+	if (frame_number >= parameter::Stop_frame)
+	{
+		if (wait_until_spare_3[k] || wait[k] || wait_until_spare_7[k])
+		{
+			available_car[k] = 1;
+			clear_decision(k);
+			return;
+		}
+	}
+
 	if (md_9[k])
 	{
 		make_decision_to_8(k);
