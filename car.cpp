@@ -35,14 +35,14 @@ double Car::CombineV(double p, double q) {
 double Car::CombineV(pair<double, double>SpeedVec) {
 	return sqrt(SpeedVec.first * SpeedVec.first + SpeedVec.second * SpeedVec.second);
 }
-double Car::CalcAng(double nx, double ny){
+double Car::CalcAng(double nx, double ny) {
 	double res = atan2(ny - y, nx - x) - ang;
 	AdjuAng(res);
 	return res;
 }
-double Car::CalcRotate(double nx,double ny,double DeltaAng) {
+double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	//计算转动惯量和角加速度
-	double I = 0.5 * pow(GetR(goods),4) * Pi * 20, B = 50.0 / I;
+	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I;
 	//判断当前朝向直行是否能到目标点
 	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.4 - eps);
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
@@ -62,6 +62,7 @@ double Car::CalcRotate(double nx,double ny,double DeltaAng) {
 	return res;
 }
 double Car::CalcForward(double nx, double ny, double DeltaAng) {
+	if (!AgainstWall)return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	if (fabs(DeltaAng) < Pi / 18 && Cv * Cv * 0.5 / A > Dist(x, y, nx, ny) - 0.3)res = 0;
@@ -78,7 +79,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 	//找寻当前小车
 	for (int i = 0; i < 4; i++)
 		if (car[i].x == x && car[i].y == y) {
-			numID = i;break;
+			numID = i; break;
 		}
 	forwar = 7;//用于判断速度是否被修改（有没有更好的方式）
 	for (int i = 0; i < 4; i++) {
@@ -152,7 +153,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 			else {
 				if (d > GetR(goods) + GetR(car[i].goods))forwar = 6;
 				else forwar = min(forwar, 6 * cos((1 - max(Dist(x, y, car[i].x, car[i].y) - 1.5, 0.0) / (AlertRange - 1.5)) * (Pi / 2)));//forwar是否需要乘进速度夹角参数
-				double Ang1 = Cross(v1x, v1y, car[i].x - x, car[i].y - y) / (v * CombineV(car[i].x - x, car[i].y - y));
+				double Ang1 = Cross(v1x, v1y, car[i].x - x, car[i].y - y) / (vecv * CombineV(car[i].x - x, car[i].y - y));
 				//重要者优先
 				if (!car[i].AgainstWall && (AgainstWall || (goods > car[i].goods || (goods == car[i].goods && numID > i))))
 					continue;
@@ -244,10 +245,8 @@ pair<double, double> Car::mov(double nx, double ny)
 	//计算角速度与速度的设定值
 	double rot = CalcRotate(nx, ny, DeltaAng), forwar = CalcForward(nx, ny, DeltaAng);
 	//小车碰撞判定
-	if (fabs(vx) > eps || fabs(vy) > eps)
-		CarCrashCheck(forwar, rot);
+	CarCrashCheck(forwar, rot);
 	//边界碰撞判定
-	if (fabs(vx) > eps || fabs(vy) > eps)
-		MarginCheck(forwar);
+	MarginCheck(forwar);
 	return pair<double, double>(forwar, rot);
 }
