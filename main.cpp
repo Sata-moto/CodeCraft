@@ -255,6 +255,7 @@ void make_decision(int car_num)
 			double weight = 0, min_distance = 999999999;
 
 			bool cal_son1 = false, cal_son2 = false;
+			if (occupied[now][0]) continue;
 			if (!desk[now].input_status[son[k][0]] && !occupied[now][son[k][0]]
 				&& !desk[now].input_status[son[k][1]] && !occupied[now][son[k][1]])
 			{
@@ -577,14 +578,15 @@ void decision_before_stop_frame(int k)
 					md_7[k] = 1;
 					wait[k] = 0;
 					wait_until_spare_7[k] = 0;
-					sol_occupied[destination[k]][son[desk[destination[k]].type][0]] = 1;
-					sol_occupied[destination[k]][son[desk[destination[k]].type][1]] = 1;
+
+					sol_occupied[destination[k]][0] = 1;
+					sol_occupied[destination[k]][car[k].goods] = 1;
 				}
 				else if (check_wait(destination[k], car[k].goods))
 				{
 					wait_until_spare_7[k] = 1;
-					occupied[destination[k]][son[desk[destination[k]].type][0]] = 1;
-					occupied[destination[k]][son[desk[destination[k]].type][1]] = 1;
+					occupied[destination[k]][0] = 1;
+					sol_occupied[destination[k]][car[k].goods] = 1;
 				}
 				else sol_occupied[destination[k]][car[k].goods] = 1;
 			}
