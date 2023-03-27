@@ -15,23 +15,30 @@ namespace seed_n
 	int seed_MOD = 998244353;
 }
 
-namespace desk_n
-{
-	Desk desk[52];
-	vector <int > available_desk[10];//各种工作台当前有哪些空闲的
-}
-
-namespace car_n
-{
-	bool available_car[4] = { 0,0,0,0 };
-}
-
 namespace map_n
 {
 	int num_desk_7;
 	int num_desk_9;
 	int cnt_desk;						// 一共有多少工作台
 	char map[N][N];						// 地图
+}
+
+namespace desk_n
+{
+	Desk desk[52];
+	vector <int > available_desk[10];//各种工作台当前有哪些空闲的
+	void init_desk()
+	{
+		for (int k = 1; k <= 9; k++)
+			available_desk[k].clear();
+		for (int k = 0; k < map_n::cnt_desk; k++)
+			available_desk[desk[k].type].push_back(k);
+	}
+}
+
+namespace car_n
+{
+	bool available_car[4] = { 0,0,0,0 };
 }
 
 namespace constant_n
@@ -66,27 +73,6 @@ namespace math_n
 	double cddis(int car1, int desk1)
 	{
 		return dis(car[car1].x, car[car1].y, desk_n::desk[desk1].x, desk_n::desk[desk1].y);
-	}
-}
-
-namespace assist_n
-{
-	bool check_wait(int desk_num, int goods)
-	{
-		if (desk_n::desk[desk_num].input_status[1] || desk_n::desk[desk_num].input_status[2] || desk_n::desk[desk_num].input_status[3])
-			return true;
-		return false;
-	}
-
-	bool judge(int dest, int goods)
-	{
-		if (goods == 4 && desk_n::desk[dest].input_status[5] && desk_n::desk[dest].input_status[6])
-			return true;
-		if (goods == 5 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[6])
-			return true;
-		if (goods == 6 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[5])
-			return true;
-		return false;
 	}
 }
 
@@ -126,6 +112,45 @@ namespace occupied_n
 					sol_ignore_occupied[k][i] = 0;
 				}
 		memset(current_occupied, 0, sizeof(current_occupied));
+	}
+}
+
+namespace assist_n
+{
+	bool check_wait(int desk_num, int goods)
+	{
+		if (desk_n::desk[desk_num].input_status[1] || desk_n::desk[desk_num].input_status[2] || desk_n::desk[desk_num].input_status[3])
+			return true;
+		return false;
+	}
+
+	bool judge(int dest, int goods)
+	{
+		if (goods == 4 && desk_n::desk[dest].input_status[5] && desk_n::desk[dest].input_status[6])
+			return true;
+		if (goods == 5 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[6])
+			return true;
+		if (goods == 6 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[5])
+			return true;
+		return false;
+	}
+
+	bool check_spare_7(int type)
+	{
+		//return true;//取消先等待再拿的决策
+		if (map_n::num_desk_9 != 0) return true;
+		desk_n::init_desk();
+
+		for (int k = 0; k < (int)desk_n::available_desk[7].size(); k++)
+		{
+			int now = desk_n::available_desk[7][k];
+			if (!occupied_n::occupied[now][type] && !desk_n::desk[now].input_status[type] && !occupied_n::current_occupied[now][type])
+			{
+				occupied_n::current_occupied[now][type] = 1;
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
@@ -176,9 +201,9 @@ using namespace math_n;				//数学包
 using namespace car_n;				//小车包
 using namespace assist_n;			//协助包
 
-namespace parameter
+namespace parameter					//参数包
 {
-	int Stop_frame = 8500;
+	int Stop_frame = 8700;
 	double Time_Upscale = 1.2;
 	double Earning_Upscale = 1.2;
 	double End_frame = 8950;
@@ -195,7 +220,7 @@ namespace parameter
 
 		if (seed == seeds[1])
 		{
-			Stop_frame = 8350;
+
 		}
 		else if (seed == seeds[2])
 		{
@@ -237,23 +262,6 @@ namespace parameter
 		if (is_begin) return 1;
 		else return 1.3;
 	}
-	double fun_extra(int desk_num)
-	{
-		// 这个参数的目的是平衡等待，但是效果不好，不投入使用。
-		return 1;
-		if (num_desk_7 == 0) return 1;
-		int type = desk[desk_num].type;
-		for (int k = 0; k < (int)available_desk[7].size(); k++)
-		{
-			int now = available_desk[7][k];
-			if (!desk[now].input_status[type] && !occupied[now][type])
-				return 1;
-		}
-		if (desk[desk_num].output_status) return 0.8;
-		if (desk[desk_num].remain_time == -1) return 1;
-		return 0.8 + desk[desk_num].remain_time / 2500.0;
-	}
-
 	double fun4(int current_frame, double distance, bool is_7, bool is_done)
 	{
 		return 1;// fun4 不起作用
@@ -273,11 +281,10 @@ namespace parameter
 	}
 	double fun6(int desk_num, int number_of_exists)
 	{
-		//return 1 + number_of_exists / 10.0; //注释掉这一行后，程序会更优先做 7 号，具体见文档
 		if (desk[desk_num].type != 7) return 1;
 		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6]) / 5.0;
 	}
-}
+}		
 
 void init()
 {
@@ -299,25 +306,10 @@ void init()
 	parameter::adjust_fun();
 }
 
-// 决策生产 4/5/6 中的谁
+// 第一层决策
 void make_decision(int car_num)
 {
-	// 贪心决策
-	// 思路：1，2，3 种物品的生产视为不需要决策的，每个机器人独立决策当前
-	// 生产 4/5/6，生产哪一个根据 生产利润/生产它需要的距离
-	// * fun1(该种物品的场上剩余数目) * fun2（该种物品的目的工作
-	// 台的产品格上是否有物品了，或者正在做）* fun3（时间选择系数）决定，
-	// 选择权重大的那个，如果目的地工作台上已经有了物品，则将其卖出。
-	// 卖出的地点是 7/9，权重是 出售它需要的距离  * fun4（当前时间）
-	// * fun5（是否是 7 并且该格子空着并且有没有输出） * fun6（是 
-	// 7 的话工作台上已经有了几种物品） 
-	// 注意：送第二次原料时保证第一次生产完毕并拿走。
-
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		available_desk[desk[k].type].push_back(k);
-	//初始化工作台
+	init_desk();
 
 	double max_earning = 0;
 	int max_earning_desk_num = -1;
@@ -383,7 +375,7 @@ void make_decision(int car_num)
 
 			weight = Earning[k] / min_distance
 				* parameter::fun1(exist_count, k) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, is_begin_now)
-				* parameter::fun3(is_begin_now) * parameter::fun_extra(now);
+				* parameter::fun3(is_begin_now);
 
 			if (weight > max_earning)
 			{
@@ -413,12 +405,7 @@ void make_decision(int car_num)
 // 决策 4/5/6 卖到哪去
 void make_decision_to_7(int car_num, int goods)
 {
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		if (!occupied[k][goods])
-			available_desk[desk[k].type].push_back(k);
-	//初始化工作台
+	init_desk();
 
 	double max_earning = 0.000000000001;
 	int max_earning_desk_num = -1;
@@ -453,12 +440,7 @@ void make_decision_to_7(int car_num, int goods)
 // 决策把 7 号物品卖到哪去，直接就近就可以了
 void make_decision_to_8(int car_num)
 {
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		if (desk[k].remain_time <= 0)
-			available_desk[desk[k].type].push_back(k);
-	//初始化工作台
+	init_desk();
 
 	double cloest_distance = 9999999999;
 	int cloest_desk = -1;
@@ -483,26 +465,6 @@ void make_decision_to_8(int car_num)
 //该函数投入使用时，因为碰撞问题导致了效果不如不加。
 //如果优化了碰撞，可以尝试加入该函数
 //加入方法：注释掉 return true 即可。
-bool check_spare_7(int type)
-{
-	//return true;//取消先等待再拿的决策
-	if (num_desk_9 != 0) return true;
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		available_desk[desk[k].type].push_back(k);
-
-	for (int k = 0; k < (int)available_desk[7].size(); k++)
-	{
-		int now = available_desk[7][k];
-		if (!occupied[now][type] && !desk[now].input_status[type] && !current_occupied[now][type])
-		{
-			current_occupied[now][type] = 1;
-			return true;
-		}
-	}
-	return false;
-}
 
 void decision_before_stop_frame(int k)
 {
@@ -675,10 +637,7 @@ void decision_before_stop_frame(int k)
 
 void make_decision_stop_frame(int car_num)
 {
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		available_desk[desk[k].type].push_back(k);
+	init_desk();
 
 	double max_weight = -1;
 	int buy_desk = -1, sell_desk = -1;
@@ -780,18 +739,6 @@ void decision_after_stop_frame(int k)
 	printf("forward %d %lf\n", k, temp.first);
 	printf("rotate %d %lf\n", k, temp.second);
 	//每个小车朝当前的目的地前进
-}
-
-void DEBUG()
-{
-	fdebug << "time = " << frame_number << endl;
-	for (int k = 0; k < cnt_desk; k++)
-	{
-		for (int i = 0; i <= 7; i++)
-			fdebug << occupied[k][i] << ' ';
-		fdebug << endl;
-	}
-	fdebug << endl << endl;
 }
 
 void make_decision_without_7(int car_num)
@@ -1028,6 +975,18 @@ void decision_before_stop_frame_without_7(int k)
 	printf("forward %d %lf\n", k, temp.first);
 	printf("rotate %d %lf\n", k, temp.second);
 	//每个小车朝当前的目的地前进
+}
+
+void DEBUG()
+{
+	fdebug << "time = " << frame_number << endl;
+	for (int k = 0; k < cnt_desk; k++)
+	{
+		for (int i = 0; i <= 7; i++)
+			fdebug << occupied[k][i] << ' ';
+		fdebug << endl;
+	}
+	fdebug << endl << endl;
 }
 
 int main()
