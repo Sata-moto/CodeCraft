@@ -6,89 +6,176 @@
 #include <iostream>
 #include <fstream>
 
-int seed = 0;
-int seeds[5] = { 0,352354535,350895017,351758063,350804994 };
-int seed_MOD = 998244353;
-//种子
 ofstream fdebug;
 
-int num_desk_7;
-int num_desk_9;
-
-bool is_waiting_for_7[10];
-
-double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
-
-char map[N][N];						// 地图
-Desk desk[52];
-int cnt_desk;						// 一共有多少工作台
-int occupied[52][10];				// 工作台是否被占用
-int sol_occupied[52][10];			// 工作台是否被占用
-int occupied_goods[10];				// 某个物品是否在被生产
-
-int occupied_stop_frame[52][10];
-int sol_occupied_stop_frame[52][10];
-
-int current_occupied[52][10];
-int ignore_occupied[52][10];
-bool sol_ignore_occupied[52][10];   // 1 可以 innore，0 不行
-
-int money;							// 金钱数
-int frame_number;					// 帧序号
-
-int destination[5];                 // 小车在当前时间的目的地
-queue <int > total_destination[5];  // 小车经过上次决策后产生的目的地组
-int buy[5];                         // 1 为 buy,0 为 sel
-queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 组
-int check[5];						// 小车当前是否 check 一下是否有商品
-queue <int > total_check[5];		// 小车总的 check 组
-
-bool available_car[4] = { 0,0,0,0 };
-
-vector <int > father[10];
-
-bool judge(int dest, int goods)
+namespace seed_n
 {
-	if (goods == 4 && desk[dest].input_status[5] && desk[dest].input_status[6])
-		return true;
-	if (goods == 5 && desk[dest].input_status[4] && desk[dest].input_status[6])
-		return true;
-	if (goods == 6 && desk[dest].input_status[4] && desk[dest].input_status[5])
-		return true;
-	return false;
+	int seed = 0;
+	int seeds[5] = { 0,352354535,350895017,351758063,350804994 };
+	int seed_MOD = 998244353;
 }
 
-
-// Sel 是让小车去卖东西，Buy 是买
-void Sel(int car_num, int desk_num, int Check = 0)
+namespace desk_n
 {
-	total_destination[car_num].push(desk_num), total_buy[car_num].push(0), total_check[car_num].push(Check);
-}
-void Buy(int car_num, int desk_num, int Check = 0)
-{
-	total_destination[car_num].push(desk_num), total_buy[car_num].push(1), total_check[car_num].push(Check);
+	Desk desk[52];
+	vector <int > available_desk[10];//各种工作台当前有哪些空闲的
 }
 
-vector <int > available_desk[10];//各种工作台当前有哪些空闲的
-
-double dis(double x1, double y1, double x2, double y2)
+namespace car_n
 {
-	return sqrt(pow(y2 - y1, 2) + pow(x2 - x1, 2));
+	bool available_car[4] = { 0,0,0,0 };
 }
 
-double dddis(int desk1, int desk2)
+namespace map_n
 {
-	return dis(desk[desk1].x, desk[desk1].y, desk[desk2].x, desk[desk2].y);
+	int num_desk_7;
+	int num_desk_9;
+	int cnt_desk;						// 一共有多少工作台
+	char map[N][N];						// 地图
 }
 
-double cddis(int car1, int desk1)
+namespace constant_n
 {
-	return dis(car[car1].x, car[car1].y, desk[desk1].x, desk[desk1].y);
+	double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
+	int money;							// 金钱数
+	int frame_number;					// 帧序号
+	int son[10][2];
+	vector <int > father[10];
 }
 
+namespace wait_n
+{
+	bool is_waiting_for_7[10];
+	bool wait[4] = { 0,0,0,0 };
+	bool wait_until_spare_3[4] = { 0,0,0,0 };
+	bool wait_until_spare_7[4] = { 0,0,0,0 };
+	bool wait_stop_frame[4] = { 0,0,0,0 };
+	bool wait_until_spare_sell[4] = { 0,0,0,0 };
+}
 
+namespace math_n
+{
+	double dis(double x1, double y1, double x2, double y2)
+	{
+		return sqrt(pow(y2 - y1, 2) + pow(x2 - x1, 2));
+	}
+	double dddis(int desk1, int desk2)
+	{
+		return dis(desk_n::desk[desk1].x, desk_n::desk[desk1].y, desk_n::desk[desk2].x, desk_n::desk[desk2].y);
+	}
+	double cddis(int car1, int desk1)
+	{
+		return dis(car[car1].x, car[car1].y, desk_n::desk[desk1].x, desk_n::desk[desk1].y);
+	}
+}
 
-//决策参数列表
+namespace assist_n
+{
+	bool check_wait(int desk_num, int goods)
+	{
+		if (desk_n::desk[desk_num].input_status[1] || desk_n::desk[desk_num].input_status[2] || desk_n::desk[desk_num].input_status[3])
+			return true;
+		return false;
+	}
+
+	bool judge(int dest, int goods)
+	{
+		if (goods == 4 && desk_n::desk[dest].input_status[5] && desk_n::desk[dest].input_status[6])
+			return true;
+		if (goods == 5 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[6])
+			return true;
+		if (goods == 6 && desk_n::desk[dest].input_status[4] && desk_n::desk[dest].input_status[5])
+			return true;
+		return false;
+	}
+}
+
+namespace occupied_n
+{
+	int occupied[52][10];				// 工作台是否被占用
+	int sol_occupied[52][10];			// 工作台是否被占用
+	int occupied_goods[10];				// 某个物品是否在被生产
+	int occupied_stop_frame[52][10];
+	int sol_occupied_stop_frame[52][10];
+	int current_occupied[52][10];
+	int ignore_occupied[52][10];
+	bool sol_ignore_occupied[52][10];   // 1 可以 innore，0 不行
+
+	void reload_occupied()
+	{
+		for (int k = 0; k < map_n::cnt_desk; k++)
+			for (int i = 0; i <= 9; i++)
+				if (sol_occupied[k][i])
+				{
+					occupied[k][i] -= sol_occupied[k][i];
+					occupied[k][i] = max(0, occupied[k][i]);
+					sol_occupied[k][i] = 0;
+				}
+		for (int k = 0; k < map_n::cnt_desk; k++)
+			for (int i = 0; i <= 9; i++)
+				if (sol_occupied_stop_frame[k][i])
+				{
+					occupied_stop_frame[k][i] = 0;
+					sol_occupied_stop_frame[k][i] = 0;
+				}
+		for (int k = 0; k < map_n::cnt_desk; k++)
+			for (int i = 0; i <= 9; i++)
+				if (sol_ignore_occupied[k][i])
+				{
+					ignore_occupied[k][i] = 0;
+					sol_ignore_occupied[k][i] = 0;
+				}
+		memset(current_occupied, 0, sizeof(current_occupied));
+	}
+}
+
+namespace command_n
+{
+	bool init_dc;
+	int destination[5];                 // 小车在当前时间的目的地
+	queue <int > total_destination[5];  // 小车经过上次决策后产生的目的地组
+	int buy[5];                         // 1 为 buy,0 为 sel
+	queue <int > total_buy[5];          // 小车经过上次决策后产生的 buy 组
+	int check[5];						// 小车当前是否 check 一下是否有商品
+	queue <int > total_check[5];		// 小车总的 check 组
+
+	// Sel 是让小车去卖东西，Buy 是买
+	void Sel(int car_num, int desk_num, int Check = 0)
+	{
+		total_destination[car_num].push(desk_num), total_buy[car_num].push(0), total_check[car_num].push(Check);
+	}
+	void Buy(int car_num, int desk_num, int Check = 0)
+	{
+		total_destination[car_num].push(desk_num), total_buy[car_num].push(1), total_check[car_num].push(Check);
+	}
+
+	void clear_decision(int k)
+	{
+		if (!total_destination[k].empty())
+		{
+			total_destination[k].pop();
+			total_buy[k].pop();
+			total_check[k].pop();
+		}
+	}
+
+	bool md[4] = { 0,0,0,0 };
+	bool md_7[4] = { 0,0,0,0 };
+	bool md_9[4] = { 0,0,0,0 };
+	bool md_stop_frame[4] = { 0,0,0,0 };
+}
+
+using namespace seed_n;				//种子包
+using namespace map_n;				//地图包
+using namespace constant_n;			//常量包
+using namespace wait_n;				//等待包
+using namespace occupied_n;			//占用包
+using namespace command_n;			//指令包
+using namespace desk_n;				//工作包	
+using namespace math_n;				//数学包
+using namespace car_n;				//小车包
+using namespace assist_n;			//协助包
+
 namespace parameter
 {
 	int Stop_frame = 8500;
@@ -145,36 +232,6 @@ namespace parameter
 		else if (is_begin_now) return max(1.0, 0.8 + output_is_doing / 1250.0);
 		else return 0.8 + output_is_doing / 1250.0;
 	}
-	/*
-	// 只考虑了到第一个工作台时的角度
-	double fun3(int car_num, int desk_num, int type)
-	{
-		double min_theta = 9999999;
-		for (int k = 0; k < 4; k++)
-		{
-			if (k == car_num) continue;
-			double ay = car[car_num].y, ax = car[car_num].x;
-			double by = car[k].y, bx = car[k].x;
-			double cy = desk[desk_num].y, cx = desk[desk_num].x;
-			double theta1 = atan2(by - ay, bx - ax);
-			double theta2 = atan2(cy - ay, cx - ax);
-			if (theta1 < 0) theta1 += 2 * Pi;
-			if (theta2 < 0) theta2 += 2 * Pi;
-			double angle_between = fabs(theta1 - theta2);
-			if (min_theta > angle_between)
-				min_theta = angle_between;
-		}
-		if (type == 2)
-		{
-			if (min_theta > Pi / 3) return 1.1;
-			return 1.1 - cos(min_theta * 3 / 2) / 10;
-		}
-		else
-		{
-			if (min_theta > Pi / 3) return 1;
-			return 1 + cos(min_theta * 3 / 2);
-		}
-	}*/
 	double fun3(bool is_begin)
 	{
 		if (is_begin) return 1;
@@ -222,8 +279,25 @@ namespace parameter
 	}
 }
 
-int son[10][2];
+void init()
+{
+	son[4][0] = 1, son[4][1] = 2;
+	son[5][0] = 1, son[5][1] = 3;
+	son[6][0] = 2, son[6][1] = 3;
 
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
+
+	for (int k = 1; k <= 7; k++) father[k].push_back(9);
+	for (int k = 4; k <= 6; k++) father[k].push_back(7);
+	father[1].push_back(4), father[1].push_back(5);
+	father[2].push_back(4), father[2].push_back(6);
+	father[3].push_back(5), father[3].push_back(6);
+	father[7].push_back(8);
+
+	parameter::adjust_fun();
+}
 
 // 决策生产 4/5/6 中的谁
 void make_decision(int car_num)
@@ -406,65 +480,6 @@ void make_decision_to_8(int car_num)
 		Sel(car_num, cloest_desk);
 }
 
-void init()
-{
-	son[4][0] = 1, son[4][1] = 2;
-	son[5][0] = 1, son[5][1] = 3;
-	son[6][0] = 2, son[6][1] = 3;
-
-	for (int k = 1; k <= 100; k++)
-		for (int i = 1; i <= 100; i++)
-			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;
-
-	for (int k = 1; k <= 7; k++) father[k].push_back(9);
-	for (int k = 4; k <= 6; k++) father[k].push_back(7);
-	father[1].push_back(4), father[1].push_back(5);
-	father[2].push_back(4), father[2].push_back(6);
-	father[3].push_back(5), father[3].push_back(6);
-	father[7].push_back(8);
-
-	parameter::adjust_fun();
-}
-
-bool md[4] = { 0,0,0,0 };
-bool md_7[4] = { 0,0,0,0 };
-bool md_9[4] = { 0,0,0,0 };
-bool md_stop_frame[4] = { 0,0,0,0 };
-bool wait[4] = { 0,0,0,0 };
-bool wait_until_spare_3[4] = { 0,0,0,0 };
-bool wait_until_spare_7[4] = { 0,0,0,0 };
-bool wait_stop_frame[4] = { 0,0,0,0 };
-bool wait_until_spare_sell[4] = { 0,0,0,0 };
-
-bool init_dc;
-
-void reload_occupied()
-{
-	for (int k = 0; k < cnt_desk; k++)
-		for (int i = 0; i <= 9; i++)
-			if (sol_occupied[k][i])
-			{
-				occupied[k][i] -= sol_occupied[k][i];
-				occupied[k][i] = max(0, occupied[k][i]);
-				sol_occupied[k][i] = 0;
-			}
-	for (int k = 0; k < cnt_desk; k++)
-		for (int i = 0; i <= 9; i++)
-			if (sol_occupied_stop_frame[k][i])
-			{
-				occupied_stop_frame[k][i] = 0;
-				sol_occupied_stop_frame[k][i] = 0;
-			}
-	for (int k = 0; k < cnt_desk; k++)
-		for (int i = 0; i <= 9; i++)
-			if (sol_ignore_occupied[k][i])
-			{
-				ignore_occupied[k][i] = 0;
-				sol_ignore_occupied[k][i] = 0;
-			}
-	memset(current_occupied, 0, sizeof(current_occupied));
-}
-
 //该函数投入使用时，因为碰撞问题导致了效果不如不加。
 //如果优化了碰撞，可以尝试加入该函数
 //加入方法：注释掉 return true 即可。
@@ -486,23 +501,6 @@ bool check_spare_7(int type)
 			return true;
 		}
 	}
-	return false;
-}
-
-void clear_decision(int k)
-{
-	if (!total_destination[k].empty())
-	{
-		total_destination[k].pop();
-		total_buy[k].pop();
-		total_check[k].pop();
-	}
-}
-
-bool check_wait(int desk_num, int goods)
-{
-	if (desk[desk_num].input_status[1] || desk[desk_num].input_status[2] || desk[desk_num].input_status[3])
-		return true;
 	return false;
 }
 
