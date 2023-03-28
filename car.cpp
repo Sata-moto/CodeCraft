@@ -153,7 +153,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 	if (Sign(Cross(car[numi].x - x, car[numi].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 		uy *= -1, vecuy *= -1;
 	//另一小车与当前小车同向行驶
-	if (vecux >= 0.15) {
+	if (ux >= 0.15) {
 		if (Dist(x, y, car[numi].x, car[numi].y) > AlertRange / 1.4)return;
 		//补丁：两个小车均在对方前方180度范围内
 		if (Sign(Dot(car[numi].x - x, car[numi].y - y, v1x, v1y)) >= 0 && Sign(Dot(x - car[numi].x, y - car[numi].y, v2x, v2y)) >= 0) {
