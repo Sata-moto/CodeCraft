@@ -26,7 +26,7 @@ namespace map_n
 namespace desk_n
 {
 	Desk desk[52];
-	vector <int > available_desk[10];//各种工作台当前有哪些空闲的
+	vector <int > available_desk[10]; //各种工作台当前有哪些空闲的
 	void init_desk()
 	{
 		for (int k = 1; k <= 9; k++)
@@ -38,26 +38,26 @@ namespace desk_n
 
 namespace car_n
 {
-	bool available_car[4] = { 0,0,0,0 };
+	bool available_car[4] = { 0,0,0,0 }; // stop_frame 前转到 stop_frame 后时，小车空闲标记。
 }
 
 namespace constant_n
 {
 	double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
-	int money;							// 金钱数
-	int frame_number;					// 帧序号
+	int money;							
+	int frame_number;					
 	int son[10][2];
-	vector <int > father[10];
+	vector <int > father[10];			// son 和 father 描述了工作台之间的需求信息，在 init 中初始化
 }
 
 namespace wait_n
 {
-	bool is_waiting_for_7[10];
-	bool wait[4] = { 0,0,0,0 };
-	bool wait_until_spare_3[4] = { 0,0,0,0 };
-	bool wait_until_spare_7[4] = { 0,0,0,0 };
-	bool wait_stop_frame[4] = { 0,0,0,0 };
-	bool wait_until_spare_sell[4] = { 0,0,0,0 };
+	bool is_waiting_for_7[10];							//某种物品有小车堵塞在了送到七号的过程种
+	bool wait[4] = { 0,0,0,0 };							//当前小车送到了最后一个原料，但是当前产品还没有生产出来
+	bool wait_until_spare_3[4] = { 0,0,0,0 };			//当前小车拿原料 1-3 时，发现 1-3 还没有生产好
+	bool wait_until_spare_7[4] = { 0,0,0,0 };			//当前小车在第一层决策，准备拿取物品时发现没地方送导致等待
+	bool wait_until_spare_sell[4] = { 0,0,0,0 };		//当前小车想要卖掉物品，但是没办法卖，导致等待（由优化引起）
+	bool wait_stop_frame[4] = { 0,0,0,0 };				//stop_frame 后面的等待
 }
 
 namespace math_n
@@ -78,16 +78,16 @@ namespace math_n
 
 namespace occupied_n
 {
-	int occupied[52][10];				// 工作台是否被占用
-	int sol_occupied[52][10];			// 工作台是否被占用
-	int occupied_goods[10];				// 某个物品是否在被生产
-	int occupied_stop_frame[52][10];
-	int sol_occupied_stop_frame[52][10];
-	int current_occupied[52][10];
-	int ignore_occupied[52][10];
-	bool sol_ignore_occupied[52][10];   // 1 可以 innore，0 不行
+	int occupied[52][10];					// 工作台是否被占用
+	int sol_occupied[52][10];				// 是否解决工作台的占用
+	int occupied_goods[10];					// 场上某种物品的数量
+	int occupied_stop_frame[52][10];		// stop_frame 后的 occupied
+	int sol_occupied_stop_frame[52][10];    // stop_frame 后的 sol_occupied
+	int ignore_occupied[52][10];			// ignore occupied 从而允许连续的运送
+	bool sol_ignore_occupied[52][10];		// 清楚 ignore occupied
+	int current_occupied[52][10];			// 单纯是 check_spare_7 用到的临时参数，用来标识是否占用了一个 7
 
-	void reload_occupied()
+	void reload_occupied()					// 每帧会 reload occupied，ocuupied 进行占用时可以本帧占用，但是解除时必须下一帧解除
 	{
 		for (int k = 0; k < map_n::cnt_desk; k++)
 			for (int i = 0; i <= 9; i++)
@@ -117,14 +117,14 @@ namespace occupied_n
 
 namespace assist_n
 {
-	bool check_wait(int desk_num, int goods)
+	bool full_6(int desk_num, int goods) //当前物品送到后，判断 4-6 号工作台是不是已经满了
 	{
 		if (desk_n::desk[desk_num].input_status[1] || desk_n::desk[desk_num].input_status[2] || desk_n::desk[desk_num].input_status[3])
 			return true;
 		return false;
 	}
 
-	bool judge(int dest, int goods)
+	bool full_7(int dest, int goods)	 //当前物品送到后，判断 7 号工作台是不是已经满了
 	{
 		if (goods == 4 && desk_n::desk[dest].input_status[5] && desk_n::desk[dest].input_status[6])
 			return true;
@@ -135,7 +135,7 @@ namespace assist_n
 		return false;
 	}
 
-	bool check_spare_7(int type)
+	bool check_spare_7(int type)		//当前是否有空闲的 7 号工作台
 	{
 		//return true;//取消先等待再拿的决策
 		if (map_n::num_desk_9 != 0) return true;
@@ -275,7 +275,7 @@ namespace parameter					//参数包
 		else if (!is_empty) return -0.01;
 		else if (is_done) return 1.5;
 		else if (is_doing > 1000) return 1.3;
-		else if (is_doing && !judge(desk_num, goods)) return max(1.0, 0.8 + is_doing / 1250.0);
+		else if (is_doing && !full_7(desk_num, goods)) return max(1.0, 0.8 + is_doing / 1250.0);
 		else if (is_doing) return 0.8 + is_doing / 1250.0;
 		else return 1;
 	}
@@ -306,7 +306,6 @@ void init()
 	parameter::adjust_fun();
 }
 
-// 第一层决策
 void make_decision(int car_num)
 {
 	init_desk();
@@ -402,7 +401,6 @@ void make_decision(int car_num)
 	}
 }
 
-// 决策 4/5/6 卖到哪去
 void make_decision_to_7(int car_num, int goods)
 {
 	init_desk();
@@ -437,7 +435,6 @@ void make_decision_to_7(int car_num, int goods)
 	}
 }
 
-// 决策把 7 号物品卖到哪去，直接就近就可以了
 void make_decision_to_8(int car_num)
 {
 	init_desk();
@@ -461,10 +458,6 @@ void make_decision_to_8(int car_num)
 	if (cloest_desk != -1)
 		Sel(car_num, cloest_desk);
 }
-
-//该函数投入使用时，因为碰撞问题导致了效果不如不加。
-//如果优化了碰撞，可以尝试加入该函数
-//加入方法：注释掉 return true 即可。
 
 void decision_before_stop_frame(int k)
 {
@@ -580,7 +573,7 @@ void decision_before_stop_frame(int k)
 					is_waiting_for_7[desk[destination[k]].type] = 0;
 					sol_occupied[destination[k]][0] = 1;
 				}
-				else if (check_wait(destination[k], car[k].goods))
+				else if (full_6(destination[k], car[k].goods))
 				{
 					if (!wait_until_spare_7[k])
 					{
@@ -591,7 +584,7 @@ void decision_before_stop_frame(int k)
 				}
 			}
 			//如果正在做并且输入填满了，要等待输出
-			else if (desk[destination[k]].remain_time != -1 && check_wait(destination[k], car[k].goods))
+			else if (desk[destination[k]].remain_time != -1 && full_6(destination[k], car[k].goods))
 				wait[k] = 1;
 			//否则就是刚填完一组，那么接触占用自己去做决策。
 		}
@@ -606,7 +599,7 @@ void decision_before_stop_frame(int k)
 				wait[k] = 0;
 			}
 			//如果正在做并且输入填满了，要等待输出
-			else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
+			else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
 				wait[k] = 1;
 			//否则就是刚填完一组，那么接触占用自己去做决策。
 		}
@@ -938,7 +931,7 @@ void decision_before_stop_frame_without_7(int k)
 				wait[k] = 0;
 			}
 			//如果正在做并且输入填满了，要等待输出
-			else if (desk[destination[k]].remain_time != -1 && judge(destination[k], car[k].goods))
+			else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
 				wait[k] = 1;
 			//否则就是刚填完一组，那么接触占用自己去做决策。
 		}
