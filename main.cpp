@@ -26,13 +26,13 @@ namespace map_n
 namespace desk_n
 {
 	Desk desk[52];
-	vector <int > available_desk[10]; //各种工作台当前有哪些空闲的
+	vector <int > total_desk[10];
 	void init_desk()
 	{
 		for (int k = 1; k <= 9; k++)
-			available_desk[k].clear();
+			total_desk[k].clear();
 		for (int k = 0; k < map_n::cnt_desk; k++)
-			available_desk[desk[k].type].push_back(k);
+			total_desk[desk[k].type].push_back(k);
 	}
 }
 
@@ -44,8 +44,8 @@ namespace car_n
 namespace constant_n
 {
 	double Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
-	int money;							
-	int frame_number;					
+	int money;
+	int frame_number;
 	int son[10][2];
 	vector <int > father[10];			// son 和 father 描述了工作台之间的需求信息，在 init 中初始化
 }
@@ -139,11 +139,9 @@ namespace assist_n
 	{
 		//return true;//取消先等待再拿的决策
 		if (map_n::num_desk_9 != 0) return true;
-		desk_n::init_desk();
-
-		for (int k = 0; k < (int)desk_n::available_desk[7].size(); k++)
+		for (int k = 0; k < (int)desk_n::total_desk[7].size(); k++)
 		{
-			int now = desk_n::available_desk[7][k];
+			int now = desk_n::total_desk[7][k];
 			if (!occupied_n::occupied[now][type] && !desk_n::desk[now].input_status[type] && !occupied_n::current_occupied[now][type])
 			{
 				occupied_n::current_occupied[now][type] = 1;
@@ -284,7 +282,7 @@ namespace parameter					//参数包
 		if (desk[desk_num].type != 7) return 1;
 		return 1 + (number_of_exists + occupied[desk_num][4] + occupied[desk_num][5] + occupied[desk_num][6]) / 5.0;
 	}
-}		
+}
 
 void init()
 {
@@ -308,8 +306,6 @@ void init()
 
 void make_decision(int car_num)
 {
-	init_desk();
-
 	double max_earning = 0;
 	int max_earning_desk_num = -1;
 	int son_desk;
@@ -317,9 +313,9 @@ void make_decision(int car_num)
 
 	for (register int k = 4; k <= 6; k++)
 	{
-		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		for (int i = 0; i < (int)total_desk[k].size(); i++)
 		{
-			int now = available_desk[k][i];
+			int now = total_desk[k][i];
 			int son_Desk = -1;
 			bool is_begin_now = 0;
 			double weight = 0, min_distance = 999999999;
@@ -343,17 +339,17 @@ void make_decision(int car_num)
 			else continue;
 
 			if (cal_son1)
-				for (int p = 0; p < (int)available_desk[son[k][0]].size(); p++)
+				for (int p = 0; p < (int)total_desk[son[k][0]].size(); p++)
 				{
-					int son_DESK = available_desk[son[k][0]][p];
+					int son_DESK = total_desk[son[k][0]][p];
 					double DIS = cddis(car_num, son_DESK) + dddis(son_DESK, now);
 					if (DIS < min_distance)
 						min_distance = DIS, son_Desk = son_DESK;
 				}
 			if (cal_son2)
-				for (int q = 0; q < (int)available_desk[son[k][1]].size(); q++)
+				for (int q = 0; q < (int)total_desk[son[k][1]].size(); q++)
 				{
-					int son_DESK = available_desk[son[k][1]][q];
+					int son_DESK = total_desk[son[k][1]][q];
 					double DIS = cddis(car_num, son_DESK) + dddis(son_DESK, now);
 					if (DIS < min_distance)
 						min_distance = DIS, son_Desk = son_DESK;
@@ -363,10 +359,10 @@ void make_decision(int car_num)
 			if (son_Desk == -1) continue;
 
 			double exist_count = occupied_goods[k];
-			for (int j = 0; j < (int)available_desk[7].size(); j++)
-				exist_count += desk[available_desk[7][j]].input_status[k];
-			for (int j = 0; j < (int)available_desk[k].size(); j++)
-				exist_count -= desk[available_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
+			for (int j = 0; j < (int)total_desk[7].size(); j++)
+				exist_count += desk[total_desk[7][j]].input_status[k];
+			for (int j = 0; j < (int)total_desk[k].size(); j++)
+				exist_count -= desk[total_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
 			if (!is_begin_now) exist_count = 0;
 
 			//计算当前物品场上存在的数量
@@ -403,16 +399,14 @@ void make_decision(int car_num)
 
 void make_decision_to_7(int car_num, int goods)
 {
-	init_desk();
-
 	double max_earning = 0.000000000001;
 	int max_earning_desk_num = -1;
 	for (register int k = 7; k <= 9; k++)
 	{
 		if (k == 8) continue;
-		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		for (int i = 0; i < (int)total_desk[k].size(); i++)
 		{
-			int now = available_desk[k][i];
+			int now = total_desk[k][i];
 			double weight = 0;
 
 			weight = Earning[goods] / pow(cddis(car_num, now), 1 / parameter::dis_pow_downscale) * parameter::fun4(frame_number, cddis(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
@@ -437,16 +431,14 @@ void make_decision_to_7(int car_num, int goods)
 
 void make_decision_to_8(int car_num)
 {
-	init_desk();
-
 	double cloest_distance = 9999999999;
 	int cloest_desk = -1;
 
 	for (register int k = 8; k <= 9; k++)
 	{
-		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		for (int i = 0; i < (int)total_desk[k].size(); i++)
 		{
-			int now = available_desk[k][i];
+			int now = total_desk[k][i];
 			if (cddis(car_num, now) < cloest_distance)
 			{
 				cloest_desk = now;
@@ -630,23 +622,21 @@ void decision_before_stop_frame(int k)
 
 void make_decision_stop_frame(int car_num)
 {
-	init_desk();
-
 	double max_weight = -1;
 	int buy_desk = -1, sell_desk = -1;
 
 	for (int k = 1; k <= 7; k++)
 	{
-		for (int i = 0; i < (int)available_desk[k].size(); i++)
+		for (int i = 0; i < (int)total_desk[k].size(); i++)
 		{
-			int now = available_desk[k][i];
+			int now = total_desk[k][i];
 			if (!desk[now].output_status || occupied_stop_frame[now][0])
 				continue;
 			for (int j = 0; j < (int)father[k].size(); j++)
 			{
-				for (int t = 0; t < (int)available_desk[father[k][j]].size(); t++)
+				for (int t = 0; t < (int)total_desk[father[k][j]].size(); t++)
 				{
-					int to = available_desk[father[k][j]][t];
+					int to = total_desk[father[k][j]][t];
 					if (desk[to].input_status[k] || occupied[to][k] || occupied[to][0])
 						continue;
 					if (father[k][j] <= 7 && occupied_stop_frame[to][k])
@@ -736,42 +726,25 @@ void decision_after_stop_frame(int k)
 
 void make_decision_without_7(int car_num)
 {
-	// 贪心决策
-	// 思路：1，2，3 种物品的生产视为不需要决策的，每个机器人独立决策当前
-	// 生产 4/5/6，生产哪一个根据 生产利润/生产它需要的距离
-	// * fun1(该种物品的场上剩余数目) * fun2（该种物品的目的工作
-	// 台的产品格上是否有物品了，或者正在做）* fun3（时间选择系数）决定，
-	// 选择权重大的那个，如果目的地工作台上已经有了物品，则将其卖出。
-	// 卖出的地点是 7/9，权重是 出售它需要的距离  * fun4（当前时间）
-	// * fun5（是否是 7 并且该格子空着并且有没有输出） * fun6（是 
-	// 7 的话工作台上已经有了几种物品） 
-	// 注意：送第二次原料时保证第一次生产完毕并拿走。
-
-
-	for (int k = 1; k <= 9; k++)
-		available_desk[k].clear();
-	for (int k = 0; k < cnt_desk; k++)
-		if (!occupied[k][0] || desk[k].type <= 3)
-			available_desk[desk[k].type].push_back(k);
-	//初始化工作台
-
 	double max_earning = 0;
 	int max_earning_desk_num = -1;
 	int son_desk1 = -1, son_desk2 = -1;
 
 	for (register int k = 4; k <= 6; k++)
 	{
-		for (int i = 0; i < (int)available_desk[k].size(); i++)
+
+		for (int i = 0; i < (int)total_desk[k].size(); i++)
 		{
-			int now = available_desk[k][i];
+			int now = total_desk[k][i];
+			if (occupied[now][0]) continue;
 			int son_Desk1 = -1, son_Desk2 = -1;
 			double weight = 0, min_distance = 999999999;
 
-			for (int p = 0; p < (int)available_desk[son[k][0]].size(); p++)
-				for (int q = 0; q < (int)available_desk[son[k][1]].size(); q++)
+			for (int p = 0; p < (int)total_desk[son[k][0]].size(); p++)
+				for (int q = 0; q < (int)total_desk[son[k][1]].size(); q++)
 				{
-					int son_DESK1 = available_desk[son[k][0]][p];
-					int son_DESK2 = available_desk[son[k][1]][q];
+					int son_DESK1 = total_desk[son[k][0]][p];
+					int son_DESK2 = total_desk[son[k][1]][q];
 					double DIS1 = (cddis(car_num, son_DESK1) + dddis(son_DESK1, now) + dddis(now, son_DESK2) * 2);
 					double DIS2 = (cddis(car_num, son_DESK2) + dddis(son_DESK2, now) + dddis(now, son_DESK1) * 2);
 					double DIS = min(DIS1, DIS2);
@@ -784,18 +757,14 @@ void make_decision_without_7(int car_num)
 							swap(son_Desk1, son_Desk2);
 					}
 				}
-			//计算最小距离
 
 			if (son_Desk1 == -1) continue;
 
 			double exist_count = occupied_goods[k];
-			for (int j = 0; j < (int)available_desk[7].size(); j++)
-				exist_count += desk[available_desk[7][j]].input_status[k];
-			for (int j = 0; j < (int)available_desk[k].size(); j++)
-				exist_count -= desk[available_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
-
-			//计算当前物品场上存在的数量
-			//occupied_good 直到物品被卖掉后才会减少，所以加上 7 上的就是场上的总量
+			for (int j = 0; j < (int)total_desk[7].size(); j++)
+				exist_count += desk[total_desk[7][j]].input_status[k];
+			for (int j = 0; j < (int)total_desk[k].size(); j++)
+				exist_count -= desk[total_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
 
 			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
 				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, 0);
@@ -1036,6 +1005,7 @@ int main()
 
 		if (!init_dc)
 		{
+			init_desk();
 			for (int k = 0; k < 4; k++)
 			{
 				if (num_desk_7)
