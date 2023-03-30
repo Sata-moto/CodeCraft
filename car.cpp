@@ -275,3 +275,9 @@ pair<double, double> Car::mov(double nx, double ny)
 	MarginCheck(forwar);
 	return pair<double, double>(forwar, rot);
 }
+
+
+pair<double, double> Car::mov(int desk_num)
+{
+	return pair<double, double>(0, 0);
+}

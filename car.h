@@ -22,5 +22,6 @@ struct Car
 	void CarCrashCheck(double&, double&);             // 小车碰撞判断并修改速度与角速度
 	void MarginCheck(double&);                        // 边界碰撞判断并修改前进速度 
 	pair<double, double> mov(double, double);         // 将小车向目标点移动
+	pair<double, double> mov(int);         // 将小车向目标点移动
 };
 extern Car car[5];

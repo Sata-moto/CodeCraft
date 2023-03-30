@@ -24,12 +24,21 @@
     <ClInclude Include="desk.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="namespace.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="decision.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="car.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="car.cpp">
+    <ClCompile Include="namespace.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
