@@ -127,3 +127,14 @@ namespace parameter					//参数包
 	static double fun5(bool is_7, bool is_empty, bool is_done, double is_doing, int desk_num, int goods);
 	static double fun6(int desk_num, int number_of_exists);
 }
+
+using namespace seed_n;				//种子包
+using namespace map_n;				//地图包
+using namespace constant_n;			//常量包
+using namespace wait_n;				//等待包
+using namespace occupied_n;			//占用包
+using namespace command_n;			//指令包
+using namespace desk_n;				//工作包	
+using namespace math_n;				//数学包
+using namespace car_n;				//小车包
+using namespace assist_n;			//协助包
