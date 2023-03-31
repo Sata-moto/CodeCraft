@@ -1,18 +1,18 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Global.h"
 #include "namespace.h"
 
-using namespace seed_n;				//ÖÖ×Ó°ü
-using namespace map_n;				//µØÍ¼°ü
-using namespace constant_n;			//³£Á¿°ü
-using namespace wait_n;				//µÈ´ı°ü
-using namespace occupied_n;			//Õ¼ÓÃ°ü
-using namespace command_n;			//Ö¸Áî°ü
-using namespace desk_n;				//¹¤×÷°ü	
-using namespace math_n;				//ÊıÑ§°ü
-using namespace car_n;				//Ğ¡³µ°ü
-using namespace assist_n;			//Ğ­Öú°ü
+using namespace seed_n;				//ç§å­åŒ…
+using namespace map_n;				//åœ°å›¾åŒ…
+using namespace constant_n;			//å¸¸é‡åŒ…
+using namespace wait_n;				//ç­‰å¾…åŒ…
+using namespace occupied_n;			//å ç”¨åŒ…
+using namespace command_n;			//æŒ‡ä»¤åŒ…
+using namespace desk_n;				//å·¥ä½œåŒ…	
+using namespace math_n;				//æ•°å­¦åŒ…
+using namespace car_n;				//å°è½¦åŒ…
+using namespace assist_n;			//ååŠ©åŒ…
 
 void make_decision(int car_num)
 {
@@ -64,7 +64,7 @@ void make_decision(int car_num)
 					if (DIS < min_distance)
 						min_distance = DIS, son_Desk = son_DESK;
 				}
-			//¼ÆËã×îĞ¡¾àÀë
+			//è®¡ç®—æœ€å°è·ç¦»
 
 			if (son_Desk == -1) continue;
 
@@ -75,8 +75,8 @@ void make_decision(int car_num)
 				exist_count -= desk[total_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
 			if (!is_begin_now) exist_count = 0;
 
-			//¼ÆËãµ±Ç°ÎïÆ·³¡ÉÏ´æÔÚµÄÊıÁ¿
-			//occupied_good Ö±µ½ÎïÆ·±»Âôµôºó²Å»á¼õÉÙ£¬ËùÒÔ¼ÓÉÏ 7 ÉÏµÄ¾ÍÊÇ³¡ÉÏµÄ×ÜÁ¿
+			//è®¡ç®—å½“å‰ç‰©å“åœºä¸Šå­˜åœ¨çš„æ•°é‡
+			//occupied_good ç›´åˆ°ç‰©å“è¢«å–æ‰åæ‰ä¼šå‡å°‘ï¼Œæ‰€ä»¥åŠ ä¸Š 7 ä¸Šçš„å°±æ˜¯åœºä¸Šçš„æ€»é‡
 
 			weight = Earning[k] / min_distance
 				* parameter::fun1(exist_count, k) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, is_begin_now)
@@ -221,7 +221,7 @@ void decision_before_stop_frame(int k)
 
 	if (car[k].workbench == destination[k])
 	{
-		//¶ÔÃ¿¸öĞ¡³µ£¬Èç¹ûÒÑ¾­µ½ÁËÄ¿µÄµØ£¬²¢ÇÒ¿ÉÒÔ×ö buy/sell Ö¸Áî£¬Êä³ö buy,sell
+		//å¯¹æ¯ä¸ªå°è½¦ï¼Œå¦‚æœå·²ç»åˆ°äº†ç›®çš„åœ°ï¼Œå¹¶ä¸”å¯ä»¥åš buy/sell æŒ‡ä»¤ï¼Œè¾“å‡º buy,sell
 		if (buy[k] && !wait[k] && !wait_until_spare_7[k])
 		{
 			printf("buy %d\n", k);
@@ -255,15 +255,15 @@ void decision_before_stop_frame(int k)
 
 			//if (occupied_goods[car[k].goods] < 0)
 			//	exit(-1);
-			//´íÎóÌø³öµã 1
+			//é”™è¯¯è·³å‡ºç‚¹ 1
 		}
 		if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
 			wait_until_spare_3[k] = 1;
-		if (check[k] == 1 && !wait_until_spare_sell[k]) //Õâ×éËÍÍù 4/5/6 µÄÈÎÎñÍê³É
+		if (check[k] == 1 && !wait_until_spare_sell[k]) //è¿™ç»„é€å¾€ 4/5/6 çš„ä»»åŠ¡å®Œæˆ
 		{
 			if (car[k].goods != 0 && !wait[k] && !wait_until_spare_7[k])
 				sol_occupied[destination[k]][car[k].goods]++;
-			//Èç¹ûÓĞÊä³öÁË£¬¾ÍÄÃ×ß
+			//å¦‚æœæœ‰è¾“å‡ºäº†ï¼Œå°±æ‹¿èµ°
 			if (desk[destination[k]].output_status && frame_number <= parameter::Stop_frame)
 			{
 				if (check_spare_7(desk[destination[k]].type))
@@ -285,31 +285,31 @@ void decision_before_stop_frame(int k)
 					}
 				}
 			}
-			//Èç¹ûÕıÔÚ×ö²¢ÇÒÊäÈëÌîÂúÁË£¬ÒªµÈ´ıÊä³ö
+			//å¦‚æœæ­£åœ¨åšå¹¶ä¸”è¾“å…¥å¡«æ»¡äº†ï¼Œè¦ç­‰å¾…è¾“å‡º
 			else if (desk[destination[k]].remain_time != -1 && full_6(destination[k], car[k].goods))
 				wait[k] = 1;
-			//·ñÔò¾ÍÊÇ¸ÕÌîÍêÒ»×é£¬ÄÇÃ´½Ó´¥Õ¼ÓÃ×Ô¼ºÈ¥×ö¾ö²ß¡£
+			//å¦åˆ™å°±æ˜¯åˆšå¡«å®Œä¸€ç»„ï¼Œé‚£ä¹ˆæ¥è§¦å ç”¨è‡ªå·±å»åšå†³ç­–ã€‚
 		}
 		else if (check[k] == 2 && !wait_until_spare_sell[k])
 		{
 			sol_occupied[destination[k]][car[k].goods] = 1;
-			//Èç¹ûÓĞÊä³öÁË£¬¾ÍÄÃ×ß
+			//å¦‚æœæœ‰è¾“å‡ºäº†ï¼Œå°±æ‹¿èµ°
 			if (desk[destination[k]].output_status)
 			{
 				printf("buy %d\n", k);
 				md_9[k] = 1;
 				wait[k] = 0;
 			}
-			//Èç¹ûÕıÔÚ×ö²¢ÇÒÊäÈëÌîÂúÁË£¬ÒªµÈ´ıÊä³ö
+			//å¦‚æœæ­£åœ¨åšå¹¶ä¸”è¾“å…¥å¡«æ»¡äº†ï¼Œè¦ç­‰å¾…è¾“å‡º
 			else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
 				wait[k] = 1;
-			//·ñÔò¾ÍÊÇ¸ÕÌîÍêÒ»×é£¬ÄÇÃ´½Ó´¥Õ¼ÓÃ×Ô¼ºÈ¥×ö¾ö²ß¡£
+			//å¦åˆ™å°±æ˜¯åˆšå¡«å®Œä¸€ç»„ï¼Œé‚£ä¹ˆæ¥è§¦å ç”¨è‡ªå·±å»åšå†³ç­–ã€‚
 		}
-		//Èç¹ûµ±Ç°ÂòÁËÖ®ºóÓĞÒ»¸ö check ÇëÇó£¬¾Í»á check µ±Ç°¹¤×÷Ì¨ÓĞÃ»ÓĞ output
-		//Èç¹ûÓĞ output£¬ÄÇ¾Í¾ö²ß°ÑÕâ¸öËÍµ½ÄÄÈ¥
-		//Èç¹ûÒòÎª¼·Õ¼µ¼ÖÂÖ¸ÁîÎŞ·¨Ö´ĞĞ£¬¾ÍÌø¹ı¾ö²ß²¢ÇÒµÈ´ı¡£
+		//å¦‚æœå½“å‰ä¹°äº†ä¹‹åæœ‰ä¸€ä¸ª check è¯·æ±‚ï¼Œå°±ä¼š check å½“å‰å·¥ä½œå°æœ‰æ²¡æœ‰ output
+		//å¦‚æœæœ‰ outputï¼Œé‚£å°±å†³ç­–æŠŠè¿™ä¸ªé€åˆ°å“ªå»
+		//å¦‚æœå› ä¸ºæŒ¤å å¯¼è‡´æŒ‡ä»¤æ— æ³•æ‰§è¡Œï¼Œå°±è·³è¿‡å†³ç­–å¹¶ä¸”ç­‰å¾…ã€‚
 
-		//´ÓÖ¸Áî×éÖĞµ¼ÈëĞÂµÄÖ¸Áî,Èç¹ûÖ¸Áî×éÎª¿Õ¾ÍĞÂ¹¹Ö¸Áî
+		//ä»æŒ‡ä»¤ç»„ä¸­å¯¼å…¥æ–°çš„æŒ‡ä»¤,å¦‚æœæŒ‡ä»¤ç»„ä¸ºç©ºå°±æ–°æ„æŒ‡ä»¤
 		if (!wait_until_spare_sell[k] && !wait_until_spare_3[k] && !wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
 			md[k] = true;
 		if (!wait_until_spare_sell[k] && !wait_until_spare_3[k] && !total_destination[k].empty())
@@ -327,7 +327,7 @@ void decision_before_stop_frame(int k)
 	temp = car[k].mov(destination[k]);
 	printf("forward %d %lf\n", k, temp.first);
 	printf("rotate %d %lf\n", k, temp.second);
-	//Ã¿¸öĞ¡³µ³¯µ±Ç°µÄÄ¿µÄµØÇ°½ø
+	//æ¯ä¸ªå°è½¦æœå½“å‰çš„ç›®çš„åœ°å‰è¿›
 }
 
 void make_decision_stop_frame(int car_num)
@@ -397,7 +397,7 @@ void decision_after_stop_frame(int k)
 
 	if (car[k].workbench == destination[k])
 	{
-		//¶ÔÃ¿¸öĞ¡³µ£¬Èç¹ûÒÑ¾­µ½ÁËÄ¿µÄµØ£¬²¢ÇÒ¿ÉÒÔ×ö buy/sell Ö¸Áî£¬Êä³ö buy,sell
+		//å¯¹æ¯ä¸ªå°è½¦ï¼Œå¦‚æœå·²ç»åˆ°äº†ç›®çš„åœ°ï¼Œå¹¶ä¸”å¯ä»¥åš buy/sell æŒ‡ä»¤ï¼Œè¾“å‡º buy,sell
 		if (buy[k])
 		{
 			if (desk[destination[k]].output_status)
@@ -431,7 +431,7 @@ void decision_after_stop_frame(int k)
 	temp = car[k].mov(destination[k]);
 	printf("forward %d %lf\n", k, temp.first);
 	printf("rotate %d %lf\n", k, temp.second);
-	//Ã¿¸öĞ¡³µ³¯µ±Ç°µÄÄ¿µÄµØÇ°½ø
+	//æ¯ä¸ªå°è½¦æœå½“å‰çš„ç›®çš„åœ°å‰è¿›
 }
 
 void make_decision_without_7(int car_num)
@@ -560,7 +560,7 @@ void decision_before_stop_frame_without_7(int k)
 
 	if (car[k].workbench == destination[k])
 	{
-		//¶ÔÃ¿¸öĞ¡³µ£¬Èç¹ûÒÑ¾­µ½ÁËÄ¿µÄµØ£¬²¢ÇÒ¿ÉÒÔ×ö buy/sell Ö¸Áî£¬Êä³ö buy,sell
+		//å¯¹æ¯ä¸ªå°è½¦ï¼Œå¦‚æœå·²ç»åˆ°äº†ç›®çš„åœ°ï¼Œå¹¶ä¸”å¯ä»¥åš buy/sell æŒ‡ä»¤ï¼Œè¾“å‡º buy,sell
 		if (buy[k] && !wait[k] && !wait_until_spare_7[k])
 		{
 			printf("buy %d\n", k);
@@ -574,13 +574,13 @@ void decision_before_stop_frame_without_7(int k)
 				occupied_goods[car[k].goods]--;
 			if (occupied_goods[car[k].goods] < 0)
 				exit(-1);
-			//´íÎóÌø³öµã 1
+			//é”™è¯¯è·³å‡ºç‚¹ 1
 		}
 		if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
 			wait_until_spare_3[k] = 1;
-		if (check[k] == 1) //Õâ×éËÍÍù 4/5/6 µÄ¾ö²ßÍê³É
+		if (check[k] == 1) //è¿™ç»„é€å¾€ 4/5/6 çš„å†³ç­–å®Œæˆ
 		{
-			//Èç¹ûÓĞÊä³öÁË£¬¾ÍÄÃ×ß
+			//å¦‚æœæœ‰è¾“å‡ºäº†ï¼Œå°±æ‹¿èµ°
 			if (desk[destination[k]].output_status && frame_number <= parameter::Stop_frame)
 			{
 				if (check_spare_7(desk[destination[k]].type))
@@ -593,30 +593,30 @@ void decision_before_stop_frame_without_7(int k)
 				}
 				else wait_until_spare_7[k] = 1;
 			}
-			//Èç¹ûÕıÔÚ×ö²¢ÇÒÊäÈëÌîÂúÁË£¬ÒªµÈ´ıÊä³ö
+			//å¦‚æœæ­£åœ¨åšå¹¶ä¸”è¾“å…¥å¡«æ»¡äº†ï¼Œè¦ç­‰å¾…è¾“å‡º
 			else if (desk[destination[k]].remain_time != -1 && desk[destination[k]].input_status != 0)
 				wait[k] = 1;
-			//·ñÔò¾ÍÊÇ¸ÕÌîÍêÒ»×é£¬ÄÇÃ´½Ó´¥Õ¼ÓÃ×Ô¼ºÈ¥×ö¾ö²ß¡£
+			//å¦åˆ™å°±æ˜¯åˆšå¡«å®Œä¸€ç»„ï¼Œé‚£ä¹ˆæ¥è§¦å ç”¨è‡ªå·±å»åšå†³ç­–ã€‚
 			else sol_occupied[destination[k]][0] = 1;
 		}
 		else if (check[k] == 2)
 		{
 			sol_occupied[destination[k]][car[k].goods] = 1;
-			//Èç¹ûÓĞÊä³öÁË£¬¾ÍÄÃ×ß
+			//å¦‚æœæœ‰è¾“å‡ºäº†ï¼Œå°±æ‹¿èµ°
 			if (desk[destination[k]].output_status)
 			{
 				printf("buy %d\n", k);
 				md_9[k] = 1;
 				wait[k] = 0;
 			}
-			//Èç¹ûÕıÔÚ×ö²¢ÇÒÊäÈëÌîÂúÁË£¬ÒªµÈ´ıÊä³ö
+			//å¦‚æœæ­£åœ¨åšå¹¶ä¸”è¾“å…¥å¡«æ»¡äº†ï¼Œè¦ç­‰å¾…è¾“å‡º
 			else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
 				wait[k] = 1;
-			//·ñÔò¾ÍÊÇ¸ÕÌîÍêÒ»×é£¬ÄÇÃ´½Ó´¥Õ¼ÓÃ×Ô¼ºÈ¥×ö¾ö²ß¡£
+			//å¦åˆ™å°±æ˜¯åˆšå¡«å®Œä¸€ç»„ï¼Œé‚£ä¹ˆæ¥è§¦å ç”¨è‡ªå·±å»åšå†³ç­–ã€‚
 		}
-		//Èç¹ûµ±Ç°ÂòÁËÖ®ºóÓĞÒ»¸ö check ÇëÇó£¬¾Í»á check µ±Ç°¹¤×÷Ì¨ÓĞÃ»ÓĞ output
-		//Èç¹ûÓĞ output£¬ÄÇ¾Í¾ö²ß°ÑÕâ¸öËÍµ½ÄÄÈ¥
-		//Èç¹ûÒòÎª¼·Õ¼µ¼ÖÂÖ¸ÁîÎŞ·¨Ö´ĞĞ£¬¾ÍÌø¹ı¾ö²ß²¢ÇÒµÈ´ı¡£
+		//å¦‚æœå½“å‰ä¹°äº†ä¹‹åæœ‰ä¸€ä¸ª check è¯·æ±‚ï¼Œå°±ä¼š check å½“å‰å·¥ä½œå°æœ‰æ²¡æœ‰ output
+		//å¦‚æœæœ‰ outputï¼Œé‚£å°±å†³ç­–æŠŠè¿™ä¸ªé€åˆ°å“ªå»
+		//å¦‚æœå› ä¸ºæŒ¤å å¯¼è‡´æŒ‡ä»¤æ— æ³•æ‰§è¡Œï¼Œå°±è·³è¿‡å†³ç­–å¹¶ä¸”ç­‰å¾…ã€‚
 
 		if (!buy[k])
 		{
@@ -628,7 +628,7 @@ void decision_before_stop_frame_without_7(int k)
 			}
 		}
 
-		//´ÓÖ¸Áî×éÖĞµ¼ÈëĞÂµÄÖ¸Áî,Èç¹ûÖ¸Áî×éÎª¿Õ¾ÍĞÂ¹¹Ö¸Áî
+		//ä»æŒ‡ä»¤ç»„ä¸­å¯¼å…¥æ–°çš„æŒ‡ä»¤,å¦‚æœæŒ‡ä»¤ç»„ä¸ºç©ºå°±æ–°æ„æŒ‡ä»¤
 		if (!wait_until_spare_3[k] && !wait_until_spare_7[k] && !wait[k] && !md_7[k] && !md_9[k] && total_destination[k].empty())
 			md[k] = true;
 		if (!wait_until_spare_3[k] && !total_destination[k].empty())
@@ -646,5 +646,5 @@ void decision_before_stop_frame_without_7(int k)
 	temp = car[k].mov(destination[k]);
 	printf("forward %d %lf\n", k, temp.first);
 	printf("rotate %d %lf\n", k, temp.second);
-	//Ã¿¸öĞ¡³µ³¯µ±Ç°µÄÄ¿µÄµØÇ°½ø
+	//æ¯ä¸ªå°è½¦æœå½“å‰çš„ç›®çš„åœ°å‰è¿›
 }

@@ -1,4 +1,4 @@
-#include "namespace.h"
+ï»¿#include "namespace.h"
 #include "car.h"
 #include "desk.h"
 #include <queue>
@@ -31,19 +31,19 @@ void map_n::init_wall()
 		for (int i = 1; i <= 100; i++)
 			if (map[k][i] == '#')
 			{
-				// Ö±Èý¿ÕÒ»Ö±½ÓÁ¬
+				// ç›´ä¸‰ç©ºä¸€ç›´æŽ¥è¿ž
 				if (k + 2 <= 101 && map[k + 2][i] == '#')
 					map[k + 1][i] = '#';
 				if (i + 2 <= 101 && map[k][i + 2] == '#')
 					map[k][i + 1] = '#';
 
-				// Ð±¶þ½ôÁ¬²»¿çÔ½
+				// æ–œäºŒç´§è¿žä¸è·¨è¶Š
 				if (map[k + 1][i + 1] == '#')
 					can_not_move[0][5][k][i + 1] = can_not_move[0][1][k + 1][i] = 1;
 				if (map[k + 1][i - 1] == '#')
 					can_not_move[0][3][k][i - 1] = can_not_move[0][7][k + 1][i] = 1;
 
-				// ÈÕ×Ö²»¹ýÖÐÖáÏß
+				// æ—¥å­—ä¸è¿‡ä¸­è½´çº¿
 				for (int j = 0; j < 4; j++)
 				{
 					int to_x = k + sun_shape[j][0];
@@ -66,7 +66,7 @@ void map_n::init_wall()
 						= can_not_move[0][7][k + 1][i - 1] = can_not_move[0][7][k + 1][i - 2] = 1;
 				}
 
-				// Ìï×ÖÖÐÐÄ²»ÍùÇ°
+				// ç”°å­—ä¸­å¿ƒä¸å¾€å‰
 				if (k + 2 <= 101 && i + 2 <= 101 && map[k + 2][i + 2] == '#')
 				{
 					for (int j = 0; j < 8; j++) can_not_move[0][j][k + 1][i + 1] = 1;
@@ -86,13 +86,13 @@ void map_n::init_wall()
 		for (int i = 1; i <= 100; i++)
 			if (map[k][i] == '#')
 			{
-				// ÕæËÄ¿Õ¶þÒ²Ö±Á¬
+				// çœŸå››ç©ºäºŒä¹Ÿç›´è¿ž
 				if (k + 3 <= 101 && map[k + 3][i] == '#')
 					map[k + 1][i] = '#', map[k + 2][i] = '#';
 				if (i + 3 <= 101 && map[k][i + 3] == '#')
 					map[k][i + 1] = '#', map[k][i + 2] = '#';
 
-				// ¸ßÈÕÉýÈ¨²»ÄÜ×ß
+				// é«˜æ—¥å‡æƒä¸èƒ½èµ°
 				for (int j = 0; j < 4; j++)
 				{
 					int to_x = k + big_sun_shape[j][0];
@@ -134,18 +134,18 @@ void map_n::init_desk()
 			{
 				desk_n::desk[temp_cnt].x = i / 2.0 - 0.25, desk_n::desk[temp_cnt].y = 50 - k / 2.0 + 0.25;
 				int flag[12] = { 0,0,0,0,0,0,0,0,0,0,0,0 };
-				if (map[k - 1][i] == '#') flag[0] = 1;					//ÉÏ
-				if (map[k][i - 1] == '#') flag[1] = 1;					//×ó
-				if (map[k + 1][i] == '#') flag[2] = 1;					//ÏÂ
-				if (map[k][i + 1] == '#') flag[3] = 1;					//ÓÒ
-				if (map[k - 1][i - 1] == '#') flag[4] = 1;				//×óÉÏ
-				if (map[k + 1][i - 1] == '#') flag[5] = 1;				//×óÏÂ
-				if (map[k + 1][i + 1] == '#') flag[6] = 1;				//ÓÒÏÂ
-				if (map[k - 1][i + 1] == '#') flag[7] = 1;				//ÓÒÉÏ
+				if (map[k - 1][i] == '#') flag[0] = 1;					//ä¸Š
+				if (map[k][i - 1] == '#') flag[1] = 1;					//å·¦
+				if (map[k + 1][i] == '#') flag[2] = 1;					//ä¸‹
+				if (map[k][i + 1] == '#') flag[3] = 1;					//å³
+				if (map[k - 1][i - 1] == '#') flag[4] = 1;				//å·¦ä¸Š
+				if (map[k + 1][i - 1] == '#') flag[5] = 1;				//å·¦ä¸‹
+				if (map[k + 1][i + 1] == '#') flag[6] = 1;				//å³ä¸‹
+				if (map[k - 1][i + 1] == '#') flag[7] = 1;				//å³ä¸Š
 				for (int k = 4; k <= 7; k++) flag[k + 4] = flag[k];
 
 				for (int j = 0; j < 4; j++)
-					if (flag[j] && flag[j + 5] || flag[j] && flag[j + 6])			//ÈÕ×ÖÐÎ
+					if (flag[j] && flag[j + 5] || flag[j] && flag[j + 6])			//æ—¥å­—å½¢
 						desk_n::can_not_sell[temp_cnt] = 1;
 				for (int j = 4; j <= 5; j++)
 					if (flag[j] && flag[j + 2])
@@ -250,7 +250,7 @@ double math_n::cddis2(int car1, int desk1)
 	return map_n::dis[1][desk1][ctoe(car1).first][ctoe(car1).second];
 }
 
-void occupied_n::reload_occupied()					// Ã¿Ö¡»á reload occupied£¬ocuupied ½øÐÐÕ¼ÓÃÊ±¿ÉÒÔ±¾Ö¡Õ¼ÓÃ£¬µ«ÊÇ½â³ýÊ±±ØÐëÏÂÒ»Ö¡½â³ý
+void occupied_n::reload_occupied()					// æ¯å¸§ä¼š reload occupiedï¼Œocuupied è¿›è¡Œå ç”¨æ—¶å¯ä»¥æœ¬å¸§å ç”¨ï¼Œä½†æ˜¯è§£é™¤æ—¶å¿…é¡»ä¸‹ä¸€å¸§è§£é™¤
 {
 	for (int k = 0; k < desk_n::cnt_desk; k++)
 		for (int i = 0; i <= 9; i++)
@@ -277,14 +277,14 @@ void occupied_n::reload_occupied()					// Ã¿Ö¡»á reload occupied£¬ocuupied ½øÐÐÕ
 	memset(current_occupied, 0, sizeof(current_occupied));
 }
 
-bool assist_n::full_6(int desk_num, int goods) //µ±Ç°ÎïÆ·ËÍµ½ºó£¬ÅÐ¶Ï 4-6 ºÅ¹¤×÷Ì¨ÊÇ²»ÊÇÒÑ¾­ÂúÁË
+bool assist_n::full_6(int desk_num, int goods) //å½“å‰ç‰©å“é€åˆ°åŽï¼Œåˆ¤æ–­ 4-6 å·å·¥ä½œå°æ˜¯ä¸æ˜¯å·²ç»æ»¡äº†
 {
 	if (desk_n::desk[desk_num].input_status[1] || desk_n::desk[desk_num].input_status[2] || desk_n::desk[desk_num].input_status[3])
 		return true;
 	return false;
 }
 
-bool assist_n::full_7(int dest, int goods)	 //µ±Ç°ÎïÆ·ËÍµ½ºó£¬ÅÐ¶Ï 7 ºÅ¹¤×÷Ì¨ÊÇ²»ÊÇÒÑ¾­ÂúÁË
+bool assist_n::full_7(int dest, int goods)	 //å½“å‰ç‰©å“é€åˆ°åŽï¼Œåˆ¤æ–­ 7 å·å·¥ä½œå°æ˜¯ä¸æ˜¯å·²ç»æ»¡äº†
 {
 	if (goods == 4 && desk_n::desk[dest].input_status[5] && desk_n::desk[dest].input_status[6])
 		return true;
@@ -295,9 +295,9 @@ bool assist_n::full_7(int dest, int goods)	 //µ±Ç°ÎïÆ·ËÍµ½ºó£¬ÅÐ¶Ï 7 ºÅ¹¤×÷Ì¨ÊÇ²
 	return false;
 }
 
-bool assist_n::check_spare_7(int type)		//µ±Ç°ÊÇ·ñÓÐ¿ÕÏÐµÄ 7 ºÅ¹¤×÷Ì¨
+bool assist_n::check_spare_7(int type)		//å½“å‰æ˜¯å¦æœ‰ç©ºé—²çš„ 7 å·å·¥ä½œå°
 {
-	//return true;//È¡ÏûÏÈµÈ´ýÔÙÄÃµÄ¾ö²ß
+	//return true;//å–æ¶ˆå…ˆç­‰å¾…å†æ‹¿çš„å†³ç­–
 	if (map_n::num_desk_9 != 0) return true;
 	for (int k = 0; k < (int)desk_n::total_desk[7].size(); k++)
 	{
@@ -383,7 +383,7 @@ double parameter::fun3(bool is_begin)
 }
 double parameter::fun4(int current_frame, double distance, bool is_7, bool is_done)
 {
-	return 1;// fun4 ²»Æð×÷ÓÃ
+	return 1;// fun4 ä¸èµ·ä½œç”¨
 	if (current_frame > 8500)
 		return 1.0 / distance;
 	else return 1;

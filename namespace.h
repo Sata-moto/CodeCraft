@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Global.h"
 #include "desk.h"
 
@@ -13,9 +13,9 @@ namespace map_n
 {
 	static int num_desk_7;
 	static int num_desk_9;
-	static char map[N][N];							// µØÍ¼
+	static char map[N][N];							// åœ°å›¾
 	static double dis[2][52][N][N];
-	static bool can_not_move[2][8][N][N];			// 0¡ü 1¨J 2¡ú 3¨K 4¡ı 5¨L 6¡û 7¨I
+	static bool can_not_move[2][8][N][N];			// 0â†‘ 1â†— 2â†’ 3â†˜ 4â†“ 5â†™ 6â† 7â†–
 
 	static bool is_MAX(int type, int desk_num, int x, int y);
 	static void dij(int desk_num, int type);
@@ -35,7 +35,7 @@ namespace desk_n
 
 namespace car_n
 {
-	static bool available_car[4] = { 0,0,0,0 }; // stop_frame Ç°×ªµ½ stop_frame ºóÊ±£¬Ğ¡³µ¿ÕÏĞ±ê¼Ç¡£
+	static bool available_car[4] = { 0,0,0,0 }; // stop_frame å‰è½¬åˆ° stop_frame åæ—¶ï¼Œå°è½¦ç©ºé—²æ ‡è®°ã€‚
 }
 
 namespace constant_n
@@ -44,63 +44,63 @@ namespace constant_n
 	static int money;
 	static int frame_number;
 	static int son[10][2];
-	static vector <int > father[10];			// son ºÍ father ÃèÊöÁË¹¤×÷Ì¨Ö®¼äµÄĞèÇóĞÅÏ¢£¬ÔÚ init ÖĞ³õÊ¼»¯
+	static vector <int > father[10];			// son å’Œ father æè¿°äº†å·¥ä½œå°ä¹‹é—´çš„éœ€æ±‚ä¿¡æ¯ï¼Œåœ¨ init ä¸­åˆå§‹åŒ–
 }
 
 namespace wait_n
 {
-	static bool is_waiting_for_7[10];							//Ä³ÖÖÎïÆ·ÓĞĞ¡³µ¶ÂÈûÔÚÁËËÍµ½ÆßºÅµÄ¹ı³ÌÖÖ
-	static bool wait[4] = { 0,0,0,0 };							//µ±Ç°Ğ¡³µËÍµ½ÁË×îºóÒ»¸öÔ­ÁÏ£¬µ«ÊÇµ±Ç°²úÆ·»¹Ã»ÓĞÉú²ú³öÀ´
-	static bool wait_until_spare_3[4] = { 0,0,0,0 };			//µ±Ç°Ğ¡³µÄÃÔ­ÁÏ 1-3 Ê±£¬·¢ÏÖ 1-3 »¹Ã»ÓĞÉú²úºÃ
-	static bool wait_until_spare_7[4] = { 0,0,0,0 };			//µ±Ç°Ğ¡³µÔÚµÚÒ»²ã¾ö²ß£¬×¼±¸ÄÃÈ¡ÎïÆ·Ê±·¢ÏÖÃ»µØ·½ËÍµ¼ÖÂµÈ´ı
-	static bool wait_until_spare_sell[4] = { 0,0,0,0 };		//µ±Ç°Ğ¡³µÏëÒªÂôµôÎïÆ·£¬µ«ÊÇÃ»°ì·¨Âô£¬µ¼ÖÂµÈ´ı£¨ÓÉÓÅ»¯ÒıÆğ£©
-	static bool wait_stop_frame[4] = { 0,0,0,0 };				//stop_frame ºóÃæµÄµÈ´ı
+	static bool is_waiting_for_7[10];							//æŸç§ç‰©å“æœ‰å°è½¦å µå¡åœ¨äº†é€åˆ°ä¸ƒå·çš„è¿‡ç¨‹ç§
+	static bool wait[4] = { 0,0,0,0 };							//å½“å‰å°è½¦é€åˆ°äº†æœ€åä¸€ä¸ªåŸæ–™ï¼Œä½†æ˜¯å½“å‰äº§å“è¿˜æ²¡æœ‰ç”Ÿäº§å‡ºæ¥
+	static bool wait_until_spare_3[4] = { 0,0,0,0 };			//å½“å‰å°è½¦æ‹¿åŸæ–™ 1-3 æ—¶ï¼Œå‘ç° 1-3 è¿˜æ²¡æœ‰ç”Ÿäº§å¥½
+	static bool wait_until_spare_7[4] = { 0,0,0,0 };			//å½“å‰å°è½¦åœ¨ç¬¬ä¸€å±‚å†³ç­–ï¼Œå‡†å¤‡æ‹¿å–ç‰©å“æ—¶å‘ç°æ²¡åœ°æ–¹é€å¯¼è‡´ç­‰å¾…
+	static bool wait_until_spare_sell[4] = { 0,0,0,0 };		//å½“å‰å°è½¦æƒ³è¦å–æ‰ç‰©å“ï¼Œä½†æ˜¯æ²¡åŠæ³•å–ï¼Œå¯¼è‡´ç­‰å¾…ï¼ˆç”±ä¼˜åŒ–å¼•èµ·ï¼‰
+	static bool wait_stop_frame[4] = { 0,0,0,0 };				//stop_frame åé¢çš„ç­‰å¾…
 }
 
 namespace math_n
 {
-	static int otoe(double x);									// ×ø±êµ½¸ñ×Ó±êºÅµÄÓ³Éä£¨Ö»Ô¼·Ö£¬²»Çø·Öºá×İ£©
-	static pair <int, int > dtoe(int desk_num);					// ¹¤×÷Ì¨±êºÅµ½¸ñ×Ó±êºÅµÄÓ³Éä
-	static pair <int, int > ctoe(int car_num);					// Ğ¡³µ±êºÅµ½¸ñ×Ó±êºÅµÄÓ³Éä
-	static pair <int, int > ztoe(int x, int y);					// Êµ×ø±êµ½¸ñ×Ó±êºÅµÄÓ³Éä
-	static double dddis1(int desk1, int desk2);					// Ä³¸ö¹¤×÷Ì¨µ½ÁíÒ»¸ö¹¤×÷Ì¨£¬Ã»ÓĞÄÃ¶«Î÷µÄ¾àÀë
-	static double cddis1(int car1, int desk1);					// Ä³¸öĞ¡³µµ½Ä³¸ö¹¤×÷Ì¨£¬Ã»ÓĞÄÃ¶«Î÷µÄ¾àÀë
-	static double dddis2(int desk1, int desk2);					// Ä³¸ö¹¤×÷Ì¨µ½ÁíÒ»¸ö¹¤×÷Ì¨£¬ÄÃ¶«Î÷µÄ¾àÀë
-	static double cddis2(int car1, int desk1);					// Ä³¸öĞ¡³µµ½Ä³¸ö¹¤×÷Ì¨£¬ÄÃ¶«Î÷µÄ¾àÀë
+	static int otoe(double x);									// åæ ‡åˆ°æ ¼å­æ ‡å·çš„æ˜ å°„ï¼ˆåªçº¦åˆ†ï¼Œä¸åŒºåˆ†æ¨ªçºµï¼‰
+	static pair <int, int > dtoe(int desk_num);					// å·¥ä½œå°æ ‡å·åˆ°æ ¼å­æ ‡å·çš„æ˜ å°„
+	static pair <int, int > ctoe(int car_num);					// å°è½¦æ ‡å·åˆ°æ ¼å­æ ‡å·çš„æ˜ å°„
+	static pair <int, int > ztoe(int x, int y);					// å®åæ ‡åˆ°æ ¼å­æ ‡å·çš„æ˜ å°„
+	static double dddis1(int desk1, int desk2);					// æŸä¸ªå·¥ä½œå°åˆ°å¦ä¸€ä¸ªå·¥ä½œå°ï¼Œæ²¡æœ‰æ‹¿ä¸œè¥¿çš„è·ç¦»
+	static double cddis1(int car1, int desk1);					// æŸä¸ªå°è½¦åˆ°æŸä¸ªå·¥ä½œå°ï¼Œæ²¡æœ‰æ‹¿ä¸œè¥¿çš„è·ç¦»
+	static double dddis2(int desk1, int desk2);					// æŸä¸ªå·¥ä½œå°åˆ°å¦ä¸€ä¸ªå·¥ä½œå°ï¼Œæ‹¿ä¸œè¥¿çš„è·ç¦»
+	static double cddis2(int car1, int desk1);					// æŸä¸ªå°è½¦åˆ°æŸä¸ªå·¥ä½œå°ï¼Œæ‹¿ä¸œè¥¿çš„è·ç¦»
 }
 
 namespace occupied_n
 {
-	static int occupied[52][10];					// ¹¤×÷Ì¨ÊÇ·ñ±»Õ¼ÓÃ
-	static int sol_occupied[52][10];				// ÊÇ·ñ½â¾ö¹¤×÷Ì¨µÄÕ¼ÓÃ
-	static int occupied_goods[10];					// ³¡ÉÏÄ³ÖÖÎïÆ·µÄÊıÁ¿
-	static int occupied_stop_frame[52][10];		// stop_frame ºóµÄ occupied
-	static int sol_occupied_stop_frame[52][10];    // stop_frame ºóµÄ sol_occupied
-	static int ignore_occupied[52][10];			// ignore occupied ´Ó¶øÔÊĞíÁ¬ĞøµÄÔËËÍ
-	static bool sol_ignore_occupied[52][10];		// Çå³ş ignore occupied
-	static int current_occupied[52][10];			// µ¥´¿ÊÇ check_spare_7 ÓÃµ½µÄÁÙÊ±²ÎÊı£¬ÓÃÀ´±êÊ¶ÊÇ·ñÕ¼ÓÃÁËÒ»¸ö 7
+	static int occupied[52][10];					// å·¥ä½œå°æ˜¯å¦è¢«å ç”¨
+	static int sol_occupied[52][10];				//
+	static int occupied_goods[10];					// åœºä¸ŠæŸç§ç‰©å“çš„æ•°é‡
+	static int occupied_stop_frame[52][10];		// stop_frame åçš„ occupied
+	static int sol_occupied_stop_frame[52][10];    // stop_frame åçš„ sol_occupied
+	static int ignore_occupied[52][10];			// ignore occupied ä»è€Œå…è®¸è¿ç»­çš„è¿é€
+	static bool sol_ignore_occupied[52][10];		// æ¸…æ¥š ignore occupied
+	static int current_occupied[52][10];			// å•çº¯æ˜¯ check_spare_7 ç”¨åˆ°çš„ä¸´æ—¶å‚æ•°ï¼Œç”¨æ¥æ ‡è¯†æ˜¯å¦å ç”¨äº†ä¸€ä¸ª 7
 
-	static void reload_occupied();					// Ã¿Ö¡»á reload occupied£¬ocuupied ½øĞĞÕ¼ÓÃÊ±¿ÉÒÔ±¾Ö¡Õ¼ÓÃ£¬µ«ÊÇ½â³ıÊ±±ØĞëÏÂÒ»Ö¡½â³ı
+	static void reload_occupied();					// æ¯å¸§ä¼š reload occupiedï¼Œocuupied è¿›è¡Œå ç”¨æ—¶å¯ä»¥æœ¬å¸§å ç”¨ï¼Œä½†æ˜¯è§£é™¤æ—¶å¿…é¡»ä¸‹ä¸€å¸§è§£é™¤
 }
 
 namespace assist_n
 {
-	static bool full_6(int desk_num, int goods); //µ±Ç°ÎïÆ·ËÍµ½ºó£¬ÅĞ¶Ï 4-6 ºÅ¹¤×÷Ì¨ÊÇ²»ÊÇÒÑ¾­ÂúÁË
-	static bool full_7(int dest, int goods);	 //µ±Ç°ÎïÆ·ËÍµ½ºó£¬ÅĞ¶Ï 7 ºÅ¹¤×÷Ì¨ÊÇ²»ÊÇÒÑ¾­ÂúÁË
-	static bool check_spare_7(int type);		//µ±Ç°ÊÇ·ñÓĞ¿ÕÏĞµÄ 7 ºÅ¹¤×÷Ì¨
+	static bool full_6(int desk_num, int goods); //å½“å‰ç‰©å“é€åˆ°åï¼Œåˆ¤æ–­ 4-6 å·å·¥ä½œå°æ˜¯ä¸æ˜¯å·²ç»æ»¡äº†
+	static bool full_7(int dest, int goods);	 //å½“å‰ç‰©å“é€åˆ°åï¼Œåˆ¤æ–­ 7 å·å·¥ä½œå°æ˜¯ä¸æ˜¯å·²ç»æ»¡äº†
+	static bool check_spare_7(int type);		//å½“å‰æ˜¯å¦æœ‰ç©ºé—²çš„ 7 å·å·¥ä½œå°
 }
 
 namespace command_n
 {
 	static bool init_dc;
-	static int destination[5];                 // Ğ¡³µÔÚµ±Ç°Ê±¼äµÄÄ¿µÄµØ
-	static queue <int > total_destination[5];  // Ğ¡³µ¾­¹ıÉÏ´Î¾ö²ßºó²úÉúµÄÄ¿µÄµØ×é
-	static int buy[5];                         // 1 Îª buy,0 Îª sel
-	static queue <int > total_buy[5];          // Ğ¡³µ¾­¹ıÉÏ´Î¾ö²ßºó²úÉúµÄ buy ×é
-	static int check[5];						// Ğ¡³µµ±Ç°ÊÇ·ñ check Ò»ÏÂÊÇ·ñÓĞÉÌÆ·
-	static queue <int > total_check[5];		// Ğ¡³µ×ÜµÄ check ×é
+	static int destination[5];                 // å°è½¦åœ¨å½“å‰æ—¶é—´çš„ç›®çš„åœ°
+	static queue <int > total_destination[5];  // å°è½¦ç»è¿‡ä¸Šæ¬¡å†³ç­–åäº§ç”Ÿçš„ç›®çš„åœ°ç»„
+	static int buy[5];                         // 1 ä¸º buy,0 ä¸º sel
+	static queue <int > total_buy[5];          // å°è½¦ç»è¿‡ä¸Šæ¬¡å†³ç­–åäº§ç”Ÿçš„ buy ç»„
+	static int check[5];						// å°è½¦å½“å‰æ˜¯å¦ check ä¸€ä¸‹æ˜¯å¦æœ‰å•†å“
+	static queue <int > total_check[5];		// å°è½¦æ€»çš„ check ç»„
 
-	// Sel ÊÇÈÃĞ¡³µÈ¥Âô¶«Î÷£¬Buy ÊÇÂò
+	// Sel æ˜¯è®©å°è½¦å»å–ä¸œè¥¿ï¼ŒBuy æ˜¯ä¹°
 	static void Sel(int car_num, int desk_num, int Check = 0);
 	static void Buy(int car_num, int desk_num, int Check = 0);
 	static void clear_decision(int k);
@@ -111,13 +111,13 @@ namespace command_n
 	static bool md_stop_frame[4] = { 0,0,0,0 };
 }
 
-namespace parameter					//²ÎÊı°ü
+namespace parameter					//å‚æ•°åŒ…
 {
 	static int Stop_frame = 14500;
 	static double Time_Upscale = 1.2;
 	static double Earning_Upscale = 1.2;
 	static double End_frame = 14950;
-	static double fun1_desk_exist_num_downscale = 1;//1 - Î´¼õÈ¨   0 - ËùÓĞ¹¤×÷Ì¨ÉÏµÄ 4/5/6 ²úÆ·²»¿¼ÂÇ
+	static double fun1_desk_exist_num_downscale = 1;//1 - æœªå‡æƒ   0 - æ‰€æœ‰å·¥ä½œå°ä¸Šçš„ 4/5/6 äº§å“ä¸è€ƒè™‘
 	static double dis_pow_downscale = 5;
 
 	static void adjust_fun();
@@ -129,13 +129,13 @@ namespace parameter					//²ÎÊı°ü
 	static double fun6(int desk_num, int number_of_exists);
 }
 
-using namespace seed_n;				//ÖÖ×Ó°ü
-using namespace map_n;				//µØÍ¼°ü
-using namespace constant_n;			//³£Á¿°ü
-using namespace wait_n;				//µÈ´ı°ü
-using namespace occupied_n;			//Õ¼ÓÃ°ü
-using namespace command_n;			//Ö¸Áî°ü
-using namespace desk_n;				//¹¤×÷°ü	
-using namespace math_n;				//ÊıÑ§°ü
-using namespace car_n;				//Ğ¡³µ°ü
-using namespace assist_n;			//Ğ­Öú°ü
+using namespace seed_n;				//ç§å­åŒ…
+using namespace map_n;				//åœ°å›¾åŒ…
+using namespace constant_n;			//å¸¸é‡åŒ…
+using namespace wait_n;				//ç­‰å¾…åŒ…
+using namespace occupied_n;			//å ç”¨åŒ…
+using namespace command_n;			//æŒ‡ä»¤åŒ…
+using namespace desk_n;				//å·¥ä½œåŒ…	
+using namespace math_n;				//æ•°å­¦åŒ…
+using namespace car_n;				//å°è½¦åŒ…
+using namespace assist_n;			//ååŠ©åŒ…

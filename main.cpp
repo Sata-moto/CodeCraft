@@ -1,4 +1,4 @@
-#include "Global.h"
+ï»¿#include "Global.h"
 #include "car.h"
 #include "desk.h"
 #include <cmath>
@@ -11,16 +11,16 @@
 
 ofstream fdebug;
 
-using namespace seed_n;				//ÖÖ×Ó°ü
-using namespace map_n;				//µØÍ¼°ü
-using namespace constant_n;			//³£Á¿°ü
-using namespace wait_n;				//µÈ´ı°ü
-using namespace occupied_n;			//Õ¼ÓÃ°ü
-using namespace command_n;			//Ö¸Áî°ü
-using namespace desk_n;				//¹¤×÷°ü	
-using namespace math_n;				//ÊıÑ§°ü
-using namespace car_n;				//Ğ¡³µ°ü
-using namespace assist_n;			//Ğ­Öú°ü
+using namespace seed_n;				//ç§å­åŒ…
+using namespace map_n;				//åœ°å›¾åŒ…
+using namespace constant_n;			//å¸¸é‡åŒ…
+using namespace wait_n;				//ç­‰å¾…åŒ…
+using namespace occupied_n;			//å ç”¨åŒ…
+using namespace command_n;			//æŒ‡ä»¤åŒ…
+using namespace desk_n;				//å·¥ä½œåŒ…	
+using namespace math_n;				//æ•°å­¦åŒ…
+using namespace car_n;				//å°è½¦åŒ…
+using namespace assist_n;			//ååŠ©åŒ…
 
 void init()
 {
@@ -75,7 +75,7 @@ int main()
 
 	printf("OK\n");
 	fflush(stdout);
-	//Ô¤´¦Àí
+	//é¢„å¤„ç†
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
@@ -98,17 +98,17 @@ int main()
 				input >>= 1, input_cnt++;
 			}
 			desk[k].output_status = output;
-		} // ³õÊ¼»¯¹¤×÷Ì¨
+		} // åˆå§‹åŒ–å·¥ä½œå°
 		for (register int k = 0; k < 4; k++)
 		{
 			scanf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf",
 				&car[k].workbench, &car[k].goods, &car[k].timerate, &car[k].hitrate,
 				&car[k].w, &car[k].vx, &car[k].vy, &car[k].ang, &car[k].x, &car[k].y);
-		} // ³õÊ¼»¯Ğ¡³µ
+		} // åˆå§‹åŒ–å°è½¦
 
 		char is_OK[10];
 		scanf("%s", is_OK);
-		// ³õÊ¼»¯Íê±Ï
+		// åˆå§‹åŒ–å®Œæ¯•
 
 		if (!init_dc)
 		{
@@ -131,7 +131,7 @@ int main()
 			}
 			init_dc = 1;
 		}
-		//µÚÒ»Ö¡³õÊ¼»¯¾ö²ß
+		//ç¬¬ä¸€å¸§åˆå§‹åŒ–å†³ç­–
 
 		for (int k = 0; k < 4; k++)
 			if (!available_car[k])
