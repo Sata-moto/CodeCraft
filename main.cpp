@@ -14,6 +14,12 @@ void init()
 	son[5][0] = 1, son[5][1] = 3;
 	son[6][0] = 2, son[6][1] = 3;
 
+	char map2[N][N];
+	memcpy(map2, map, sizeof(map));
+	for (int k = 1; k <= 100; k++)
+		for (int i = 1; i <= 100; i++)
+			map[k][i] = map2[100 - i + 1][k];
+
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)
 			seed += (k * 100 + i) * map[k][i], seed %= seed_MOD;

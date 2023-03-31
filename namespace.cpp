@@ -184,7 +184,7 @@ void map_n::init_desk()
 		for (int i = 1; i <= 100; i++)
 			if (map[k][i] >= '0' && map[k][i] <= '9')
 			{
-				desk_n::desk[temp_cnt].x = i / 2.0 - 0.25, desk_n::desk[temp_cnt].y = 50 - k / 2.0 + 0.25;
+				desk_n::desk[temp_cnt].x = math_n::etoz(k, i).first, desk_n::desk[temp_cnt].y = math_n::etoz(k, i).second;
 				int flag[12] = { 0,0,0,0,0,0,0,0,0,0,0,0 };
 				if (map[k - 1][i] == '#') flag[0] = 1;					//上
 				if (map[k][i - 1] == '#') flag[1] = 1;					//左
@@ -274,19 +274,19 @@ int math_n::otoe(double x)
 
 pair <int, int > math_n::dtoe(int desk_num)
 {
-	return make_pair(101 - math_n::otoe(desk_n::desk[desk_num].y), math_n::otoe(desk_n::desk[desk_num].x));
+	return make_pair(math_n::otoe(desk_n::desk[desk_num].x), math_n::otoe(desk_n::desk[desk_num].y));
 }
 pair <int, int > math_n::ctoe(int car_num)
 {
-	return make_pair(101 - math_n::otoe(car[car_num].y), math_n::otoe(car[car_num].x));
+	return make_pair(math_n::otoe(car[car_num].x), math_n::otoe(car[car_num].y));
 }
 pair <int, int > math_n::ztoe(double x, double y)
 {
-	return make_pair(101 - math_n::otoe(y), math_n::otoe(x));
+	return make_pair( math_n::otoe(x), math_n::otoe(y));
 }
 pair <double, double > math_n::etoz(int x, int y)
 {
-	return make_pair(y / 2.0 - 0.25, 50 - x / 2.0 + 0.25);
+	return make_pair(x / 2.0 - 0.25, y / 2.0 - 0.25);
 }
 
 
