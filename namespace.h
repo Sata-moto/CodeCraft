@@ -14,11 +14,11 @@ namespace map_n
 	static int num_desk_7;
 	static int num_desk_9;
 	static char map[N][N];							// 地图
-	static double dis[2][52][N][N];					
+	static double dis[2][52][N][N];
 	static bool can_not_move[2][8][N][N];			// 0↑ 1↗ 2→ 3↘ 4↓ 5↙ 6← 7↖
 
-	static bool is_MAX(int type,int desk_num,int x,int y);
-	static void dij(int desk_num,int type);
+	static bool is_MAX(int type, int desk_num, int x, int y);
+	static void dij(int desk_num, int type);
 	static void get_dis(int type);
 	static void init_wall();
 	static void init_desk();
@@ -62,6 +62,7 @@ namespace math_n
 	static int otoe(double x);									// 坐标到格子标号的映射（只约分，不区分横纵）
 	static pair <int, int > dtoe(int desk_num);					// 工作台标号到格子标号的映射
 	static pair <int, int > ctoe(int car_num);					// 小车标号到格子标号的映射
+	static pair <int, int > ztoe(int x, int y);					// 实坐标到格子标号的映射
 	static double dddis1(int desk1, int desk2);					// 某个工作台到另一个工作台，没有拿东西的距离
 	static double cddis1(int car1, int desk1);					// 某个小车到某个工作台，没有拿东西的距离
 	static double dddis2(int desk1, int desk2);					// 某个工作台到另一个工作台，拿东西的距离

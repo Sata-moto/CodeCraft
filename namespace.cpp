@@ -222,11 +222,15 @@ int math_n::otoe(double x)
 
 pair <int, int > math_n::dtoe(int desk_num)
 {
-	return  make_pair(101 - math_n::otoe(desk_n::desk[desk_num].y), math_n::otoe(desk_n::desk[desk_num].x));
+	return make_pair(101 - math_n::otoe(desk_n::desk[desk_num].y), math_n::otoe(desk_n::desk[desk_num].x));
 }
 pair <int, int > math_n::ctoe(int car_num)
 {
-	return  make_pair(101 - math_n::otoe(car[car_num].y), math_n::otoe(car[car_num].x));
+	return make_pair(101 - math_n::otoe(car[car_num].y), math_n::otoe(car[car_num].x));
+}
+pair <int, int > math_n::ztoe(int x, int y)
+{
+	return make_pair(101 - math_n::otoe(y), math_n::otoe(x));
 }
 
 double math_n::dddis1(int desk1, int desk2)
