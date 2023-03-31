@@ -62,7 +62,8 @@ namespace math_n
 	static int otoe(double x);									// 坐标到格子标号的映射（只约分，不区分横纵）
 	static pair <int, int > dtoe(int desk_num);					// 工作台标号到格子标号的映射
 	static pair <int, int > ctoe(int car_num);					// 小车标号到格子标号的映射
-	static pair <int, int > ztoe(int x, int y);					// 实坐标到格子标号的映射
+	static pair <int, int > ztoe(double x, double y);			// 实坐标到格子标号的映射
+	static pair <double, double > etoz(int x, int y);			// 格子标号到实坐标的映射
 	static double dddis1(int desk1, int desk2);					// 某个工作台到另一个工作台，没有拿东西的距离
 	static double cddis1(int car1, int desk1);					// 某个小车到某个工作台，没有拿东西的距离
 	static double dddis2(int desk1, int desk2);					// 某个工作台到另一个工作台，拿东西的距离
