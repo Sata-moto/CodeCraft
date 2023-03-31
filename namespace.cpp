@@ -4,13 +4,65 @@
 #include <queue>
 #include <iostream>
 
+int seed_n::seed = 0;
+int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
+int seed_n::seed_MOD = 998244353;
+int map_n::num_desk_7;
+int map_n::num_desk_9;
+char map_n::map[N][N];							// 地图
+double map_n::dis[2][52][N][N];
+bool map_n::can_not_move[2][8][N][N];			// 0↑ 1↗ 2→ 3↘ 4↓ 5↙ 6← 7↖
+int desk_n::cnt_desk;
+Desk desk_n::desk[52];
+bool desk_n::can_not_sell[52];
+vector <int > desk_n::total_desk[10];
+bool car_n::available_car[4] = { 0,0,0,0 };
+double constant_n::Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
+int constant_n::money;
+int constant_n::frame_number;
+int constant_n::son[10][2];
+vector <int > constant_n::father[10];
+bool wait_n::is_waiting_for_7[10];							//某种物品有小车堵塞在了送到七号的过程种
+bool wait_n::wait[4] = { 0,0,0,0 };							//当前小车送到了最后一个原料，但是当前产品还没有生产出来
+bool wait_n::wait_until_spare_3[4] = { 0,0,0,0 };			//当前小车拿原料 1-3 时，发现 1-3 还没有生产好
+bool wait_n::wait_until_spare_7[4] = { 0,0,0,0 };			//当前小车在第一层决策，准备拿取物品时发现没地方送导致等待
+bool wait_n::wait_until_spare_sell[4] = { 0,0,0,0 };		//当前小车想要卖掉物品，但是没办法卖，导致等待（由优化引起）
+bool wait_n::wait_stop_frame[4] = { 0,0,0,0 };
+int occupied_n::occupied[52][10];					// 工作台是否被占用
+int occupied_n::sol_occupied[52][10];				//
+int occupied_n::occupied_goods[10];					// 场上某种物品的数量
+int occupied_n::occupied_stop_frame[52][10];		// stop_frame 后的 occupied
+int occupied_n::sol_occupied_stop_frame[52][10];    // stop_frame 后的 sol_occupied
+int occupied_n::ignore_occupied[52][10];			// ignore occupied 从而允许连续的运送
+bool occupied_n::sol_ignore_occupied[52][10];		// 清楚 ignore occupied
+int occupied_n::current_occupied[52][10];
+bool command_n::init_dc;
+int command_n::destination[5];                 // 小车在当前时间的目的地
+queue <int > command_n::total_destination[5];  // 小车经过上次决策后产生的目的地组
+int command_n::buy[5];                         // 1 为 buy,0 为 sel
+queue <int > command_n::total_buy[5];          // 小车经过上次决策后产生的 buy 组
+int command_n::check[5];						// 小车当前是否 check 一下是否有商品
+queue <int > command_n::total_check[5];		// 小车总的 check 组
+bool command_n::md[4] = { 0,0,0,0 };
+bool command_n::md_7[4] = { 0,0,0,0 };
+bool command_n::md_9[4] = { 0,0,0,0 };
+bool command_n::md_stop_frame[4] = { 0,0,0,0 };
+int parameter::Stop_frame = 14500;
+double parameter::Time_Upscale = 1.2;
+double parameter::Earning_Upscale = 1.2;
+double parameter::End_frame = 14950;
+double parameter::fun1_desk_exist_num_downscale = 1;//1 - 未减权   0 - 所有工作台上的 4/5/6 产品不考虑
+double parameter::dis_pow_downscale = 5;
+
 void desk_n::init_desk()
 {
 	for (int k = 1; k <= 9; k++)
 		total_desk[k].clear();
 	for (int k = 0; k < cnt_desk; k++)
+	{
 		if (!can_not_sell[k] || desk[k].type <= 3)
 			total_desk[desk[k].type].push_back(k);
+	}
 }
 
 #define MAXN 1000000000.0
@@ -153,7 +205,7 @@ void map_n::init_desk()
 				for (int j = 1; j <= 4; j++)
 					if (flag[j] && flag[(j + 1) % 4])
 						desk_n::can_not_sell[temp_cnt] = 1;
-
+				printf("%d\n", can_not_sell[temp_cnt]);
 				temp_cnt++;
 			}
 	desk_n::cnt_desk = temp_cnt;
@@ -164,10 +216,10 @@ void map_n::init_desk()
 #define dis_z 0.5
 #define dis_x 0.7071
 
-static bool solved[N][N];
 const int Forward[8][2] = { -1,0,-1,1,0,1,1,1,1,0,1,-1,0,-1,-1,-1 };
 void map_n::dij(int desk_num, int type)
 {
+	bool solved[N][N];
 	priority_queue <pair < double, pii >, vector<pair < double, pii >>, greater<pair < double, pii >>> q;
 	memset(solved, 0, sizeof(solved));
 	q.push(mp(0, math_n::dtoe(desk_num)));

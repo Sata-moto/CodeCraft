@@ -4,23 +4,9 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <fstream>
 #include "namespace.h"
-#include "namespace.cpp"
 #include "decision.h"
-
-ofstream fdebug;
-
-using namespace seed_n;				//种子包
-using namespace map_n;				//地图包
-using namespace constant_n;			//常量包
-using namespace wait_n;				//等待包
-using namespace occupied_n;			//占用包
-using namespace command_n;			//指令包
-using namespace desk_n;				//工作包	
-using namespace math_n;				//数学包
-using namespace car_n;				//小车包
-using namespace assist_n;			//协助包
+#include "iomanip"
 
 void init()
 {
@@ -46,18 +32,6 @@ void init()
 	parameter::adjust_fun();
 }
 
-void DEBUG()
-{
-	fdebug << "time = " << frame_number << endl;
-	for (int k = 0; k < cnt_desk; k++)
-	{
-		for (int i = 0; i <= 7; i++)
-			fdebug << occupied[k][i] << ' ';
-		fdebug << endl;
-	}
-	fdebug << endl << endl;
-}
-
 int main()
 {
 	//fdebug.open("data.txt");
@@ -72,6 +46,7 @@ int main()
 				num_desk_9++;
 
 	init();
+	//DEBUG();
 
 	printf("OK\n");
 	fflush(stdout);
@@ -79,9 +54,6 @@ int main()
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
-		//if (frame_number % 100 == 0)
-		//	DEBUG();
-
 		reload_occupied();
 		printf("%d\n", frame_number);
 		scanf("%d", &cnt_desk);
