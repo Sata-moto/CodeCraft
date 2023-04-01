@@ -145,7 +145,7 @@ void map_n::init_wall()
 				if (i + 3 <= 101 && map[k][i + 3] == '#')
 					map[k][i + 1] = '#', map[k][i + 2] = '#';
 
-				// 高日升权不能走
+				// 长日升权不能走
 				for (int j = 0; j < 4; j++)
 				{
 					int to_x = k + big_sun_shape[j][0];
@@ -158,20 +158,24 @@ void map_n::init_wall()
 						= can_not_move[1][6][k + 1][i + 1] = can_not_move[1][2][k + 1][i]
 						= can_not_move[1][1][k + 1][i] = can_not_move[1][1][k + 2][i]
 						= can_not_move[1][6][k + 2][i + 1] = can_not_move[1][5][k + 2][i + 1]
+						= can_not_move[1][3][k + 1][i] = can_not_move[1][7][k + 2][i + 1]
 						= can_not_move[1][2][k + 2][i] = can_not_move[1][1][k + 3][i] = 1;
 					if (j == 1) can_not_move[1][3][k][i] = can_not_move[1][3][k + 1][i]
 						= can_not_move[1][2][k + 1][i] = can_not_move[1][6][k + 1][i - 1]
 						= can_not_move[1][6][k + 2][i] = can_not_move[1][7][k + 3][i]
 						= can_not_move[1][2][k + 2][i - 1] = can_not_move[1][3][k + 2][i - 1]
+						= can_not_move[1][5][k + 1][i] = can_not_move[1][1][k + 2][i - 1]
 						= can_not_move[1][7][k + 1][i - 1] = can_not_move[1][7][k + 2][i - 1] = 1;
 					if (j == 2) can_not_move[1][4][k][i + 1] = can_not_move[1][5][k][i + 1]
 						= can_not_move[1][5][k][i + 2] = can_not_move[1][1][k + 1][i]
 						= can_not_move[1][4][k][i + 2] = can_not_move[1][5][k][i + 3]
+						= can_not_move[1][3][k][i + 1] = can_not_move[1][7][k + 1][i + 2]
 						= can_not_move[1][0][k + 1][i + 2] = can_not_move[1][1][k + 1][i + 2]
 						= can_not_move[1][1][k + 1][i + 1] = can_not_move[1][0][k + 1][i + 1] = 1;
 					if (j == 3) can_not_move[1][3][k][i] = can_not_move[1][3][k][i - 1]
 						= can_not_move[1][4][k][i - 1] = can_not_move[1][0][k + 1][i - 1]
 						= can_not_move[1][4][k][i - 2] = can_not_move[1][3][k][i - 3]
+						= can_not_move[1][5][k][i - 1] = can_not_move[1][1][k + 1][i - 2]
 						= can_not_move[1][0][k + 1][i - 2] = can_not_move[1][7][k + 1][i - 2]
 						= can_not_move[1][7][k + 1][i - 1] = can_not_move[1][7][k + 1][i - 2] = 1;
 				}
@@ -283,7 +287,7 @@ pair <int, int > math_n::ctoe(int car_num)
 }
 pair <int, int > math_n::ztoe(double x, double y)
 {
-	return make_pair( math_n::otoe(x), math_n::otoe(y));
+	return make_pair(math_n::otoe(x), math_n::otoe(y));
 }
 pair <double, double > math_n::etoz(int x, int y)
 {
