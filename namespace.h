@@ -26,6 +26,7 @@ namespace map_n
 
 namespace desk_n
 {
+	extern int desk_num[N][N];
 	extern int cnt_desk;
 	extern Desk desk[52];
 	extern bool can_not_sell[52];

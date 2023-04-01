@@ -15,6 +15,7 @@ bool map_n::can_not_move[2][8][N][N];			// 0↑ 1↗ 2→ 3↘ 4↓ 5↙ 6← 7�
 int desk_n::cnt_desk;
 Desk desk_n::desk[52];
 bool desk_n::can_not_sell[52];
+int desk_n::desk_num[N][N];
 vector <int > desk_n::total_desk[10];
 bool car_n::available_car[4] = { 0,0,0,0 };
 double constant_n::Earning[10] = { 0,3000,3200,3400,7100,7800,8300,29000 };
@@ -179,11 +180,13 @@ void map_n::init_wall()
 
 void map_n::init_desk()
 {
-	int temp_cnt = 0;
+	int cnt = 0;
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)
 			if (map[k][i] >= '0' && map[k][i] <= '9')
 			{
+				int temp_cnt = desk_num[k][i];
+				cnt++;
 				desk_n::desk[temp_cnt].x = math_n::etoz(k, i).first, desk_n::desk[temp_cnt].y = math_n::etoz(k, i).second;
 				int flag[12] = { 0,0,0,0,0,0,0,0,0,0,0,0 };
 				if (map[k - 1][i] == '#') flag[0] = 1;					//上
@@ -205,10 +208,8 @@ void map_n::init_desk()
 				for (int j = 1; j <= 4; j++)
 					if (flag[j] && flag[(j + 1) % 4])
 						desk_n::can_not_sell[temp_cnt] = 1;
-				printf("%d\n", can_not_sell[temp_cnt]);
-				temp_cnt++;
 			}
-	desk_n::cnt_desk = temp_cnt;
+	desk_n::cnt_desk = cnt;
 }
 
 #define mp make_pair
