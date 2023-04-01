@@ -3,6 +3,9 @@
 #include "Global.h"
 #include "namespace.h"
 
+
+#define MAXN 1000000000.0
+
 void make_decision(int car_num)
 {
 	double max_earning = 0;
@@ -56,6 +59,7 @@ void make_decision(int car_num)
 			//计算最小距离
 
 			if (son_Desk == -1) continue;
+			if (min_distance > MAXN) continue;
 
 			double exist_count = occupied_goods[k];
 			for (int j = 0; j < (int)total_desk[7].size(); j++)
@@ -108,6 +112,7 @@ void make_decision_to_7(int car_num, int goods)
 			int now = total_desk[k][i];
 			double weight = 0;
 
+			if (cddis2(car_num, now) - MAXN > -1) continue;
 			weight = Earning[goods] / pow(cddis2(car_num, now), 1 / parameter::dis_pow_downscale) * parameter::fun4(frame_number, cddis2(car_num, now), k == 7 ? 1 : 0, desk[now].output_status)
 				* parameter::fun5(k == 7 ? 1 : 0, !desk[now].input_status[goods], desk[now].output_status, 500 - desk[now].remain_time, now, goods)
 				* parameter::fun6(now, desk[now].input_status[4] + desk[now].input_status[5] + desk[now].input_status[6]);
@@ -342,7 +347,8 @@ void make_decision_stop_frame(int car_num)
 						continue;
 
 					double dis = cddis1(car_num, now) + dddis2(now, to);
-					if (dis / 6 * parameter::Time_Upscale * 50 + frame_number > parameter::End_frame)
+					if (dis > MAXN) continue;
+ 					if (dis / 6 * parameter::Time_Upscale * 50 + frame_number > parameter::End_frame)
 						continue;
 					double weight = pow(Earning[k], parameter::Earning_Upscale) / dis;
 					if (weight > max_weight)
@@ -464,6 +470,7 @@ void make_decision_without_7(int car_num)
 				exist_count += desk[total_desk[7][j]].input_status[k];
 			for (int j = 0; j < (int)total_desk[k].size(); j++)
 				exist_count -= desk[total_desk[k][j]].output_status * (1 - parameter::fun1_desk_exist_num_downscale);
+			if (min_distance > MAXN) continue;
 
 			weight = (Earning[k] + Earning[son[k][0]] + Earning[son[k][1]]) / min_distance
 				* parameter::fun1(exist_count) * parameter::fun2(desk[now].output_status, 500 - desk[now].remain_time, 0);
@@ -637,3 +644,5 @@ void decision_before_stop_frame_without_7(int k)
 	printf("rotate %d %lf\n", k, temp.second);
 	//每个小车朝当前的目的地前进
 }
+
+#undef MAXN

@@ -73,6 +73,7 @@ bool map_n::is_MAX(int type, int desk_num, int x, int y)
 		return true;
 	return false;
 }
+#undef MAXN
 
 const int sun_shape[4][2] = { 2,1,2,-1,1,2,1,-2 };
 const int big_sun_shape[4][2] = { 3,1,3,-1,1,3,1,-3 };
