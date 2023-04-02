@@ -1,4 +1,4 @@
-﻿#include "Global.h"
+#include "Global.h"
 #include "car.h"
 #include "desk.h"
 #include <cmath>
@@ -51,7 +51,7 @@ void init()
 int main()
 {
 	//fdebug.open("data.txt");
-
+	//output.open("test.txt", ios::out);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	for (int k = 1; k <= 100; k++)
@@ -135,6 +135,6 @@ int main()
 	}
 
 	//fdebug.close();
-
+	//output.close();
 	return 0;
 }
