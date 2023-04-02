@@ -1,6 +1,7 @@
-﻿#pragma once
+#pragma once
 #include "Global.h"
 #include "desk.h"
+//extern ofstream output;
 
 namespace seed_n
 {
