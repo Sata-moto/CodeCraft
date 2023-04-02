@@ -122,6 +122,7 @@ int main()
 		//第一帧初始化决策
 
 		for (int k = 0; k < 4; k++)
+		{
 			if (!available_car[k])
 				if (num_desk_7)
 					decision_before_stop_frame(k);
@@ -129,6 +130,18 @@ int main()
 					decision_before_stop_frame_without_7(k);
 			else
 				decision_after_stop_frame(k);
+		}
+
+		calc();
+
+		for (int k = 0; k < 4; k++)
+		{
+			pair<double, double> temp;
+			temp = car[k].mov(destination[k]);
+			printf("forward %d %lf\n", k, temp.first);
+			printf("rotate %d %lf\n", k, temp.second);
+			//每个小车朝当前的目的地前进
+		}
 
 		printf("OK\n");
 		fflush(stdout);

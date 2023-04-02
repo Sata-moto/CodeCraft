@@ -315,12 +315,6 @@ void decision_before_stop_frame(int k)
 			total_check[k].pop();
 		}
 	}
-
-	pair<double, double> temp;
-	temp = car[k].mov(destination[k]);
-	printf("forward %d %lf\n", k, temp.first);
-	printf("rotate %d %lf\n", k, temp.second);
-	//每个小车朝当前的目的地前进
 }
 
 void make_decision_stop_frame(int car_num)
@@ -420,12 +414,6 @@ void decision_after_stop_frame(int k)
 			total_check[k].pop();
 		}
 	}
-
-	pair<double, double> temp;
-	temp = car[k].mov(destination[k]);
-	printf("forward %d %lf\n", k, temp.first);
-	printf("rotate %d %lf\n", k, temp.second);
-	//每个小车朝当前的目的地前进
 }
 
 void make_decision_without_7(int car_num)
@@ -636,12 +624,6 @@ void decision_before_stop_frame_without_7(int k)
 			total_check[k].pop();
 		}
 	}
-
-	pair<double, double> temp;
-	temp = car[k].mov(destination[k]);
-	printf("forward %d %lf\n", k, temp.first);
-	printf("rotate %d %lf\n", k, temp.second);
-	//每个小车朝当前的目的地前进
 }
 
 #undef MAXN
