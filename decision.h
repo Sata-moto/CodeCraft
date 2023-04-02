@@ -3,7 +3,6 @@
 #include "Global.h"
 #include "namespace.h"
 
-
 #define MAXN 1000000000.0
 
 void make_decision(int car_num)

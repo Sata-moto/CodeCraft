@@ -141,9 +141,27 @@ void map_n::init_wall()
 			{
 				// 真四空二也直连
 				if (k + 3 <= 101 && map[k + 3][i] == '#')
-					map[k + 1][i] = '#', map[k + 2][i] = '#';
+				{
+					desk_n::can_not_sell[desk_num[k + 1][i]] = 1;
+					desk_n::can_not_sell[desk_num[k + 2][i]] = 1;
+					can_not_move[1][3][k][i - 1] = can_not_move[1][5][k][i + 1]
+						= can_not_move[1][3][k + 1][i - 1] = can_not_move[1][5][k + 1][i + 1]
+						= can_not_move[1][2][k + 1][i - 1] = can_not_move[1][6][k + 1][i + 1]
+						= can_not_move[1][2][k + 2][i - 1] = can_not_move[1][6][k + 2][i + 1]
+						= can_not_move[1][1][k + 2][i - 1] = can_not_move[1][7][k + 2][i + 1]
+						= can_not_move[1][1][k + 3][i - 1] = can_not_move[1][7][k + 3][i + 1] = 1;
+				}
 				if (i + 3 <= 101 && map[k][i + 3] == '#')
-					map[k][i + 1] = '#', map[k][i + 2] = '#';
+				{
+					desk_n::can_not_sell[desk_num[k][i + 1]] = 1;
+					desk_n::can_not_sell[desk_num[k][i + 2]] = 1;
+					can_not_move[1][3][k - 1][i] = can_not_move[1][1][k + 1][i]
+						= can_not_move[1][3][k - 1][i + 1] = can_not_move[1][1][k + 1][i + 1]
+						= can_not_move[1][4][k - 1][i + 1] = can_not_move[1][0][k + 1][i + 1]
+						= can_not_move[1][4][k - 1][i + 2] = can_not_move[1][0][k + 1][i + 2]
+						= can_not_move[1][5][k - 1][i + 2] = can_not_move[1][7][k + 1][i + 2]
+						= can_not_move[1][5][k - 1][i + 3] = can_not_move[1][7][k + 1][i + 3] = 1;
+				}
 
 				// 长日升权不能走
 				for (int j = 0; j < 4; j++)
@@ -164,7 +182,7 @@ void map_n::init_wall()
 						= can_not_move[1][2][k + 1][i - 1] = can_not_move[1][6][k + 1][i]
 						= can_not_move[1][7][k + 1][i] = can_not_move[1][7][k + 2][i]
 						= can_not_move[1][2][k + 2][i - 1] = can_not_move[1][6][k + 2][i]
-						= can_not_move[1][7][k + 3][i] = can_not_move[1][3][k + 2][i - 1] 
+						= can_not_move[1][7][k + 3][i] = can_not_move[1][3][k + 2][i - 1]
 						= can_not_move[1][1][k + 2][i - 1] = can_not_move[1][5][k + 1][i] = 1;
 					if (j == 2) can_not_move[1][4][k][i + 1] = can_not_move[1][5][k][i + 1]
 						= can_not_move[1][5][k][i + 2] = can_not_move[1][1][k + 1][i]
@@ -175,8 +193,8 @@ void map_n::init_wall()
 					if (j == 3) can_not_move[1][3][k][i - 2] = can_not_move[1][3][k][i - 1]
 						= can_not_move[1][4][k][i - 1] = can_not_move[1][0][k + 1][i - 1]
 						= can_not_move[1][7][k + 1][i - 1] = can_not_move[1][7][k + 1][i]
-						= can_not_move[1][3][k][i - 3] = can_not_move[1][4][k][i - 2] 
-						= can_not_move[1][0][k + 1][i - 2]= can_not_move[1][7][k + 1][i - 2] 
+						= can_not_move[1][3][k][i - 3] = can_not_move[1][4][k][i - 2]
+						= can_not_move[1][0][k + 1][i - 2] = can_not_move[1][7][k + 1][i - 2]
 						= can_not_move[1][5][k][i - 1] = can_not_move[1][1][k + 1][i - 2] = 1;
 				}
 			}
