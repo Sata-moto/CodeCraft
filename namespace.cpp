@@ -1,9 +1,10 @@
-﻿#include "namespace.h"
+#include "namespace.h"
 #include "car.h"
 #include "desk.h"
 #include <queue>
 #include <iostream>
 
+//ofstream output;
 int seed_n::seed = 0;
 int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
 int seed_n::seed_MOD = 998244353;
@@ -286,6 +287,23 @@ void map_n::get_dis(int type)
 
 	for (int k = 0; k < desk_n::cnt_desk; k++)
 		dij(k, type);
+
+	/*
+	output.precision(3);
+	output.flags(ios::fixed);
+	output.fill('0');
+	for (int i = 1; i <= 100; i++) {
+		for (int j = 1; j <= 100; j++) {
+			output.width(7);
+			if (dis[type][0][i][j] == 1000000000)
+				output << 999.999 << "  ";
+			else output << dis[type][0][i][j] << "  ";
+		}
+		output << endl;
+	}
+	output << endl;
+	*/
+
 }
 
 #undef MAXN
