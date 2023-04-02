@@ -11,6 +11,7 @@ Car car[5];
 static int dx[4] = { -1,0,1,0 }, dy[4] = { 0,1,0,-1 };
 static int vis[N][N], t;
 static bool obfind;
+pair<double, double>des[4];
 
 
 
@@ -539,7 +540,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {//考虑可�
 		nowang += Delt;
 	}
 
-	/*
+	
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			output << i << "-------------------" << endl;
@@ -561,7 +562,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {//考虑可�
 			output << endl;
 		}
 	}
-	*/
+	
 
 	if (mode == 0)	return mov(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
 	else return make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
@@ -582,7 +583,6 @@ pair<double, double> Car::mov(int desk_num)
 			numID = i; break;
 		}
 	//步骤一：判断当前小车是否需要进入动态回避模式
-	pair<double, double>myto = Static_Avoidance(desk_num, 1);
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
 		if (!ObCheck(x, y, car[i].x, car[i].y, 0, 0))continue;
@@ -607,23 +607,23 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
-		if (Dot(myto, car[i].Static_Avoidance(destination[i], 1)) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange) {//0还是0.15
+		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange) {//0还是0.15
 			if (ChooseAvoider(i))continue;
 			bool Check1 = !Search(x, y, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04), Check2 = !Search(car[i].x, car[i].y, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04);
 			if (Check1 && Check2 && d >= GetR(goods) + GetR(car[i].goods))continue;
 			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 1)continue;//注意这里+1的参数调整
 			if (Check1) {
 				if (Check1 && Check2)continue;
-				else return make_pair(0, 0);
+				else return make_pair(0, 0);//(23012830)
 			}
 			else return Dynamic_Avoidance(i);
 		}
 	}
 	//步骤二：判断连接当前小车与目标工作台的线段是否经过障碍物
 	if (!ObCheck(x, y, desk[desk_num].x, desk[desk_num].y, GetR(goods) + epss, 0))
-		return Static_Avoidance(desk_num, 0);
+		return mov(des[numID].first, des[numID].second);
 
-	/*
+	
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			output << i << "-------------------" << endl;
@@ -640,7 +640,13 @@ pair<double, double> Car::mov(int desk_num)
 			output << endl;
 		}
 	}
-	*/
+	
 
 	return mov(desk[desk_num].x, desk[desk_num].y);
+}
+void calc() {
+	des[0] = car[0].Static_Avoidance(destination[0], 1);
+	des[1] = car[1].Static_Avoidance(destination[1], 1);
+	des[2] = car[2].Static_Avoidance(destination[2], 1);
+	des[3] = car[3].Static_Avoidance(destination[3], 1);
 }

@@ -53,3 +53,5 @@ struct Car
 	pair<double, double> mov(int);                             // 将小车向目标点移动（目标点编号形式，加入障碍物避障）
 };
 extern Car car[5];
+
+extern void calc();

@@ -4,7 +4,7 @@
 #include <queue>
 #include <iostream>
 
-//ofstream output;
+ofstream output;
 int seed_n::seed = 0;
 int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
 int seed_n::seed_MOD = 998244353;
@@ -288,7 +288,7 @@ void map_n::get_dis(int type)
 	for (int k = 0; k < desk_n::cnt_desk; k++)
 		dij(k, type);
 
-	/*
+	
 	output.precision(3);
 	output.flags(ios::fixed);
 	output.fill('0');
@@ -302,7 +302,7 @@ void map_n::get_dis(int type)
 		output << endl;
 	}
 	output << endl;
-	*/
+	
 
 }
 
