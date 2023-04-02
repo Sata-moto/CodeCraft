@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Global.h"
 #include "namespace.h"
@@ -347,7 +347,7 @@ void make_decision_stop_frame(int car_num)
 
 					double dis = cddis1(car_num, now) + dddis2(now, to);
 					if (dis > MAXN) continue;
- 					if (dis / 6 * parameter::Time_Upscale * 50 + frame_number > parameter::End_frame)
+					if (dis / 6 * parameter::Time_Upscale * 50 + frame_number > parameter::End_frame)
 						continue;
 					double weight = pow(Earning[k], parameter::Earning_Upscale) / dis;
 					if (weight > max_weight)
