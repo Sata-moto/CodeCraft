@@ -614,7 +614,7 @@ pair<double, double> Car::mov(int desk_num)
 			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 1)continue;//注意这里+1的参数调整
 			if (Check1) {
 				if (Check1 && Check2)continue;
-				else return make_pair(0, 0);//(23012830)
+				//else return make_pair(0, 0);//(23012830)
 			}
 			else return Dynamic_Avoidance(i);
 		}
