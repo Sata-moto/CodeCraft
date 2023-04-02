@@ -460,7 +460,7 @@ void Car::MarginCheck(double& forwar) {
 			else r = mid;
 		}
 	}
-	forwar = resv;
+	forwar = min(forwar, resv);
 }
 pair<double, double> Car::mov(double nx, double ny) {
 	//计算当前朝向与目标点的偏向角
@@ -513,7 +513,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {//考虑可�
 
 
 
-	double nowang = -Pi, Delt = Pi / 9, l, r, mid, res, ansang = -1, ansdis = -1, maxdisperreal = -1e9, disperreal;
+	double nowang = -Pi, Delt = Pi / 12, l, r, mid, res, ansang = -1, ansdis = -1, maxdisperreal = -1e9, disperreal;
 	//这边还有优化空间：先大致确定距离下降方向再划分※※※
 	double realtx, realty;
 	while (Pi > nowang) {
@@ -607,7 +607,7 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
-		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange) {//0还是0.15
+		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange) {
 			if (ChooseAvoider(i))continue;
 			bool Check1 = !Search(x, y, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04), Check2 = !Search(car[i].x, car[i].y, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04);
 			if (Check1 && Check2 && d >= GetR(goods) + GetR(car[i].goods))continue;
