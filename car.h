@@ -1,27 +1,55 @@
 #pragma once
 
+
+//几何/数学
+pair<double, double> getVec(double);                                                                      // 得到指向对应角度的单位向量
+double Sign(double);                                                                                      // 提取输入参数的符号
+double Dot(double, double, double, double);                                                               // 点积（点对形式）
+double Dot(pair<double, double>, pair<double, double>);                                                   // 点积（向量形式）
+double Cross(double, double, double, double);                                                             // 叉积（点对形式）
+double Cross(pair<double, double>, pair<double, double>);                                                 // 叉积（向量形式）
+pair<double, double> Rotate(pair<double, double>, double);                                                // 旋转向量
+pair<double, double> multi(pair<double, double>, double);                                                 // 向量乘标量
+pair<double, double> Add(pair<double, double>, pair<double, double>);                                     // 向量加向量
+pair<double, double> Sub(pair<double, double>, pair<double, double>);                                     // 向量减向量
+double Dist(double, double, double, double);                                                              // 计算两个点之间的距离（double点对形式）
+double Dist(pair<double, double>, pair<double, double>);                                                  // 计算两个点之间的距离（pair形式）
+double PointToLine(pair<double, double>, pair<double, double>, pair<double, double>);                     // 计算点到直线距离
+double PointToSegment(pair<double, double>, pair<double, double>, pair<double, double>);                  // 计算点到线段距离
+bool SegmentCross(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);// 线段求交
+void AdjuAng(double&);                                                                                    // 调整角度范围使其落在-Pi到Pi之间
+double CombineV(double, double);                                                                          // 计算合速度（点对形式，非负）
+double CombineV(pair<double, double>);                                                                    // 计算合速度（向量形式，非负）
+void UnitV(pair<double, double>&);                                                                        // 单位化向量
+void DFS(pair<int, int>, pair<double, double>, double);                                                   // 搜索一定范围的格子并判断是否是障碍物
+bool Search(double, double, double);                                                                      // 判断一定范围内是否有障碍物（半径不宜过大）
+
 struct Car
 {
-	int workbench, goods;                             // 所处工作台编号，携带物品编号
-	double timerate, hitrate;                         // 时间价值系数，碰撞价值系数
-	double vx, vy, w;                                 // 二维线速度向量，角速度
-	double ang, x, y;                                 // 朝向角度，坐标
-	bool AgainstWall;                                 // 判断小车是否在回避撞墙
-	pair<double, double> getVec(double);              // 得到指向对应角度的单位向量
-	double Sign(double);                              // 提取输入参数的符号
-	double Dot(double, double, double, double);       // 点积
-	double Cross(double, double, double, double);     // 叉积
-	double Dist(double, double, double, double);      // 计算两个点之间的距离
-	void AdjuAng(double&);                            // 调整角度范围使其落在-Pi到Pi之间
-	double GetR(int);                                 // 根据是否持有物品返回当前半径
-	double CombineV(double, double);                  // 计算合速度（非负）
-	double CombineV(pair<double, double>);            // 计算合速度
-	double CalcAng(double, double);                   // 计算当前朝向与目标点的偏向角
-	double CalcRotate(double, double, double);        // 根据偏向角计算角速度
-	double CalcForward(double, double, double);       // 根据偏向角计算前进速度
-	void CarCrashCheck(double&, double&);             // 小车碰撞判断并修改速度与角速度
-	void MarginCheck(double&);                        // 边界碰撞判断并修改前进速度 
-	pair<double, double> mov(double, double);         // 将小车向目标点移动
-	pair<double, double> mov(int);         // 将小车向目标点移动
+	int workbench, goods;                                      // 所处工作台编号，携带物品编号
+	double timerate, hitrate;                                  // 时间价值系数，碰撞价值系数
+	double vx, vy, w;                                          // 二维线速度向量，角速度
+	double ang, x, y;                                          // 朝向角度，坐标
+
+	//小车
+	int Carry(int);                                            // 判断当前小车是否持有物品
+	double GetR(int);                                          // 根据是否持有物品返回当前半径
+	double CalcAng(double, double);                            // 计算当前朝向与目标点的偏向角
+	double CalcRotate(double, double, double);                 // 根据偏向角计算角速度
+	double CalcForward(double, double, double);                // 根据偏向角计算前进速度
+	bool ObCheck(double, double, double, double, double, bool);// 碰撞检测（包含最小容忍宽度）
+
+	//避障
+	void MarginCheck(double&);                                 // 地图边界避障
+	void CarCrashCheck(double&, double&);                      // 仅小车避障
+
+	bool ChooseAvoider(int);                                   // 判断当前情况下是否应该由另一小车避让
+	bool judge(int, double, double);                           // 二分需要用到的判断函数
+	pair<double, double> Static_Avoidance(int, int);           // 静态避障（仅考虑障碍物避障）
+	pair<double, double> Dynamic_Avoidance(int);               // 动态避障（小车+障碍物避障）
+
+	//移动决策输出
+	pair<double, double> mov(double, double);                  // 将小车向目标点移动（坐标形式，仅有小车避障）
+	pair<double, double> mov(int);                             // 将小车向目标点移动（目标点编号形式，加入障碍物避障）
 };
 extern Car car[5];
