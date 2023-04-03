@@ -289,6 +289,7 @@ void map_n::get_dis(int type)
 		dij(k, type);
 
 	
+	
 	output.precision(3);
 	output.flags(ios::fixed);
 	output.fill('0');
