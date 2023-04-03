@@ -166,9 +166,9 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 double Car::CalcForward(double nx, double ny, double DeltaAng) {
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
-	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(x, y);
+	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-	//if (fabs(DeltaAng) < Pi / 18 && Cv * Cv * 0.5 / A > Dist(x, y, nx, ny) - 0.3)res = 0;
+	if (fabs(DeltaAng) < Pi / 18 && Cv * Cv * 0.5 / A > Dist(reals.first, reals.second, realt.first, realt.second) - 0.3)res = 0;
 	//到点减速需要修※※※※※（影响准确进入窄道&短距离前进）
 	return res;
 }
