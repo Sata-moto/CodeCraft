@@ -78,6 +78,11 @@ bool SegmentCross(pair<double, double>s1, pair<double, double>t1, pair<double, d
 	bool CrossCheck = l1check && l2check;
 	return (!RejectCheck) && CrossCheck;
 }
+pair<double, double> CrossPoint(pair<double, double>s1, pair<double, double>t1, pair<double, double>s2, pair<double, double>t2) {
+	pair<double, double>a = Sub(t1, s1), b = Sub(t2, s2), u = Sub(t1, t2);
+	double T = Cross(u, b) / Cross(a, b);
+	return Sub(t1, multi(a, T));
+}
 void AdjuAng(double& InAng) {
 	if (InAng >= Pi)
 		InAng -= 2 * Pi;
@@ -520,6 +525,7 @@ bool Car::ChooseAvoider(int Cnum) {
 	return false;
 }
 bool Car::accessjudge(int desk_num, double Ang, double d) {
+
 	double tx = x + (d + deltaeps) * cos(Ang), ty = y + (d + deltaeps) * sin(Ang);
 	double ttx = x + d * cos(Ang), tty = y + d * sin(Ang);
 	if (tx < 0 || tx>50 || ty < 0 || ty>50) return false;//判断是否越界
@@ -532,13 +538,6 @@ bool Car::accessjudge(int desk_num, double Ang, double d) {
 	//连续性的判断方法？（注意参数1.2与二分上界关联）※※※
 	return ObCheck(x, y, tx, ty, desk_num, GetR(goods) + epss, 1);
 
-}
-double Car::f(int desk_num, double Ang, double d) {
-	pair<int, int>nowpos = math_n::ztoe(x, y);
-	pair<int, int>po = math_n::ztoe(x + d * cos(Ang), y + d * sin(Ang));
-	if (nowpos.first == po.first && nowpos.second == po.second)
-		return 1e9;
-	return dis[Carry(goods)][desk_num][po.first][po.second];
 }
 pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 
@@ -608,15 +607,14 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 
-	
-	output << "numID=" << numID << endl;
-	output << "startang=" << startang << endl;
-	output << "endang=" << endang << endl;
-	
+
+	//output << "numID=" << numID << endl;
+	//output << "startang=" << startang << endl;
+	//output << "endang=" << endang << endl;
+
 	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
-	double Delt = (endang-startang) / 24, l, r, mid, maxlen;
-	double lmid, rmid, res, eps3 = 0.08;
-	
+	double Delt = (endang - startang) / 24, l, r, mid, maxlen, res;
+
 	double realtx, realty;
 	while (startang < endang) {
 		maxlen = -1; l = 0; r = 5;
@@ -625,19 +623,47 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			if (accessjudge(desk_num, startang, mid))maxlen = mid, l = mid;
 			else r = mid;
 		}
-		res = -1; l = 0; r = maxlen;
-		while (r - l >= eps3) {
-			mid = (l + r) / 2;
-			lmid = mid - eps3 / 2;
-			rmid = mid + eps3 / 2;
-			if (f(desk_num, startang, lmid) < f(desk_num, startang, rmid))r = mid;
-			else l = mid;
-		}
-		if (l > r) {
+
+		if (maxlen == -1) {
 			startang += Delt;
 			continue;
 		}
-		res = r;
+
+		res = -1;
+		pair<double, double> s, t;
+		pair<int, int>S, T;
+		pair<double, double>p[6];
+		int Crossnum = 1;
+		
+		s = make_pair(x, y);
+		t = make_pair(x + maxlen * cos(startang), y + maxlen * sin(startang));
+		S = math_n::ztoe(x, y);
+		T = math_n::ztoe(x + maxlen * cos(startang), y + maxlen * sin(startang));
+		while (S != T) {
+			p[0] = math_n::etoz(S.first, S.second);
+			p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
+			p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
+			p[3] = make_pair(p[0].first + 0.25, p[0].second + 0.25);
+			p[4] = make_pair(p[0].first + 0.25, p[0].second - 0.25);
+			p[5] = p[1];
+			for (int i = 1; i <= 4; i++) {
+				if (Dot(dx[i - 1], dy[i - 1], t.first - s.first, t.second - s.second) <= 0)
+					continue;
+				if (SegmentCross(s, t, p[i], p[i + 1])) {
+					Crossnum = i;
+					break;
+				}
+			}
+			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
+			if (dis[Carry(goods)][desk_num][S.first][S.second] <= dis[Carry(goods)][desk_num][nx][ny]) {
+				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s);
+				break;
+			}
+			S = make_pair(nx, ny);
+		}
+
+		if (res == -1)
+			res = maxlen;
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
 		pair<int, int>ss = math_n::ztoe(x, y), tt = math_n::ztoe(realtx, realty);
@@ -648,12 +674,12 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			ansdis = res;
 			maxdisdown = disdown;
 		}
-		output << "maxdisdown=" << maxdisdown;
+		//output << "maxdisdown=" << maxdisdown;
 		startang += Delt;
 	}
 
 
-	
+	/*
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			output << i << "-------------------" << endl;
@@ -675,9 +701,9 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
-	
-	
-	
+	*/
+
+
 
 	if (mode == 0)	return mov(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
 	else return make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
@@ -739,27 +765,6 @@ pair<double, double> Car::mov(int desk_num)
 	if (!ObCheck(x, y, desk[desk_num].x, desk[desk_num].y, desk_num, GetR(goods) + epss, 0))
 		return mov(des[numID].first, des[numID].second);
 
-	
-	/*
-	for (int i = 0; i < 4; i++) {
-		if (x == car[i].x && y == car[i].y) {
-			output << i << "-------------------" << endl;
-			pair<int, int>k;
-			output << "desk" << endl << endl;
-			output << "nowpos" << endl;
-			k = math_n::ztoe(x, y);
-			output << k.first << " " << k.second << endl;
-			output << map[k.first][k.second] << endl;
-			k = math_n::ztoe(desk[desk_num].x, desk[desk_num].y);
-			output << "target" << endl;
-			output << k.first << " " << k.second << endl;
-			output << map[k.first][k.second] << endl;
-			output << endl;
-		}
-	}
-	*/
-	
-	
 
 	return mov(desk[desk_num].x, desk[desk_num].y);
 }
