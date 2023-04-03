@@ -49,10 +49,10 @@ bool command_n::md[4] = { 0,0,0,0 };
 bool command_n::md_7[4] = { 0,0,0,0 };
 bool command_n::md_9[4] = { 0,0,0,0 };
 bool command_n::md_stop_frame[4] = { 0,0,0,0 };
-int parameter::Stop_frame = 14500;
-double parameter::Time_Upscale = 1.2;
+int parameter::Stop_frame = 14000;
+double parameter::Time_Upscale = 1.7;
 double parameter::Earning_Upscale = 1.2;
-double parameter::End_frame = 14950;
+double parameter::End_frame = 14900;
 double parameter::fun1_desk_exist_num_downscale = 1;//1 - 未减权   0 - 所有工作台上的 4/5/6 产品不考虑
 double parameter::dis_pow_downscale = 5;
 
