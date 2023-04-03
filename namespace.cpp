@@ -143,8 +143,10 @@ void map_n::init_wall()
 				// 真四空二也直连
 				if (k + 3 <= 101 && map[k + 3][i] == '#')
 				{
-					desk_n::can_not_sell[desk_num[k + 1][i]] = 1;
-					desk_n::can_not_sell[desk_num[k + 2][i]] = 1;
+					if (map[k + 1][i] >= '0' && map[k + 1][i] <= '9')
+						desk_n::can_not_sell[desk_num[k + 1][i]] = 1;
+					if (map[k + 2][i] >= '0' && map[k + 2][i] <= '9')
+						desk_n::can_not_sell[desk_num[k + 2][i]] = 1;
 					can_not_move[1][3][k][i - 1] = can_not_move[1][5][k][i + 1]
 						= can_not_move[1][3][k + 1][i - 1] = can_not_move[1][5][k + 1][i + 1]
 						= can_not_move[1][2][k + 1][i - 1] = can_not_move[1][6][k + 1][i + 1]
@@ -154,8 +156,10 @@ void map_n::init_wall()
 				}
 				if (i + 3 <= 101 && map[k][i + 3] == '#')
 				{
-					desk_n::can_not_sell[desk_num[k][i + 1]] = 1;
-					desk_n::can_not_sell[desk_num[k][i + 2]] = 1;
+					if (map[k][i + 1] >= '0' && map[k][i + 1] <= '9')
+						desk_n::can_not_sell[desk_num[k][i + 1]] = 1;
+					if (map[k][i + 2] >= '0' && map[k][i + 2] <= '9')
+						desk_n::can_not_sell[desk_num[k][i + 2]] = 1;
 					can_not_move[1][3][k - 1][i] = can_not_move[1][1][k + 1][i]
 						= can_not_move[1][3][k - 1][i + 1] = can_not_move[1][1][k + 1][i + 1]
 						= can_not_move[1][4][k - 1][i + 1] = can_not_move[1][0][k + 1][i + 1]
@@ -288,7 +292,7 @@ void map_n::get_dis(int type)
 	for (int k = 0; k < desk_n::cnt_desk; k++)
 		dij(k, type);
 
-	
+
 	output.precision(3);
 	output.flags(ios::fixed);
 	output.fill('0');
@@ -302,7 +306,7 @@ void map_n::get_dis(int type)
 		output << endl;
 	}
 	output << endl;
-	
+
 
 }
 
