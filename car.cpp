@@ -149,7 +149,7 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	//计算转动惯量、角加速度和距离目标点的距离
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I, diss = Dist(nx, ny, x, y);
 	//判断当前朝向直行是否能到目标点
-	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * diss <= 0.05) &&
+	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * diss <= 0.01) &&
 		ObCheck(x, y, x + diss * cos(ang), y + diss * sin(ang), destination[numID], GetR(goods), 0);
 	//这里需要修※※※（影响过隧道抖动&过墙角判断）
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
@@ -173,7 +173,8 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-	if (fabs(DeltaAng) < Pi / 18 && Cv * Cv * 0.5 / A > Dist(reals.first, reals.second, realt.first, realt.second) - 0.3)res = 0;
+	if ((fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.01) &&
+		Cv * Cv * 0.5 / A > Dist(reals.first, reals.second, realt.first, realt.second))res = 0;
 	//到点减速需要修※※※※※（影响准确进入窄道&短距离前进）
 	return res;
 }
@@ -495,8 +496,8 @@ pair<double, double> Car::mov(double nx, double ny) {
 
 	double checkforwar = forwar;
 
-	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
-		MarginCheck(forwar);
+	//if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
+		//MarginCheck(forwar);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -608,17 +609,19 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
-	//output << "numID=" << numID << endl;
-	//output << "startang=" << startang << endl;
-	//output << "endang=" << endang << endl;
+	output << "numID=" << numID << endl;
+	output << endl;
+	output << "startang=" << startang << endl;
+	output << "endang=" << endang << endl;
+	output << endl;
 
 	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
-	double Delt = (endang - startang) / 24, l, r, mid, maxlen, res;
+	double Delt = (endang - startang) / 48, l, r, mid, maxlen, res;
 
 	double realtx, realty;
 	while (startang < endang) {
 		maxlen = -1; l = 0; r = 5;
-		while (r - l >= 0.125) {
+		while (r - l >= 0.05) {
 			mid = (l + r) / 2;
 			if (accessjudge(desk_num, startang, mid))maxlen = mid, l = mid;
 			else r = mid;
@@ -656,7 +659,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			}
 			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
 			if (dis[Carry(goods)][desk_num][S.first][S.second] <= dis[Carry(goods)][desk_num][nx][ny]) {
-				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s);
+				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) + eps;
 				break;
 			}
 			S = make_pair(nx, ny);
@@ -679,10 +682,9 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
-	/*
+	
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
-			output << i << "-------------------" << endl;
 			pair<int, int>k;
 			output << "Static" << endl << endl;
 			pair<int, int>deskxy = math_n::ztoe(desk[desk_num].x, desk[desk_num].y);
@@ -701,7 +703,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
-	*/
+	
 
 
 
