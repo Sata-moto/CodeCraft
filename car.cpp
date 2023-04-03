@@ -14,7 +14,7 @@ static double deltaang1 = atan(1.0 / 3.0), deltaang2 = Pi / 2 - 2 * deltaang1;
 static double angset[8] = { -Pi + deltaang1,-Pi + deltaang1 + deltaang2,-deltaang1 - deltaang2,-deltaang1,deltaang1,deltaang1 + deltaang2,Pi - deltaang1 - deltaang2,Pi - deltaang1 };
 static int vis[N][N], t;
 static bool obfind;
-pair<double, double>des[4];
+pair<double, double>des[4] = { make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1) };
 
 
 
@@ -519,14 +519,26 @@ bool Car::ChooseAvoider(int Cnum) {
 		return true;//需要加入对方向上是否有可避让空间的判断※※※
 	return false;
 }
-bool Car::judge(int desk_num, double Ang, double d) {
+bool Car::accessjudge(int desk_num, double Ang, double d) {
 	double tx = x + (d + deltaeps) * cos(Ang), ty = y + (d + deltaeps) * sin(Ang);
+	double ttx = x + d * cos(Ang), tty = y + d * sin(Ang);
 	if (tx < 0 || tx>50 || ty < 0 || ty>50) return false;//判断是否越界
-	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty);
-	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second);
-	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][t.first][t.second]) / Dist(sreal.first, sreal.second, treal.first, treal.second) > 1.5)return false;
+	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty), tt = math_n::ztoe(ttx, tty);
+	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second), ttreal = math_n::etoz(tt.first, tt.second);
+	if (s.first == tt.first && s.second == tt.second)
+		return false;
+	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(sreal.first, sreal.second, ttreal.first, ttreal.second) > 1.5)
+		return false;
 	//连续性的判断方法？（注意参数1.2与二分上界关联）※※※
 	return ObCheck(x, y, tx, ty, desk_num, GetR(goods) + epss, 1);
+
+}
+double Car::f(int desk_num, double Ang, double d) {
+	pair<int, int>nowpos = math_n::ztoe(x, y);
+	pair<int, int>po = math_n::ztoe(x + d * cos(Ang), y + d * sin(Ang));
+	if (nowpos.first == po.first && nowpos.second == po.second)
+		return 1e9;
+	return dis[Carry(goods)][desk_num][po.first][po.second];
 }
 pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 
@@ -585,6 +597,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			startang -= deltaang2;
 		else startang -= 2 * deltaang1;
 	}
+	//这里偶尔可能出问题
 
 
 	int numID = -1;
@@ -595,30 +608,47 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 
-	double Delt = (endang-startang) / 24, l, r, mid, res, ansang = -1, ansdis = -1, maxdisperreal = -1e9, disperreal;
+	
+	output << "numID=" << numID << endl;
+	output << "startang=" << startang << endl;
+	output << "endang=" << endang << endl;
+	
+	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
+	double Delt = (endang-startang) / 24, l, r, mid, maxlen;
+	double lmid, rmid, res, eps3 = 0.08;
 	
 	double realtx, realty;
 	while (startang < endang) {
-		res = -1; l = 0; r = 5;
-		while (r - l >= 0.25) {
+		maxlen = -1; l = 0; r = 5;
+		while (r - l >= 0.125) {
 			mid = (l + r) / 2;
-			if (judge(desk_num, startang, mid))res = mid, l = mid;
+			if (accessjudge(desk_num, startang, mid))maxlen = mid, l = mid;
 			else r = mid;
 		}
-		if (res == -1) {
+		res = -1; l = 0; r = maxlen;
+		while (r - l >= eps3) {
+			mid = (l + r) / 2;
+			lmid = mid - eps3 / 2;
+			rmid = mid + eps3 / 2;
+			if (f(desk_num, startang, lmid) < f(desk_num, startang, rmid))r = mid;
+			else l = mid;
+		}
+		if (l > r) {
 			startang += Delt;
 			continue;
 		}
+		res = r;
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
 		pair<int, int>ss = math_n::ztoe(x, y), tt = math_n::ztoe(realtx, realty);
 		pair<double, double>ssreal = math_n::etoz(ss.first, ss.second), ttreal = math_n::etoz(tt.first, tt.second);
-		disperreal = (dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(ssreal.first, ssreal.second, ttreal.first, ttreal.second);
-		if (disperreal > maxdisperreal || (fabs(disperreal - maxdisperreal) < eps && res > ansdis)) {//可以考虑差在一定范围内就选长的
+		disdown = dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second];
+		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {//可以考虑差在一定范围内就选长的
 			ansang = startang;
 			ansdis = res;
-			maxdisperreal = disperreal;
+			maxdisdown = disdown;
 		}
+		output << "maxdisdown=" << maxdisdown;
 		startang += Delt;
 	}
 
@@ -692,12 +722,12 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
-		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange / 2) {
+		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange / 1.5) {
 			//加强动态避障判断（Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y)))还不够）※※※
 			if (ChooseAvoider(i))continue;
 			bool Check1 = !Search(x, y, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04), Check2 = !Search(car[i].x, car[i].y, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04);
 			if (Check1 && Check2 && d >= GetR(goods) + GetR(car[i].goods))continue;
-			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 5)continue;//注意这里+1的参数调整
+			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 2)continue;//注意这里+1的参数调整
 			if (Check1) {
 				if (Check1 && Check2)continue;
 				//else return make_pair(0, 0);//(23012830)

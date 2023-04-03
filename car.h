@@ -44,7 +44,8 @@ struct Car
 	void CarCrashCheck(double&, double&);                           // 仅小车避障
 
 	bool ChooseAvoider(int);                                        // 判断当前情况下是否应该由另一小车避让
-	bool judge(int, double, double);                                // 二分需要用到的判断函数
+	bool accessjudge(int, double, double);                          // 判断当前角度一定距离是否可以通行
+	double f(int, double, double);                                  // 三分需要用到的取值函数
 	pair<double, double> Static_Avoidance(int, int);                // 静态避障（仅考虑障碍物避障）
 	pair<double, double> Dynamic_Avoidance(int);                    // 动态避障（小车+障碍物避障）
 
