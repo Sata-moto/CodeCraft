@@ -6,7 +6,7 @@
 using namespace std;
 const double eps = 1e-2;
 const double epss = 0;
-const double deltaeps = 0;//延长二分判定长度
+const double deltaeps = 0.02;//延长二分判定长度
 Car car[5];
 static int dx[4] = { -1,0,1,0 }, dy[4] = { 0,1,0,-1 };
 static int dxx[8] = { -1,0,1,1,1,0,-1,-1 }, dyy[8] = { -1,-1,-1,0,1,1,1,0 };
@@ -309,8 +309,8 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 		//前方180度视角内无车
-		if ((d >= GetR(goods) + GetR(car[i].goods) + 0.07 && uy < eps) ||
-			(uy >= eps && max(d - GetR(goods) - GetR(car[i].goods) - 0.07, 0.0) / uy >= AlertTime))
+		if ((d >= GetR(goods) + GetR(car[i].goods) + 0.5 && uy < eps) ||
+			(uy >= eps && max(d - GetR(goods) - GetR(car[i].goods) - 0.5, 0.0) / uy >= AlertTime))
 			continue;
 		//另一小车与当前小车同向行驶
 		if (Dot(car[i].x - x, car[i].y - y, v1x, v1y) / (vecv * CombineV(car[i].x - x, car[i].y - y)) < 0)continue;
@@ -390,7 +390,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		else forwar = 6 * cos((1 - max(Dist(x, y, car[numi].x, car[numi].y) - GetR(goods) - GetR(car[numi].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[numi].goods))) * (Pi / 2));//forwar是否需要乘进速度夹角参数
 		double Ang1 = Cross(v1x, v1y, car[numi].x - x, car[numi].y - y) / (vecv * CombineV(car[numi].x - x, car[numi].y - y));
 		//重要者优先
-		if (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))
+		if (!car[numi].AgainstWall && (AgainstWall || (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))))
 			return;
 		//旋转方向调整
 		if (uy > 0.2) {//加入uy与当前距离比较参数
@@ -469,11 +469,14 @@ void Car::MarginCheck(double& forwar) {
 		if (mid * mid / A * 0.5 > res)r = mid;
 		else {
 			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
-			if (mid / A + (res - mid * mid / A * 0.5) / mid >= 0)resv = mid, l = mid;
+			if (mid / A + (res - mid * mid / A * 0.5) / mid >= deltaeps)resv = mid, l = mid;
 			else r = mid;
 		}
 	}
 	forwar = min(forwar, resv);
+
+	if (Search(x, y, GetR(goods)) + 0.02)
+		AgainstWall = true;
 }
 pair<double, double> Car::mov(double nx, double ny) {
 
@@ -491,22 +494,26 @@ pair<double, double> Car::mov(double nx, double ny) {
 	double rot = CalcRotate(nx, ny, DeltaAng), forwar = CalcForward(nx, ny, DeltaAng);
 	//小车碰撞判定
 
+	/*
 	output << "original set---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	CarCrashCheck(forwar, rot);
 	//边界碰撞判定
 
 	//粗糙补丁（前往工作台的小车不需要减速）
 
+	/*
 	output << "CarCrashCheck---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	double checkforwar = forwar;
 
@@ -516,11 +523,13 @@ pair<double, double> Car::mov(double nx, double ny) {
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
 
+	/*
 	output << "Margin---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	return pair<double, double>(forwar, rot);
 }
@@ -535,7 +544,7 @@ bool Car::ChooseAvoider(int Cnum) {
 			break;
 		}
 	}
-	if (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum))
+	if ((goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
 		return true;//需要加入对方向上是否有可避让空间的判断※※※
 	return false;
 }
@@ -546,8 +555,10 @@ bool Car::accessjudge(int desk_num, double Ang, double d) {
 	if (tx < 0 || tx>50 || ty < 0 || ty>50) return false;//判断是否越界
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty), tt = math_n::ztoe(ttx, tty);
 	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second), ttreal = math_n::etoz(tt.first, tt.second);
+	/*
 	if (s.first == tt.first && s.second == tt.second)
 		return false;
+	*/
 	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(sreal.first, sreal.second, ttreal.first, ttreal.second) > 1.5)
 		return false;
 	//连续性的判断方法？（注意参数1.2与二分上界关联）※※※
@@ -618,15 +629,17 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
+	/*
 	output << "numID=" << numID << endl;
 	output << endl;
 	output << "startang=" << startang << endl;
 	output << "endang=" << endang << endl;
 	output << endl;
+	*/
 
 	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
 	double Delt = (endang - startang) / 20, l, r, mid, maxlen, res;
-	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口
+	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口※※※※※※※
 
 	double realtx, realty;
 	while (startang < endang) {
@@ -692,7 +705,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
-
+	/*
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			pair<int, int>k;
@@ -713,6 +726,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
+	*/
 
 
 
@@ -735,6 +749,12 @@ pair<double, double> Car::mov(int desk_num)
 		if (car[i].x == x && car[i].y == y) {
 			numID = i; break;
 		}
+
+	output << "numID=" << numID << endl;
+	output << "AgainstWall=" << AgainstWall<<endl;
+	output << endl;
+
+
 	//步骤一：判断当前小车是否需要进入动态回避模式
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
@@ -760,12 +780,15 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
+
+
+		//动态避障可以交错判断（加入小车朝向）
 		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange / 1.5) {
 			//加强动态避障判断（Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y)))还不够）※※※
 			if (ChooseAvoider(i))continue;
 			bool Check1 = !Search(x, y, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04), Check2 = !Search(car[i].x, car[i].y, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04);
 			if (Check1 && Check2 && d >= GetR(goods) + GetR(car[i].goods))continue;
-			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 2)continue;//注意这里+1的参数调整
+			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 2)continue;//注意这里+2的参数调整
 			if (Check1) {
 				if (Check1 && Check2)continue;
 				//else return make_pair(0, 0);//(23012830)
