@@ -189,10 +189,7 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 			else r = mid;
 		}
 	}
-
-
 	return res;
-
 
 	return min(res, resv);
 }
@@ -522,7 +519,7 @@ pair<double, double> Car::mov(double nx, double ny) {
 
 	double checkforwar = forwar;
 
-	//if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
+//	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
 		//MarginCheck(forwar);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
@@ -736,6 +733,8 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		dvec = Sub(gettonum, obnum);
 		UnitV(dvec);
 		dest = Add(multi(dvec, 0.5), make_pair(x, y));
+
+		/*
 		output << "numID=" << numID << endl;
 		output << "truexy=" << x << " " << y << endl;
 		output << "xy=" << temp.first << " " << temp.second << endl;
@@ -743,9 +742,11 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		output << "ob=" << obnum.first << " " << obnum.second << endl;
 		output << " vec=" << dvec.first << " " << dvec.second << endl;
 		output << endl;
+		*/
 	}
+	else dest = make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
 
-	dest = make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
+	/*
 	output << "dest=" << dest.first << " " << dest.second << endl;
 	
 	for (int i = 0; i < 4; i++) {
@@ -769,7 +770,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 	
-
+	*/
 
 
 
@@ -842,8 +843,6 @@ pair<double, double> Car::mov(int desk_num)
 	//步骤二：判断连接当前小车与目标工作台的线段是否经过障碍物
 	if (!ObCheck(x, y, desk[desk_num].x, desk[desk_num].y, desk_num, GetR(goods) + epss, 0))
 		return mov(des[numID].first, des[numID].second);
-
-
 	return mov(desk[desk_num].x, desk[desk_num].y);
 }
 void calc() {
