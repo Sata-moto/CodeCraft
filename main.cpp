@@ -50,7 +50,7 @@ void init()
 
 int main()
 {
-	//output.open("test.txt", ios::out);
+	output.open("test.txt", ios::out);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	for (int k = 1; k <= 100; k++)
@@ -132,21 +132,26 @@ int main()
 		}
 
 		calc();
-
+		output << "frame_number=" << frame_number << endl;
+		output << endl;
 		for (int k = 0; k < 4; k++)
 		{
 			pair<double, double> temp;
 			temp = car[k].mov(destination[k]);
+			
+			output << "forward=" << temp.first << "rotate=" << temp.second << endl;
+
 			printf("forward %d %lf\n", k, temp.first);
 			printf("rotate %d %lf\n", k, temp.second);
 			//每个小车朝当前的目的地前进
 		}
+		output << endl;
 
 		printf("OK\n");
 		fflush(stdout);
 	}
 
 	//fdebug.close();
-	//output.close();
+	output.close();
 	return 0;
 }

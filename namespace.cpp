@@ -4,7 +4,7 @@
 #include <queue>
 #include <iostream>
 
-//ofstream output;
+ofstream output;
 int seed_n::seed = 0;
 int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
 int seed_n::seed_MOD = 998244353;
