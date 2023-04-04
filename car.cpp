@@ -6,7 +6,7 @@
 using namespace std;
 const double eps = 1e-2;
 const double epss = 0;
-const double deltaeps = 0.02;//延长二分判定长度
+const double deltaeps = 0;//延长二分判定长度
 Car car[5];
 static int dx[4] = { -1,0,1,0 }, dy[4] = { 0,1,0,-1 };
 static int dxx[8] = { -1,0,1,1,1,0,-1,-1 }, dyy[8] = { -1,-1,-1,0,1,1,1,0 };
@@ -106,15 +106,19 @@ void DFS(pair<int, int>meshc, pair<double, double>realc, double r) {
 		obfind = true;
 		return;
 	}
+	pair<double, double>p[6];
 	for (int i = 0; i < 4; i++) {
 		int nx = meshc.first + dx[i], ny = meshc.second + dy[i];
-		if (nx < 0 || nx>101 || ny < 0 || ny>101)continue;
+		if(nx < 0 || nx>101 || ny < 0 || ny>101)continue;
 		if (vis[nx][ny] == t)continue;
-		pair<double, double>realcent = math_n::etoz(nx, ny);
-		if (Dist(make_pair(realcent.first - 0.25, realcent.second - 0.25), realc) < r ||
-			Dist(make_pair(realcent.first - 0.25, realcent.second + 0.25), realc) < r ||
-			Dist(make_pair(realcent.first + 0.25, realcent.second + 0.25), realc) < r ||
-			Dist(make_pair(realcent.first + 0.25, realcent.second - 0.25), realc) < r)
+		p[0] = math_n::etoz(nx, ny);
+		p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
+		p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
+		p[3] = make_pair(p[0].first + 0.25, p[0].second + 0.25);
+		p[4] = make_pair(p[0].first + 0.25, p[0].second - 0.25);
+		p[5] = p[1];
+		if (PointToSegment(realc, p[1], p[2]) < r || PointToSegment(realc, p[2], p[3]) < r ||
+			PointToSegment(realc, p[3], p[4]) < r || PointToSegment(realc, p[4], p[5]) < r)
 			DFS(make_pair(nx, ny), realc, r);
 		if (obfind)return;
 	}
@@ -171,12 +175,21 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 double Car::CalcForward(double nx, double ny, double DeltaAng) {
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
+	double diss = Dist(nx, ny, x, y);
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-	if ((fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * Dist(nx, ny, x, y) <= 0.01) &&
-		Cv * Cv * 0.5 / A > Dist(reals.first, reals.second, realt.first, realt.second))res = 0;
-	//到点减速需要修※※※※※（影响准确进入窄道&短距离前进）
-	return res;
+
+	double l = 0, r = 6, mid, resv = 0;
+	while (r - l >= 0.01) {
+		mid = (l + r) / 2;
+		if (mid * mid / A * 0.5 > diss)r = mid;
+		else {
+			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
+			if (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0)resv = mid, l = mid;
+			else r = mid;
+		}
+	}
+	return min(res, resv);
 }
 bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, double width, bool Checkbool) {
 	//output << "Startnode=" << x1 << "," << y1 << endl;//
@@ -438,9 +451,9 @@ void Car::MarginCheck(double& forwar) {
 	double vv = CombineV(vx, vy);
 	//判断是否可能发生边界碰撞并修改速度设定值
 	double l = 0, r = 50, mid, res = 0;
-	while (r - l >= 0.25) {
+	while (r - l >= 0.05) {
 		mid = (l + r) / 2;
-		double tx = x + (mid + deltaeps) * cos(ang), ty = y + (mid + deltaeps) * sin(ang);
+		double tx = x + mid * cos(ang), ty = y + mid * sin(ang);
 		if (tx < 0 || tx>50 || ty < 0 || ty>50)r = mid;
 		else {
 			if (ObCheck(x, y, x + (mid + deltaeps) * cos(ang), y + (mid + deltaeps) * sin(ang), destination[numID], GetR(goods) + epss, 1))
@@ -455,7 +468,8 @@ void Car::MarginCheck(double& forwar) {
 		mid = (l + r) / 2;
 		if (mid * mid / A * 0.5 > res)r = mid;
 		else {
-			if (vv / A + (res - vv * vv / A * 0.5) / vv >= 0)resv = mid, l = mid;
+			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
+			if (mid / A + (res - mid * mid / A * 0.5) / mid >= 0)resv = mid, l = mid;
 			else r = mid;
 		}
 	}
@@ -496,8 +510,8 @@ pair<double, double> Car::mov(double nx, double ny) {
 
 	double checkforwar = forwar;
 
-	//if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
-		//MarginCheck(forwar);
+	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
+		MarginCheck(forwar);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -572,7 +586,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			if (dis[Carry(goods)][desk_num][now.first + dxx[obid]][now.second + dyy[obid]] <
 				dis[Carry(goods)][desk_num][now.first][now.second]) {
 				if (startang == Pi * 10)
-					startang = angset[obid];
+					startang = angset[(obid - 1 + 8) % 8];
 			}
 			else {
 				if (startang != Pi * 10) {
@@ -588,14 +602,9 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		startang = -Pi;
 		endang = Pi;
 	}
-	else {
-		if (endang == Pi * 10) {
-			endang = angset[(lim + 1) % 8];
-			if (endang < startang)endang += 2 * Pi;
-		}
-		if (startang == angset[0] || startang == angset[2] || startang == angset[4] || startang == angset[6])
-			startang -= deltaang2;
-		else startang -= 2 * deltaang1;
+	else if (endang == Pi * 10) {
+		endang = angset[(lim + 1) % 8];
+		if (endang < startang)endang += 2 * Pi;
 	}
 	//这里偶尔可能出问题
 
@@ -616,12 +625,13 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	output << endl;
 
 	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
-	double Delt = (endang - startang) / 48, l, r, mid, maxlen, res;
+	double Delt = (endang - startang) / 20, l, r, mid, maxlen, res;
+	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口
 
 	double realtx, realty;
 	while (startang < endang) {
 		maxlen = -1; l = 0; r = 5;
-		while (r - l >= 0.05) {
+		while (r - l >= 0.125) {
 			mid = (l + r) / 2;
 			if (accessjudge(desk_num, startang, mid))maxlen = mid, l = mid;
 			else r = mid;
@@ -637,7 +647,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		pair<int, int>S, T;
 		pair<double, double>p[6];
 		int Crossnum = 1;
-		
+
 		s = make_pair(x, y);
 		t = make_pair(x + maxlen * cos(startang), y + maxlen * sin(startang));
 		S = math_n::ztoe(x, y);
@@ -659,13 +669,13 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			}
 			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
 			if (dis[Carry(goods)][desk_num][S.first][S.second] <= dis[Carry(goods)][desk_num][nx][ny]) {
-				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) + eps;
+				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) + GetR(goods) + 0.03;
 				break;
 			}
 			S = make_pair(nx, ny);
 		}
 
-		if (res == -1)
+		if (res == -1 || res > maxlen)
 			res = maxlen;
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
@@ -682,7 +692,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
-	
+
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			pair<int, int>k;
@@ -703,7 +713,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
-	
+
 
 
 
