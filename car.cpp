@@ -173,6 +173,7 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	return res;
 }
 double Car::CalcForward(double nx, double ny, double DeltaAng) {
+
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	double diss = Dist(nx, ny, x, y);
@@ -392,7 +393,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		else forwar = 6 * cos((1 - max(Dist(x, y, car[numi].x, car[numi].y) - GetR(goods) - GetR(car[numi].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[numi].goods))) * (Pi / 2));//forwar是否需要乘进速度夹角参数
 		double Ang1 = Cross(v1x, v1y, car[numi].x - x, car[numi].y - y) / (vecv * CombineV(car[numi].x - x, car[numi].y - y));
 		//重要者优先
-		if (!car[numi].AgainstWall && (AgainstWall || (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))))
+		if (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))
 			return;
 		//旋转方向调整
 		if (uy > 0.2) {//加入uy与当前距离比较参数
@@ -476,9 +477,6 @@ void Car::MarginCheck(double& forwar) {
 		}
 	}
 	forwar = min(forwar, resv);
-
-	if (Search(x, y, GetR(goods)) + 0.02)
-		AgainstWall = true;
 }
 pair<double, double> Car::mov(double nx, double ny) {
 
@@ -736,40 +734,31 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			dest = Add(multi(dvec, 0.5), make_pair(x, y));
 		}
 		else {
+			/*
 			pair<int, int>temp = math_n::ztoe(x, y);
 			pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
 			double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
 			for (int i = 0; i < 8; i += 2) {
 				if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
-					obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+					obnum = make_pair(nownum.first + dxx[i], nownum.second + dyy[i]);
 					break;
 				}
 			}
 			for (int i = 1; i < 8; i += 2) {
 				if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
 					mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
-					gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+					gettonum = make_pair(nownum.first + dxx[i], nownum.second + dyy[i]);
 				}
 			}
 			dvec = Sub(gettonum, obnum);
 			UnitV(dvec);
 			dest = Add(multi(dvec, 0.5), make_pair(x, y));
+			*/
 		}
-
-		/*
-		output << "numID=" << numID << endl;
-		output << "truexy=" << x << " " << y << endl;
-		output << "xy=" << temp.first << " " << temp.second << endl;
-		output << "getto=" << gettonum.first << " " << gettonum.second << endl;
-		output << "ob=" << obnum.first << " " << obnum.second << endl;
-		output << " vec=" << dvec.first << " " << dvec.second << endl;
-		output << endl;
-		*/
 	}
 	else dest = make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
 
 	/*
-	output << "dest=" << dest.first << " " << dest.second << endl;
 	
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
@@ -793,8 +782,6 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 	
 	*/
-
-
 
 	if (mode == 0)	return mov(dest.first, dest.second);
 	else return dest;

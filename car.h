@@ -31,7 +31,6 @@ struct Car
 	double timerate, hitrate;                                       // 时间价值系数，碰撞价值系数
 	double vx, vy, w;                                               // 二维线速度向量，角速度
 	double ang, x, y;                                               // 朝向角度，坐标
-	bool AgainstWall;                                               // 小车靠近障碍物判断
 
 	//小车
 	int Carry(int);                                                 // 判断当前小车是否持有物品
