@@ -641,7 +641,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	
 
 	double ansang = -1, ansdis = -1, maxdisdown = 0, disdown;
-	double Delt = (endang - startang) / 20, l, r, mid, maxlen, res;
+	double Delt = (endang - startang) / 8, l, r, mid, maxlen, res;
 	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口※※※※※※※
 
 	double realtx, realty;
@@ -715,24 +715,46 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	pair<double, double>dest;
 
 	if (maxdisdown < eps) {
-		pair<int, int>temp = math_n::ztoe(x, y);
-		pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
-		double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
-		for (int i = 0; i < 8; i += 2) {
-			if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
-				obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
-				break;
+		if (Carry(goods) == 0) {
+			pair<int, int>temp = math_n::ztoe(x, y);
+			pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
+			double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
+			for (int i = 0; i < 8; i += 2) {
+				if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
+					obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+					break;
+				}
 			}
-		}
-		for (int i = 1; i < 8; i += 2) {
-			if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
-				mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
-				gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+			for (int i = 1; i < 8; i += 2) {
+				if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
+					mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
+					gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+				}
 			}
+			dvec = Sub(gettonum, obnum);
+			UnitV(dvec);
+			dest = Add(multi(dvec, 0.5), make_pair(x, y));
 		}
-		dvec = Sub(gettonum, obnum);
-		UnitV(dvec);
-		dest = Add(multi(dvec, 0.5), make_pair(x, y));
+		else {
+			pair<int, int>temp = math_n::ztoe(x, y);
+			pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
+			double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
+			for (int i = 0; i < 8; i += 2) {
+				if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
+					obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+					break;
+				}
+			}
+			for (int i = 1; i < 8; i += 2) {
+				if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
+					mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
+					gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+				}
+			}
+			dvec = Sub(gettonum, obnum);
+			UnitV(dvec);
+			dest = Add(multi(dvec, 0.5), make_pair(x, y));
+		}
 
 		/*
 		output << "numID=" << numID << endl;
