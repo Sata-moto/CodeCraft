@@ -14,7 +14,7 @@ static double deltaang1 = atan(1.0 / 3.0), deltaang2 = Pi / 2 - 2 * deltaang1;
 static double angset[8] = { -Pi + deltaang1,-Pi + deltaang1 + deltaang2,-deltaang1 - deltaang2,-deltaang1,deltaang1,deltaang1 + deltaang2,Pi - deltaang1 - deltaang2,Pi - deltaang1 };
 static int vis[N][N], t;
 static bool obfind;
-pair<double, double>des[4];
+pair<double, double>des[4] = { make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1) };
 
 
 
@@ -64,7 +64,7 @@ double PointToLine(pair<double, double> P, pair<double, double> S, pair<double, 
 double PointToSegment(pair<double, double> P, pair<double, double> S, pair<double, double> T) {
 	double x = P.first, y = P.second, sx = S.first, sy = S.second, tx = T.first, ty = T.second;
 	bool PosCheck = (Dot(x - sx, y - sy, tx - sx, ty - sy) > 0) && (Dot(x - tx, y - ty, sx - tx, sy - ty) > 0);
-	if (PosCheck)return PointToLine(P, S, Add(S, multi(T, -1)));
+	if (PosCheck)return PointToLine(P, S, Add(T, multi(S, -1)));
 	else return min(Dist(P, S), Dist(P, T));
 }
 bool SegmentCross(pair<double, double>s1, pair<double, double>t1, pair<double, double>s2, pair<double, double>t2) {
@@ -77,6 +77,11 @@ bool SegmentCross(pair<double, double>s1, pair<double, double>t1, pair<double, d
 		Cross(t1.first - s2.first, t1.second - s2.second, t2.first - s2.first, t2.second - s2.second) <= 0;
 	bool CrossCheck = l1check && l2check;
 	return (!RejectCheck) && CrossCheck;
+}
+pair<double, double> CrossPoint(pair<double, double>s1, pair<double, double>t1, pair<double, double>s2, pair<double, double>t2) {
+	pair<double, double>a = Sub(t1, s1), b = Sub(t2, s2), u = Sub(t1, t2);
+	double T = Cross(u, b) / Cross(a, b);
+	return Sub(t1, multi(a, T));
 }
 void AdjuAng(double& InAng) {
 	if (InAng >= Pi)
@@ -101,15 +106,19 @@ void DFS(pair<int, int>meshc, pair<double, double>realc, double r) {
 		obfind = true;
 		return;
 	}
+	pair<double, double>p[6];
 	for (int i = 0; i < 4; i++) {
 		int nx = meshc.first + dx[i], ny = meshc.second + dy[i];
 		if (nx < 0 || nx>101 || ny < 0 || ny>101)continue;
 		if (vis[nx][ny] == t)continue;
-		pair<double, double>realcent = math_n::etoz(nx, ny);
-		if (Dist(make_pair(realcent.first - 0.25, realcent.second - 0.25), realc) < r ||
-			Dist(make_pair(realcent.first - 0.25, realcent.second + 0.25), realc) < r ||
-			Dist(make_pair(realcent.first + 0.25, realcent.second + 0.25), realc) < r ||
-			Dist(make_pair(realcent.first + 0.25, realcent.second - 0.25), realc) < r)
+		p[0] = math_n::etoz(nx, ny);
+		p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
+		p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
+		p[3] = make_pair(p[0].first + 0.25, p[0].second + 0.25);
+		p[4] = make_pair(p[0].first + 0.25, p[0].second - 0.25);
+		p[5] = p[1];
+		if (PointToSegment(realc, p[1], p[2]) < r || PointToSegment(realc, p[2], p[3]) < r ||
+			PointToSegment(realc, p[3], p[4]) < r || PointToSegment(realc, p[4], p[5]) < r)
 			DFS(make_pair(nx, ny), realc, r);
 		if (obfind)return;
 	}
@@ -144,7 +153,7 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 	//计算转动惯量、角加速度和距离目标点的距离
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I, diss = Dist(nx, ny, x, y);
 	//判断当前朝向直行是否能到目标点
-	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * diss <= 0.05) &&
+	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * diss <= 0.01) &&
 		ObCheck(x, y, x + diss * cos(ang), y + diss * sin(ang), destination[numID], GetR(goods), 0);
 	//这里需要修※※※（影响过隧道抖动&过墙角判断）
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
@@ -166,11 +175,21 @@ double Car::CalcRotate(double nx, double ny, double DeltaAng) {
 double Car::CalcForward(double nx, double ny, double DeltaAng) {
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
+	double diss = Dist(nx, ny, x, y);
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-	if (fabs(DeltaAng) < Pi / 18 && Cv * Cv * 0.5 / A > Dist(reals.first, reals.second, realt.first, realt.second) - 0.3)res = 0;
-	//到点减速需要修※※※※※（影响准确进入窄道&短距离前进）
-	return res;
+
+	double l = 0, r = 6, mid, resv = 0;
+	while (r - l >= 0.01) {
+		mid = (l + r) / 2;
+		if (mid * mid / A * 0.5 > diss)r = mid;
+		else {
+			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
+			if (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0.02)resv = mid, l = mid;//注意这里的参数调整
+			else r = mid;
+		}
+	}
+	return min(res, resv);
 }
 bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, double width, bool Checkbool) {
 	//output << "Startnode=" << x1 << "," << y1 << endl;//
@@ -187,14 +206,14 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 	//output << "Vertvec2 " << Vertvec2.first << " " << Vertvec2.second << endl;
 
 	//判断终点一定范围内没有障碍物※※※（是否需要配合到终点减速？可能不需要）Checkbool用于判断是否需要判断终点附近的障碍物情况
-	if (Checkbool && Search(x2, y2, GetR(goods)))return false;
+	if (Checkbool  && Search(x2, y2, GetR(goods)))return false;
 
 	q.push(make_pair(x2, y2));
 	q.push(make_pair(x1, y1));
-	q.push(make_pair(x2 + Vertvec1.first * width, y2 + Vertvec1.second * width));
-	q.push(make_pair(x1 + Vertvec1.first * width, y1 + Vertvec1.second * width));
-	q.push(make_pair(x2 + Vertvec2.first * width, y2 + Vertvec2.second * width));
-	q.push(make_pair(x1 + Vertvec2.first * width, y1 + Vertvec2.second * width));
+	q.push(make_pair(x2 + Vertvec1.first * width * 0.97, y2 + Vertvec1.second * width * 0.97));
+	q.push(make_pair(x1 + Vertvec1.first * width * 0.97, y1 + Vertvec1.second * width * 0.97));
+	q.push(make_pair(x2 + Vertvec2.first * width * 0.97, y2 + Vertvec2.second * width * 0.97));
+	q.push(make_pair(x1 + Vertvec2.first * width * 0.97, y1 + Vertvec2.second * width * 0.97));
 	q.push(make_pair(x2 + Vertvec1.first * width * 0.5, y2 + Vertvec1.second * width * 0.5));
 	q.push(make_pair(x1 + Vertvec1.first * width * 0.5, y1 + Vertvec1.second * width * 0.5));
 	q.push(make_pair(x2 + Vertvec2.first * width * 0.5, y2 + Vertvec2.second * width * 0.5));
@@ -290,8 +309,8 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 		//前方180度视角内无车
-		if ((d >= GetR(goods) + GetR(car[i].goods) + 0.07 && uy < eps) ||
-			(uy >= eps && max(d - GetR(goods) - GetR(car[i].goods) - 0.07, 0.0) / uy >= AlertTime))
+		if ((d >= GetR(goods) + GetR(car[i].goods) + 0.5 && uy < eps) ||
+			(uy >= eps && max(d - GetR(goods) - GetR(car[i].goods) - 0.5, 0.0) / uy >= AlertTime))
 			continue;
 		//另一小车与当前小车同向行驶
 		if (Dot(car[i].x - x, car[i].y - y, v1x, v1y) / (vecv * CombineV(car[i].x - x, car[i].y - y)) < 0)continue;
@@ -371,7 +390,7 @@ void Car::CarCrashCheck(double& forwar, double& rot) {
 		else forwar = 6 * cos((1 - max(Dist(x, y, car[numi].x, car[numi].y) - GetR(goods) - GetR(car[numi].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[numi].goods))) * (Pi / 2));//forwar是否需要乘进速度夹角参数
 		double Ang1 = Cross(v1x, v1y, car[numi].x - x, car[numi].y - y) / (vecv * CombineV(car[numi].x - x, car[numi].y - y));
 		//重要者优先
-		if (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))
+		if (!car[numi].AgainstWall && (AgainstWall || (goods > car[numi].goods || (goods == car[numi].goods && numID > numi))))
 			return;
 		//旋转方向调整
 		if (uy > 0.2) {//加入uy与当前距离比较参数
@@ -432,9 +451,9 @@ void Car::MarginCheck(double& forwar) {
 	double vv = CombineV(vx, vy);
 	//判断是否可能发生边界碰撞并修改速度设定值
 	double l = 0, r = 50, mid, res = 0;
-	while (r - l >= 0.25) {
+	while (r - l >= 0.05) {
 		mid = (l + r) / 2;
-		double tx = x + (mid + deltaeps) * cos(ang), ty = y + (mid + deltaeps) * sin(ang);
+		double tx = x + mid * cos(ang), ty = y + mid * sin(ang);
 		if (tx < 0 || tx>50 || ty < 0 || ty>50)r = mid;
 		else {
 			if (ObCheck(x, y, x + (mid + deltaeps) * cos(ang), y + (mid + deltaeps) * sin(ang), destination[numID], GetR(goods) + epss, 1))
@@ -449,11 +468,15 @@ void Car::MarginCheck(double& forwar) {
 		mid = (l + r) / 2;
 		if (mid * mid / A * 0.5 > res)r = mid;
 		else {
-			if (vv / A + (res - vv * vv / A * 0.5) / vv >= 0)resv = mid, l = mid;
+			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
+			if (mid / A + (res - mid * mid / A * 0.5) / mid >= deltaeps)resv = mid, l = mid;
 			else r = mid;
 		}
 	}
 	forwar = min(forwar, resv);
+
+	if (Search(x, y, GetR(goods)) + 0.02)
+		AgainstWall = true;
 }
 pair<double, double> Car::mov(double nx, double ny) {
 
@@ -471,22 +494,26 @@ pair<double, double> Car::mov(double nx, double ny) {
 	double rot = CalcRotate(nx, ny, DeltaAng), forwar = CalcForward(nx, ny, DeltaAng);
 	//小车碰撞判定
 
+	/*
 	output << "original set---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	CarCrashCheck(forwar, rot);
 	//边界碰撞判定
 
 	//粗糙补丁（前往工作台的小车不需要减速）
 
+	/*
 	output << "CarCrashCheck---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	double checkforwar = forwar;
 
@@ -496,11 +523,13 @@ pair<double, double> Car::mov(double nx, double ny) {
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
 
+	/*
 	output << "Margin---------------" << endl;
 	output << "ID=" << numID << endl;
 	output << "forward=" << forwar << endl;
 	output << "rotate=" << rot << endl;
 	output << endl;
+	*/
 
 	return pair<double, double>(forwar, rot);
 }
@@ -515,18 +544,27 @@ bool Car::ChooseAvoider(int Cnum) {
 			break;
 		}
 	}
-	if (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum))
+	if ((goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
 		return true;//需要加入对方向上是否有可避让空间的判断※※※
 	return false;
 }
-bool Car::judge(int desk_num, double Ang, double d) {
+bool Car::accessjudge(int desk_num, double Ang, double d) {
+
 	double tx = x + (d + deltaeps) * cos(Ang), ty = y + (d + deltaeps) * sin(Ang);
+	double ttx = x + d * cos(Ang), tty = y + d * sin(Ang);
 	if (tx < 0 || tx>50 || ty < 0 || ty>50) return false;//判断是否越界
-	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty);
-	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second);
-	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][t.first][t.second]) / Dist(sreal.first, sreal.second, treal.first, treal.second) > 1.5)return false;
+	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty), tt = math_n::ztoe(ttx, tty);
+	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second), ttreal = math_n::etoz(tt.first, tt.second);
+	
+	//这样是否可以完全避免不选当前点
+	if (s.first == tt.first && s.second == tt.second)
+		return false;
+	
+	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(sreal.first, sreal.second, ttreal.first, ttreal.second) > 1.5)
+		return false;
 	//连续性的判断方法？（注意参数1.2与二分上界关联）※※※
 	return ObCheck(x, y, tx, ty, desk_num, GetR(goods) + epss, 1);
+
 }
 pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 
@@ -560,7 +598,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			if (dis[Carry(goods)][desk_num][now.first + dxx[obid]][now.second + dyy[obid]] <
 				dis[Carry(goods)][desk_num][now.first][now.second]) {
 				if (startang == Pi * 10)
-					startang = angset[obid];
+					startang = angset[(obid - 1 + 8) % 8];
 			}
 			else {
 				if (startang != Pi * 10) {
@@ -576,14 +614,9 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		startang = -Pi;
 		endang = Pi;
 	}
-	else {
-		if (endang == Pi * 10) {
-			endang = angset[(lim + 1) % 8];
-			if (endang < startang)endang += 2 * Pi;
-		}
-		if (startang == angset[0] || startang == angset[2] || startang == angset[4] || startang == angset[6])
-			startang -= deltaang2;
-		else startang -= 2 * deltaang1;
+	else if (endang == Pi * 10) {
+		endang = angset[(lim + 1) % 8];
+		if (endang < startang)endang += 2 * Pi;
 	}
 
 
@@ -595,38 +628,120 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 
-	double Delt = (endang-startang) / 24, l, r, mid, res, ansang = -1, ansdis = -1, maxdisperreal = -1e9, disperreal;
+
 	
+	output << "numID=" << numID << endl;
+	output << endl;
+	output << "startang=" << startang << endl;
+	output << "endang=" << endang << endl;
+	output << endl;
+	
+
+	double ansang = -1, ansdis = -1, maxdisdown = 0, disdown;
+	double Delt = (endang - startang) / 20, l, r, mid, maxlen, res;
+	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口※※※※※※※
+
 	double realtx, realty;
 	while (startang < endang) {
-		res = -1; l = 0; r = 5;
-		while (r - l >= 0.25) {
+		maxlen = -1; l = 0; r = 5;
+		while (r - l >= 0.125) {
 			mid = (l + r) / 2;
-			if (judge(desk_num, startang, mid))res = mid, l = mid;
+			if (accessjudge(desk_num, startang, mid))maxlen = mid, l = mid;
 			else r = mid;
 		}
-		if (res == -1) {
+
+		if (maxlen == -1) {
 			startang += Delt;
 			continue;
 		}
+
+		output << "nowang=" << startang << endl;
+		output << "maxlen=" << maxlen << endl;
+
+		res = -1;
+		pair<double, double> s, t;
+		pair<int, int>S, T;
+		pair<double, double>p[6];
+		int Crossnum = 1;
+
+		s = make_pair(x, y);
+		t = make_pair(x + maxlen * cos(startang), y + maxlen * sin(startang));
+		S = math_n::ztoe(x, y);
+		T = math_n::ztoe(x + maxlen * cos(startang), y + maxlen * sin(startang));
+		while (S != T) {
+			p[0] = math_n::etoz(S.first, S.second);
+			p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
+			p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
+			p[3] = make_pair(p[0].first + 0.25, p[0].second + 0.25);
+			p[4] = make_pair(p[0].first + 0.25, p[0].second - 0.25);
+			p[5] = p[1];
+			for (int i = 1; i <= 4; i++) {
+				if (Dot(dx[i - 1], dy[i - 1], t.first - s.first, t.second - s.second) <= 0)
+					continue;
+				if (SegmentCross(s, t, p[i], p[i + 1])) {
+					Crossnum = i;
+					break;
+				}
+			}
+			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
+			if (dis[Carry(goods)][desk_num][S.first][S.second] <= dis[Carry(goods)][desk_num][nx][ny]) {
+				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) + 0.03;//这里是否需要加上GetR(goods)
+				break;
+			}
+			S = make_pair(nx, ny);
+		}
+
+		if (res == -1 || res > maxlen)
+			res = maxlen;
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
 		pair<int, int>ss = math_n::ztoe(x, y), tt = math_n::ztoe(realtx, realty);
 		pair<double, double>ssreal = math_n::etoz(ss.first, ss.second), ttreal = math_n::etoz(tt.first, tt.second);
-		disperreal = (dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(ssreal.first, ssreal.second, ttreal.first, ttreal.second);
-		if (disperreal > maxdisperreal || (fabs(disperreal - maxdisperreal) < eps && res > ansdis)) {//可以考虑差在一定范围内就选长的
+		disdown = dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second];
+		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {//可以考虑差在一定范围内就选长的
 			ansang = startang;
 			ansdis = res;
-			maxdisperreal = disperreal;
+			maxdisdown = disdown;
 		}
+		//output << "maxdisdown=" << maxdisdown;
 		startang += Delt;
 	}
 
+	pair<double, double>dest;
 
-	
+	if (maxdisdown < eps) {
+		pair<int, int>temp = math_n::ztoe(x, y);
+		pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
+		double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
+		for (int i = 0; i < 8; i += 2) {
+			if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
+				obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+				break;
+			}
+		}
+		for (int i = 1; i < 8; i += 2) {
+			if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
+				mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
+				gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+			}
+		}
+		dvec = Sub(gettonum, obnum);
+		UnitV(dvec);
+		dest = Add(multi(dvec, 0.5), nownum);
+		output << "numID=" << numID << endl;
+		output << "xy=" << temp.first << " " << temp.second << endl;
+		output << "getto=" << gettonum.first << " " << gettonum.second << endl;
+		output << "ob=" << obnum.first << " " << obnum.second << endl;
+		output << " vec=" << dvec.first << " " << dvec.second << endl;
+		output << "dest=" << dest.first << " " << dest.second << endl;
+		output << endl;
+	}
+
+	dest = make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
+
+	/*
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
-			output << i << "-------------------" << endl;
 			pair<int, int>k;
 			output << "Static" << endl << endl;
 			pair<int, int>deskxy = math_n::ztoe(desk[desk_num].x, desk[desk_num].y);
@@ -645,12 +760,13 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
-	
-	
-	
+	*/
 
-	if (mode == 0)	return mov(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
-	else return make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
+
+
+
+	if (mode == 0)	return mov(dest.first, dest.second);
+	else return dest;
 }
 pair<double, double> Car::Dynamic_Avoidance(int Cnum) {
 	return Static_Avoidance(destination[Cnum], 0);
@@ -667,6 +783,13 @@ pair<double, double> Car::mov(int desk_num)
 		if (car[i].x == x && car[i].y == y) {
 			numID = i; break;
 		}
+
+	/*
+	output << "numID=" << numID << endl;
+	output << "AgainstWall=" << AgainstWall << endl;
+	output << endl;
+	*/
+
 	//步骤一：判断当前小车是否需要进入动态回避模式
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
@@ -692,12 +815,15 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
-		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange / 2) {
+
+
+		//动态避障可以交错判断（加入小车朝向）
+		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 && Dist(x, y, car[i].x, car[i].y) < AlertRange / 1.5) {
 			//加强动态避障判断（Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y)))还不够）※※※
 			if (ChooseAvoider(i))continue;
 			bool Check1 = !Search(x, y, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04), Check2 = !Search(car[i].x, car[i].y, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04);
 			if (Check1 && Check2 && d >= GetR(goods) + GetR(car[i].goods))continue;
-			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 5)continue;//注意这里+1的参数调整
+			if ((!Check1 || !Check2) && d >= GetR(goods) + GetR(car[i].goods) + 2)continue;//注意这里+2的参数调整
 			if (Check1) {
 				if (Check1 && Check2)continue;
 				//else return make_pair(0, 0);//(23012830)
@@ -709,27 +835,6 @@ pair<double, double> Car::mov(int desk_num)
 	if (!ObCheck(x, y, desk[desk_num].x, desk[desk_num].y, desk_num, GetR(goods) + epss, 0))
 		return mov(des[numID].first, des[numID].second);
 
-	
-	/*
-	for (int i = 0; i < 4; i++) {
-		if (x == car[i].x && y == car[i].y) {
-			output << i << "-------------------" << endl;
-			pair<int, int>k;
-			output << "desk" << endl << endl;
-			output << "nowpos" << endl;
-			k = math_n::ztoe(x, y);
-			output << k.first << " " << k.second << endl;
-			output << map[k.first][k.second] << endl;
-			k = math_n::ztoe(desk[desk_num].x, desk[desk_num].y);
-			output << "target" << endl;
-			output << k.first << " " << k.second << endl;
-			output << map[k.first][k.second] << endl;
-			output << endl;
-		}
-	}
-	*/
-	
-	
 
 	return mov(desk[desk_num].x, desk[desk_num].y);
 }
