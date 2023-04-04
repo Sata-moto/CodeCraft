@@ -189,6 +189,11 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 			else r = mid;
 		}
 	}
+
+
+	return res;
+
+
 	return min(res, resv);
 }
 bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, double width, bool Checkbool) {
@@ -517,8 +522,8 @@ pair<double, double> Car::mov(double nx, double ny) {
 
 	double checkforwar = forwar;
 
-	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
-		MarginCheck(forwar);
+	//if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
+		//MarginCheck(forwar);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -629,12 +634,13 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	}
 
 
-	
+	/*
 	output << "numID=" << numID << endl;
 	output << endl;
 	output << "startang=" << startang << endl;
 	output << "endang=" << endang << endl;
 	output << endl;
+	*/
 	
 
 	double ansang = -1, ansdis = -1, maxdisdown = 0, disdown;
@@ -655,8 +661,10 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			continue;
 		}
 
+		/*
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
+		*/
 
 		res = -1;
 		pair<double, double> s, t;
