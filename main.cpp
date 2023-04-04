@@ -50,7 +50,6 @@ void init()
 
 int main()
 {
-	//fdebug.open("data.txt");
 	output.open("test.txt", ios::out);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);

@@ -17,7 +17,7 @@ double Dist(pair<double, double>, pair<double, double>);                  //测�
 double PointToLine(pair<double, double>, pair<double, double>, pair<double, double>);   //测试4                        // 计算点到直线距离
 double PointToSegment(pair<double, double>, pair<double, double>, pair<double, double>);     //测试5                   // 计算点到线段距离
 bool SegmentCross(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);    //测试6  // 判断线段是否相交
-pair<double,double> CrossPoint(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);//测试7     // 线段求交点
+pair<double,double> CrossPoint(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);//测试7     // 直线求交点
 void AdjuAng(double&);                                                                                                 // 调整角度范围使其落在-Pi到Pi之间
 double CombineV(double, double);                                                                                       // 计算合速度（点对形式，非负）
 double CombineV(pair<double, double>);                                                                                 // 计算合速度（向量形式，非负）
