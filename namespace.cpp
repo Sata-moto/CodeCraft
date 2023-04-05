@@ -299,9 +299,9 @@ void map_n::get_dis(int type)
 	for (int i = 1; i <= 100; i++) {
 		for (int j = 1; j <= 100; j++) {
 			output.width(7);
-			if (dis[type][0][i][j] == 1000000000)
+			if (dis[type][10][i][j] == 1000000000)
 				output << 999.999 << "  ";
-			else output << dis[type][0][i][j] << "  ";
+			else output << dis[type][10][i][j] << "  ";
 		}
 		output << endl;
 	}

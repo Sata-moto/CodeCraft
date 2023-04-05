@@ -619,6 +619,9 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		endang = angset[(lim + 1) % 8];
 		if (endang < startang)endang += 2 * Pi;
 	}
+	startang = -Pi;
+	endang = Pi;
+
 
 
 	int numID = -1;
@@ -715,7 +718,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		output << "res=" << res << endl;
 		output << endl;
 
-		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {//可以考虑差在一定范围内就选长的
+		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {
 			ansang = startang;
 			ansdis = res;
 			maxdisdown = disdown;
