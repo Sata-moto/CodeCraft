@@ -292,7 +292,7 @@ void map_n::get_dis(int type)
 	for (int k = 0; k < desk_n::cnt_desk; k++)																																																									
 		dij(k, type);
 
-	
+	/*
 	output.precision(3);
 	output.flags(ios::fixed);
 	output.fill('0');
@@ -305,10 +305,7 @@ void map_n::get_dis(int type)
 		}
 		output << endl;
 	}
-	output << endl;
-	
-
-
+	output << endl;*/
 }
 
 #undef MAXN

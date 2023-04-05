@@ -716,8 +716,8 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		pair<double, double>ssreal = math_n::etoz(ss.first, ss.second), ttreal = math_n::etoz(tt.first, tt.second);
 		disdown = dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second];
 
-		output << "res=" << res << endl;
-		output << endl;
+		//output << "res=" << res << endl;
+		//output << endl;
 
 		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {
 			ansang = startang;
@@ -908,7 +908,7 @@ void calc() {
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
 	des[2] = car[2].Static_Avoidance(destination[2], 1);
 	des[3] = car[3].Static_Avoidance(destination[3], 1);
-	output << "frame_number is " << frame_number << endl;
+	/*output << "frame_number is " << frame_number << endl;
 	output << des[3].first << ' ' << des[3].second << endl;
-	output << endl;
+	output << endl;*/
 }
