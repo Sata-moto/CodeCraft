@@ -237,7 +237,7 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 			//if (t > 100)exit(0);//
 			//output << "S=" << S.first << "," << S.second << endl;//
 			//output << "T=" << T.first << "," << T.second << endl;//
-			if (dis[Carry(goods)][desk_num][S.first][S.second] == 1e9)
+			if (dis[Carry(goods)][desk_num][S.first][S.second] == 1e9 || map[S.first][S.second] == '#')
 				return false;
 			p[0] = math_n::etoz(S.first, S.second);
 			p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
@@ -261,7 +261,7 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 			S = make_pair(nx, ny);
 			//output << endl;//
 		}
-		if (dis[Carry(goods)][desk_num][S.first][S.second] == 1e9)
+		if (dis[Carry(goods)][desk_num][S.first][S.second] == 1e9 || map[S.first][S.second] == '#')
 			return false;
 	}
 	return true;
@@ -572,7 +572,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	int obid = -1, lim = 0;
 	pair<int, int>now = math_n::ztoe(x, y);
 	for (int i = 0; i < 8; i++) {
-		if (dis[Carry(goods)][desk_num][now.first][now.second] == 1e9) {
+		if (dis[Carry(goods)][desk_num][now.first][now.second] == 1e9 || map[now.first][now.second] == '#') {
 			obid = i; break;
 		}
 	}
@@ -587,7 +587,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	lim = obid;
 	obid = (obid + 1) % 8;
 	while (obid != lim) {
-		if (dis[Carry(goods)][desk_num][now.first + dxx[obid]][now.second + dyy[obid]] == 1e9) {
+		if (dis[Carry(goods)][desk_num][now.first + dxx[obid]][now.second + dyy[obid]] == 1e9 || map[now.first + dxx[obid]][now.second + dyy[obid]] == '#') {
 			if (startang != Pi * 10) {
 				endang = angset[(obid + 1) % 8];
 				if (endang < startang)endang += 2 * Pi;
@@ -628,18 +628,21 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 
-
 	/*
+	startang = -Pi;
+	endang = Pi;
+	*/
+	
 	output << "numID=" << numID << endl;
 	output << endl;
 	output << "startang=" << startang << endl;
 	output << "endang=" << endang << endl;
 	output << endl;
-	*/
+	
 	
 
 	double ansang = -1, ansdis = -1, maxdisdown = 0, disdown;
-	double Delt = (endang - startang) / 8, l, r, mid, maxlen, res;
+	double Delt = (endang - startang) / 20, l, r, mid, maxlen, res;
 	//Delt划分过细会导致掉帧，划分过粗糙会导致有些角度无法达到从而使小车卡在较窄的隧道入口※※※※※※※
 
 	double realtx, realty;
@@ -655,11 +658,6 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			startang += Delt;
 			continue;
 		}
-
-		/*
-		output << "nowang=" << startang << endl;
-		output << "maxlen=" << maxlen << endl;
-		*/
 
 		res = -1;
 		pair<double, double> s, t;
@@ -698,9 +696,24 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			res = maxlen;
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
+
+
+		output << "nowang=" << startang << endl;
+		output << "maxlen=" << maxlen << endl;
+
+
 		pair<int, int>ss = math_n::ztoe(x, y), tt = math_n::ztoe(realtx, realty);
+
+		output << "ss=" << ss.first << " " << ss.second << endl;
+		output << "tt=" << tt.first << " " << tt.second << endl;
+
+
 		pair<double, double>ssreal = math_n::etoz(ss.first, ss.second), ttreal = math_n::etoz(tt.first, tt.second);
 		disdown = dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second];
+
+		output << "res=" << res << endl;
+		output << endl;
+
 		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {//可以考虑差在一定范围内就选长的
 			ansang = startang;
 			ansdis = res;
@@ -713,20 +726,26 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	pair<double, double>dest;
 
 	if (maxdisdown < eps) {
-		if (Carry(goods) == 0) {
-			pair<int, int>temp = math_n::ztoe(x, y);
-			pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
-			double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
+		pair<int, int>temp = math_n::ztoe(x, y);
+		pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
+		double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
+		if (!goods) {
 			for (int i = 0; i < 8; i += 2) {
-				if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
-					obnum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+				int nx = temp.first + dxx[i], ny = temp.second + dyy[i];
+				if (nx < 0 || nx>101 || ny < 0 || ny>101)
+					continue;
+				if (map[nx][ny] == '#') {
+					obnum = make_pair(nx, ny);
 					break;
 				}
 			}
 			for (int i = 1; i < 8; i += 2) {
-				if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
-					mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
-					gettonum = make_pair(temp.first + dxx[i], temp.second + dyy[i]);
+				int nx = temp.first + dxx[i], ny = temp.second + dyy[i];
+				if (nx < 0 || nx>101 || ny < 0 || ny>101)
+					continue;
+				if (dis[Carry(goods)][desk_num][nx][ny] < mindis) {
+					mindis = dis[Carry(goods)][desk_num][nx][ny];
+					gettonum = make_pair(nx, ny);
 				}
 			}
 			dvec = Sub(gettonum, obnum);
@@ -734,31 +753,49 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			dest = Add(multi(dvec, 0.5), make_pair(x, y));
 		}
 		else {
-			/*
-			pair<int, int>temp = math_n::ztoe(x, y);
-			pair<double, double>obnum, gettonum, dvec, nownum = make_pair(temp.first, temp.second);
-			double mindis = dis[Carry(goods)][desk_num][temp.first][temp.second];
-			for (int i = 0; i < 8; i += 2) {
-				if (map[temp.first + dxx[i]][temp.second + dyy[i]] == '#') {
-					obnum = make_pair(nownum.first + dxx[i], nownum.second + dyy[i]);
-					break;
-				}
-			}
 			for (int i = 1; i < 8; i += 2) {
-				if (dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]] < mindis) {
-					mindis = dis[Carry(goods)][desk_num][temp.first + dxx[i]][temp.second + dyy[i]];
-					gettonum = make_pair(nownum.first + dxx[i], nownum.second + dyy[i]);
+				int nx = temp.first + dxx[i] + dxx[i], ny = temp.second + dyy[i] + dyy[i];
+				if (nx < 0 || nx>101 || ny < 0 || ny>101)
+					continue;
+				if (dis[Carry(goods)][desk_num][nx][ny] < mindis) {
+					mindis = dis[Carry(goods)][desk_num][nx][ny];
+					gettonum = make_pair(nx, ny);
+					int nxx1 = nx + dxx[(i + 2) % 8], nyy1 = ny + dyy[(i + 2) % 8];
+					int nxx2 = nx + dxx[(i + 2) % 8] + dxx[(i + 2) % 8], nyy2 = ny + dyy[(i + 2) % 8] + ny + dyy[(i + 2) % 8];
+					if ((nxx1 >= 0 && nxx1 <= 101 && nyy1 >= 0 && nyy1 <= 101 && map[nxx1][nyy1] == '#') ||
+						(nxx2 >= 0 && nxx2 <= 101 && nyy2 >= 0 && nyy2 <= 101 && map[nxx2][nyy2] == '#')) {
+						dvec = Sub(gettonum, make_pair(nxx1, nyy1));
+					}
+					else dvec = Sub(gettonum, make_pair(nx + dxx[(i + 6) % 8], ny + dyy[(i + 6) % 8]));
 				}
 			}
-			dvec = Sub(gettonum, obnum);
+			if (fabs(dvec.first) < eps && fabs(dvec.second) < eps) {
+				for (int i = 0; i < 8; i += 2) {
+					int nx = temp.first + dxx[i], ny = temp.second + dyy[i];
+					if (nx < 0 || nx>101 || ny < 0 || ny>101)
+						continue;
+					if (map[nx][ny] == '#') {
+						obnum = make_pair(nx, ny);
+						break;
+					}
+				}
+				for (int i = 1; i < 8; i += 2) {
+					int nx = temp.first + dxx[i], ny = temp.second + dyy[i];
+					if (nx < 0 || nx>101 || ny < 0 || ny>101)
+						continue;
+					if (dis[Carry(goods)][desk_num][nx][ny] < mindis) {
+						mindis = dis[Carry(goods)][desk_num][nx][ny];
+						gettonum = make_pair(nx, ny);
+					}
+				}
+				dvec = Sub(gettonum, obnum);
+			}
 			UnitV(dvec);
 			dest = Add(multi(dvec, 0.5), make_pair(x, y));
-			*/
 		}
 	}
 	else dest = make_pair(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
 
-	/*
 	
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
@@ -781,7 +818,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		}
 	}
 	
-	*/
+	
 
 	if (mode == 0)	return mov(dest.first, dest.second);
 	else return dest;
@@ -802,11 +839,14 @@ pair<double, double> Car::mov(int desk_num)
 			numID = i; break;
 		}
 
-	/*
+	
+	pair<int, int>df = math_n::ztoe(x, y);
 	output << "numID=" << numID << endl;
-	output << "AgainstWall=" << AgainstWall << endl;
+	output << "dis=" << dis[Carry(goods)][desk_num][df.first][df.second] << endl;
 	output << endl;
-	*/
+
+
+
 
 	//步骤一：判断当前小车是否需要进入动态回避模式
 	for (int i = 0; i < 4; i++) {
