@@ -4,7 +4,7 @@
 #include <queue>
 #include <iostream>
 
-ofstream output;
+//ofstream output;
 int seed_n::seed = 0;
 int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
 int seed_n::seed_MOD = 998244353;
@@ -285,27 +285,28 @@ void map_n::dij(int desk_num, int type)
 void map_n::get_dis(int type)
 {
 	for (int k = 0; k < desk_n::cnt_desk; k++)
-		for (int i = 1; i <= 100; i++)
-			for (int j = 1; j <= 100; j++)
+		for (int i = 0; i <= 101; i++)
+			for (int j = 0; j <= 101; j++)
 				dis[type][k][i][j] = MAXN;
 
 	for (int k = 0; k < desk_n::cnt_desk; k++)																																																									
 		dij(k, type);
 
-	
+	/*
 	output.precision(3);
 	output.flags(ios::fixed);
 	output.fill('0');
 	for (int i = 1; i <= 100; i++) {
 		for (int j = 1; j <= 100; j++) {
 			output.width(7);
-			if (dis[type][10][i][j] == 1000000000)
+			if (fabs(dis[type][9][i][j] - 1e9) < 1e-2)
 				output << 999.999 << "  ";
-			else output << dis[type][10][i][j] << "  ";
+			else output << dis[type][9][i][j] << "  ";
 		}
 		output << endl;
 	}
 	output << endl;
+	*/
 	
 
 
