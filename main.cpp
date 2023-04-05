@@ -8,20 +8,21 @@
 #include "decision.h"
 #include "iomanip"
 
+char map2[N][N];
+int temp_desk_num[N][N];
 void init()
 {
 	son[4][0] = 1, son[4][1] = 2;
 	son[5][0] = 1, son[5][1] = 3;
 	son[6][0] = 2, son[6][1] = 3;
 
-	int cnt = 0, temp_desk_num[N][N];
+	int cnt = 0;
 	memset(temp_desk_num, 0, sizeof(temp_desk_num));
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)
 			if (map[k][i] >= '0' && map[k][i] <= '9')
 				temp_desk_num[k][i] = cnt++;
 
-	char map2[N][N];
 	memcpy(map2, map, sizeof(map));
 	for (int k = 1; k <= 100; k++)
 		for (int i = 1; i <= 100; i++)

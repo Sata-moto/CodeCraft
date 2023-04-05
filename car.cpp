@@ -189,6 +189,7 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 			else r = mid;
 		}
 	}
+
 	return res;
 
 	return min(res, resv);
@@ -208,7 +209,7 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 	//output << "Vertvec2 " << Vertvec2.first << " " << Vertvec2.second << endl;
 
 	//判断终点一定范围内没有障碍物※※※（是否需要配合到终点减速？可能不需要）Checkbool用于判断是否需要判断终点附近的障碍物情况
-	if (Checkbool  && Search(x2, y2, GetR(goods)))return false;
+	if (Checkbool && Search(x2, y2, GetR(goods)))return false;
 
 	q.push(make_pair(x2, y2));
 	q.push(make_pair(x1, y1));
@@ -519,8 +520,8 @@ pair<double, double> Car::mov(double nx, double ny) {
 
 	double checkforwar = forwar;
 
-//	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
-		//MarginCheck(forwar);
+	//	if (desk[destination[numID]].x != nx || desk[destination[numID]].y != ny)
+			//MarginCheck(forwar);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -557,11 +558,11 @@ bool Car::accessjudge(int desk_num, double Ang, double d) {
 	if (tx < 0 || tx>50 || ty < 0 || ty>50) return false;//判断是否越界
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(tx, ty), tt = math_n::ztoe(ttx, tty);
 	pair<double, double>sreal = math_n::etoz(s.first, s.second), treal = math_n::etoz(t.first, t.second), ttreal = math_n::etoz(tt.first, tt.second);
-	
+
 	//这样是否可以完全避免不选当前点
 	if (s.first == tt.first && s.second == tt.second)
 		return false;
-	
+
 	if ((dis[Carry(goods)][desk_num][s.first][s.second] - dis[Carry(goods)][desk_num][tt.first][tt.second]) / Dist(sreal.first, sreal.second, ttreal.first, ttreal.second) > 1.5)
 		return false;
 	//连续性的判断方法？（注意参数1.2与二分上界关联）※※※
@@ -573,11 +574,6 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	double startang = Pi * 10, endang = Pi * 10;
 	int obid = -1, lim = 0;
 	pair<int, int>now = math_n::ztoe(x, y);
-	for (int i = 0; i < 8; i++) {
-		if (dis[Carry(goods)][desk_num][now.first][now.second] == 1e9) {
-			obid = i; break;
-		}
-	}
 	if (obid == -1) {
 		for (int i = 0; i < 8; i++) {
 			if (dis[Carry(goods)][desk_num][now.first + dxx[i]][now.second + dyy[i]] >
@@ -638,7 +634,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	output << "endang=" << endang << endl;
 	output << endl;
 	*/
-	
+
 
 	double ansang = -1, ansdis = -1, maxdisdown = 0, disdown;
 	double Delt = (endang - startang) / 8, l, r, mid, maxlen, res;
@@ -770,7 +766,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 
 	/*
 	output << "dest=" << dest.first << " " << dest.second << endl;
-	
+
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			pair<int, int>k;
@@ -791,7 +787,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			output << endl;
 		}
 	}
-	
+
 	*/
 
 
@@ -872,4 +868,5 @@ void calc() {
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
 	des[2] = car[2].Static_Avoidance(destination[2], 1);
 	des[3] = car[3].Static_Avoidance(destination[3], 1);
+	output << des[3].first << ' ' << des[3].second << endl;
 }
