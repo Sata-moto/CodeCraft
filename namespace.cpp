@@ -289,7 +289,7 @@ void map_n::get_dis(int type)
 			for (int j = 1; j <= 100; j++)
 				dis[type][k][i][j] = MAXN;
 
-	for (int k = 0; k < desk_n::cnt_desk; k++)
+	for (int k = 0; k < desk_n::cnt_desk; k++)																																																									
 		dij(k, type);
 
 	
