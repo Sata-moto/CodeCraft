@@ -22,8 +22,6 @@ void AdjuAng(double&);                                                          
 double CombineV(double, double);                                                                                       // 计算合速度（点对形式，非负）
 double CombineV(pair<double, double>);                                                                                 // 计算合速度（向量形式，非负）
 void UnitV(pair<double, double>&);                                                                                     // 单位化向量
-void DFS(pair<int, int>, pair<double, double>, double);                                                                // 搜索一定范围的格子并判断是否是障碍物
-bool Search(double, double, double);                                                                                   // 判断一定范围内是否有障碍物（半径不宜过大）
 
 struct Car
 {
@@ -39,6 +37,8 @@ struct Car
 	double CalcRotate(double, double, double);                      // 根据偏向角计算角速度
 	double CalcForward(double, double, double);                     // 根据偏向角计算前进速度
 	bool ObCheck(double, double, double, double, int, double, bool);// 碰撞检测（包含最小容忍宽度）
+	void DFS(pair<int, int>, pair<double, double>, int, double);    // 搜索一定范围的格子并判断是否是障碍物
+	bool Search(double, double, int, double);                       // 判断一定范围内是否有障碍物（半径不宜过大）
 
 	//避障
 	void MarginCheck(double&);                                      // 地图边界避障
