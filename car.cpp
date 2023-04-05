@@ -694,7 +694,8 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			}
 			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
 			if (dis[Carry(goods)][desk_num][S.first][S.second] <= dis[Carry(goods)][desk_num][nx][ny]) {
-				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) - 0.03;//这里有无更精准的移动方式？
+				res = Dist(CrossPoint(s, t, p[Crossnum], p[Crossnum + 1]), s) - 0.03;
+				//这里有无更精准的移动方式？（增大参数或许可以在一定程度上避免小车过度行驶问题）※※※※※※※※
 				break;
 			}
 			S = make_pair(nx, ny);
