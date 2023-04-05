@@ -133,21 +133,14 @@ int main()
 		}
 
 		calc();
-		output << "frame_number=" << frame_number << endl;
-		output << endl;
 		for (int k = 0; k < 4; k++)
 		{
 			pair<double, double> temp;
 			temp = car[k].mov(destination[k]);
-			
-			output << "forward=" << temp.first << "rotate=" << temp.second << endl;
-
 			printf("forward %d %lf\n", k, temp.first);
 			printf("rotate %d %lf\n", k, temp.second);
 			//每个小车朝当前的目的地前进
 		}
-		output << endl;
-
 		printf("OK\n");
 		fflush(stdout);
 	}
