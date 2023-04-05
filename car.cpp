@@ -635,12 +635,12 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	endang = Pi;
 	*/
 	
-	output << "numID=" << numID << endl;
+	/*output << "numID=" << numID << endl;
 	output << endl;
 	output << "startang=" << startang << endl;
 	output << "endang=" << endang << endl;
 	output << endl;
-	
+	*/
 	
 
 	double ansang = -1, ansdis = -1, maxdisdown = -1e9, disdown;
@@ -699,23 +699,23 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		realtx = x + res * cos(startang);
 		realty = y + res * sin(startang);
 
-
+		/*
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
-
+		*/
 
 		pair<int, int>ss = math_n::ztoe(x, y), tt = math_n::ztoe(realtx, realty);
 
-		output << "ss=" << ss.first << " " << ss.second << endl;
-		output << "tt=" << tt.first << " " << tt.second << endl;
+		//output << "ss=" << ss.first << " " << ss.second << endl;
+		//output << "tt=" << tt.first << " " << tt.second << endl;
 
 
 		pair<double, double>ssreal = math_n::etoz(ss.first, ss.second), ttreal = math_n::etoz(tt.first, tt.second);
 		disdown = dis[Carry(goods)][desk_num][ss.first][ss.second] - dis[Carry(goods)][desk_num][tt.first][tt.second];
 
-		output << "res=" << res << endl;
-		output << endl;
-
+		//output << "res=" << res << endl;
+		//output << endl;
+		
 		if (disdown > maxdisdown || (fabs(disdown - maxdisdown) < eps && res < ansdis)) {//可以考虑差在一定范围内就选长的
 			ansang = startang;
 			ansdis = res;
@@ -805,21 +805,21 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
 			pair<int, int>k;
-			output << "Static" << endl << endl;
+			//output << "Static" << endl << endl;
 			pair<int, int>deskxy = math_n::ztoe(desk[desk_num].x, desk[desk_num].y);
 
 			//output<<"Target desk_xy="<<
-			output << "nowpos" << endl;
+			//output << "nowpos" << endl;
 			k = math_n::ztoe(x, y);
-			output << k.first << " " << k.second << endl;
-			output << map[k.first][k.second] << endl;
+			//output << k.first << " " << k.second << endl;
+			//output << map[k.first][k.second] << endl;
 			k = math_n::ztoe(x + ansdis * cos(ansang), y + ansdis * sin(ansang));
-			output << "target" << endl;
+			/*output << "target" << endl;
 			output << k.first << " " << k.second << endl;
 			output << map[k.first][k.second] << endl;
 			output << "ansdis=" << ansdis << endl;
 			output << "ansang=" << ansang << endl;
-			output << endl;
+			output << endl;*/
 		}
 	}
 	
@@ -846,10 +846,10 @@ pair<double, double> Car::mov(int desk_num)
 
 	
 	pair<int, int>df = math_n::ztoe(x, y);
-	output << "numID=" << numID << endl;
+	/*output << "numID=" << numID << endl;
 	output << "dis=" << dis[Carry(goods)][desk_num][df.first][df.second] << endl;
 	output << endl;
-
+	*/
 
 
 
@@ -905,5 +905,7 @@ void calc() {
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
 	des[2] = car[2].Static_Avoidance(destination[2], 1);
 	des[3] = car[3].Static_Avoidance(destination[3], 1);
+	output << "frame_number is " << frame_number << endl;
 	output << des[3].first << ' ' << des[3].second << endl;
+	output << endl;
 }
