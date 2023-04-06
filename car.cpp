@@ -151,7 +151,6 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 
 	double l = 0, r = 6, mid, resv = 0;
 	while (r - l >= 0.01) {
-		assist_n::check_jump_frame(0);
 		mid = (l + r) / 2;
 		if (mid * mid / A * 0.5 > diss)r = mid;
 		else {
@@ -191,7 +190,6 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 	q.push(make_pair(x2 + Vertvec2.first * width * 0.5, y2 + Vertvec2.second * width * 0.5));
 	q.push(make_pair(x1 + Vertvec2.first * width * 0.5, y1 + Vertvec2.second * width * 0.5));
 	while (!q.empty()) {
-		assist_n::check_jump_frame(1);
 		realS = q.front(); q.pop();
 		realT = q.front(); q.pop();
 		if (realS.first < 0 || realS.first>50 || realS.second < 0 || realS.second>50)return false;
@@ -203,7 +201,6 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 		int Crossnum = 1;
 		//int t = 0;//
 		while (S != T) {
-			assist_n::check_jump_frame(2);
 			//if (++t > 100)output << "no!" << endl;//
 			//if (t > 100)exit(0);//
 			//output << "S=" << S.first << "," << S.second << endl;//
@@ -455,7 +452,6 @@ void Car::MarginCheck(double& forwar, int desk_num) {
 	//判断是否可能发生边界碰撞并修改速度设定值
 	double l = 0, r = 50, mid, res = 0;
 	while (r - l >= 0.05) {
-		assist_n::check_jump_frame(3);
 		mid = (l + r) / 2;
 		double tx = x + mid * cos(ang), ty = y + mid * sin(ang);
 		if (tx < 0 || tx>50 || ty < 0 || ty>50)r = mid;
@@ -469,7 +465,6 @@ void Car::MarginCheck(double& forwar, int desk_num) {
 	l = 0; r = 6;
 	double resv = 0;
 	while (r - l >= 0.01) {
-		assist_n::check_jump_frame(4);
 		mid = (l + r) / 2;
 		if (mid * mid / A * 0.5 > res)r = mid;
 		else {
@@ -618,10 +613,8 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 
 	double realtx, realty;
 	while (startang < endang) {
-		assist_n::check_jump_frame(5);
 		maxlen = -1; l = 0; r = 5;
 		while (r - l >= 0.125) {
-			assist_n::check_jump_frame(6);
 			mid = (l + r) / 2;
 			if (accessjudge(desk_num, startang, mid, 0.02))maxlen = mid, l = mid;
 			else r = mid;
@@ -643,7 +636,6 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 		S = math_n::ztoe(x, y);
 		T = math_n::ztoe(x + maxlen * cos(startang), y + maxlen * sin(startang));
 		while (S != T) {
-			assist_n::check_jump_frame(7);
 			p[0] = math_n::etoz(S.first, S.second);
 			p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
 			p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
@@ -906,12 +898,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	pair<double, double>lsta2 = lassta2, lsta3 = lassta3;
 
 	int numm = Avoidnum;
-	while (car[numm].FindAvoid)
-	{
-		output << "numm is " << numm << endl;
-		assist_n::check_jump_frame(8);
-		numm = car[numm].Avoidnum;
-	}
+	while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
 	pair<double, double>StaPo = Static_Avoidance(destination[numm], 1);
 	pair<int, int>newnum = math_n::ztoe(StaPo.first, StaPo.second);
 	pair<int, int>s1 = math_n::ztoe(lassta.first, lassta.second);
@@ -956,7 +943,6 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	}
 
 	while (startang < endang) {
-		assist_n::check_jump_frame(9);
 		Vecp = getVec(startang);
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
 			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps)) {
@@ -966,7 +952,6 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 		l = 0; r = 4; maxlen = -1;
 		while (r - l >= 0.01) {
-			assist_n::check_jump_frame(10);
 			mid = (l + r) / 2;
 			double tx = sx + mid * cos(startang), ty = sy + mid * sin(startang);
 			pair<int, int>tt = math_n::ztoe(tx, ty);
@@ -1010,7 +995,6 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	deltaang = Pi / 2;
 
 	while (startang < endang) {
-		assist_n::check_jump_frame(11);
 		Vecp = getVec(startang);
 		output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
@@ -1020,7 +1004,6 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		}
 		l = 0; r = 50; maxlen = -1;
 		while (r - l >= 0.01) {
-			assist_n::check_jump_frame(12);
 			mid = (l + r) / 2;
 			double tx = sx + mid * cos(startang), ty = sy + mid * sin(startang);
 			pair<int, int>tt = math_n::ztoe(tx, ty);
@@ -1047,7 +1030,6 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		int Crossnum = 1;
 
 		while (S != T) {
-			assist_n::check_jump_frame(13);
 			p[0] = math_n::etoz(S.first, S.second);
 			p[1] = make_pair(p[0].first - 0.25, p[0].second - 0.25);
 			p[2] = make_pair(p[0].first - 0.25, p[0].second + 0.25);
@@ -1089,7 +1071,18 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 	if (mode == 0) {
 		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 	else {
 		if (FindAvoid == 1)return make_pair(StaPo.first, StaPo.second);
@@ -1130,11 +1123,7 @@ pair<double, double> Car::mov(int desk_num)
 		if (!car[i].FindAvoid)continue;
 		if (car[i].Avoidnum != numID)continue;
 		int numm = numID;
-		while (car[numm].FindAvoid)
-		{
-			assist_n::check_jump_frame(14);
-			numm = car[numm].Avoidnum;
-		}
+		while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
 		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0) &&
 			Dot(des[numm], make_pair(car[i].x - x, car[i].y - y)) > 0)
 			return make_pair(0.0, 0.0);
@@ -1143,7 +1132,18 @@ pair<double, double> Car::mov(int desk_num)
 	if (FindAvoid > 1) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 	else if (FindAvoid == 1)
 		return Static_Avoidance(destination[Avoidnum], 0);
@@ -1197,7 +1197,18 @@ pair<double, double> Car::mov(int desk_num)
 	if (FindAvoid) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 
 
@@ -1215,15 +1226,17 @@ void calc() {
 		if (car[i].FindAvoid == 3 && (Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) > 4 || car[i].goodsrec != car[car[i].Avoidnum].goods))
 			car[i].FindAvoid = 0;
 	}
-	for (int i = 0; i < 4; i++) 
+	for (int i = 0; i < 4; i++) {
 		if (car[i].FindAvoid == 1)
 			car[i].Dynamic_Avoidance(0);
+	}
 	t = 0;
 	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
 	des[0] = car[0].Static_Avoidance(destination[0], 1);
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
 	des[2] = car[2].Static_Avoidance(destination[2], 1);
 	des[3] = car[3].Static_Avoidance(destination[3], 1);
+
 	/*
 	output << "frame_number is " << frame_number << endl;
 	output << des[3].first << ' ' << des[3].second << endl;
