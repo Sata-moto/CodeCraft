@@ -534,6 +534,7 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
 //新版
 bool Car::ChooseAvoider(int Cnum) {
+	if (FindAvoid)return true;
 	int numID = -1;
 	for (int i = 0; i < 4; i++) {
 		if (x == car[i].x && y == car[i].y) {
@@ -541,9 +542,19 @@ bool Car::ChooseAvoider(int Cnum) {
 			break;
 		}
 	}
-	if ((!car[Cnum].FindAvoid || (car[Cnum].FindAvoid && car[Cnum].Avoidnum == numID))
-		&& (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
-		return true;//需要加入对方向上是否有可避让空间的判断※※※
+	int numm = Cnum;
+	bool Chw;
+	if (!car[Cnum].FindAvoid) 
+		Chw = true;
+	else {
+		Chw = (car[numm].Avoidnum == numID);
+		while (car[numm].FindAvoid) {
+			numm = car[numm].Avoidnum;
+			Chw |= (car[numm].Avoidnum == numID);
+		}
+	}
+	if (Chw && (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
+		return true;
 	return false;
 }
 bool Car::accessjudge(int desk_num, double Ang, double d, double deltaeps) {
