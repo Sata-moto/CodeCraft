@@ -936,7 +936,11 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
 		VecA3 = VecA;
 
-	if (Dot(VecA, VecA3) <= 0) {
+	pair<double, double>dir = getVec(ang);
+	pair<double, double>cardir = make_pair(x - car[Avoidnum].x, y - car[Avoidnum].y);
+	if (!ObCheck(x, y, car[Avoidnum].x, car[Avoidnum].y, 51, 0, 0))cardir = make_pair(0.0, 0.0);
+
+	if (Dot(VecA, VecA3) <= 0 || Dot(VecA, dir) <= 0 || Dot(VecA3, dir) <= 0) {
 		if (mode == 0)
 			return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
 		else return make_pair(StaPo.first, StaPo.second);
@@ -945,7 +949,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	while (startang < endang) {
 		Vecp = getVec(startang);
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
-			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps)) {
+			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
 			startang += deltaang;
 			continue;
 		}
@@ -998,7 +1002,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		Vecp = getVec(startang);
 		output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
-			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps)) {
+			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
 				startang += deltaang;
 				continue;
 		}
@@ -1015,7 +1019,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				l = mid;
 				continue;
 			}
-			if (ObCheck(sx, sy, tx, ty, destination[Avoidnum], GetR(goods), 0))maxlen = mid, l = mid;
+			if (ObCheck(sx, sy, tx, ty, destination[Avoidnum], GetR(goods), 1))maxlen = mid, l = mid;
 			else r = mid;
 		}
 
@@ -1059,7 +1063,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
 
-		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 1.2) {
+		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods)) {
 			setto = make_pair(x + (Dist(realS, goodPoint) + 1.2) * cos(startang),
 				y + (Dist(realS, goodPoint) + 1.2) * sin(startang));
 			FindAvoid = 2;
@@ -1112,6 +1116,7 @@ pair<double, double> Car::mov(int desk_num)
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
+	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
 
