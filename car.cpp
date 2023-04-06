@@ -1063,9 +1063,9 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
 
-		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods)) {
-			setto = make_pair(x + (Dist(realS, goodPoint) + 1.2) * cos(startang),
-				y + (Dist(realS, goodPoint) + 1.2) * sin(startang));
+		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
+			setto = make_pair(x + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * cos(startang),
+				y + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * sin(startang));
 			FindAvoid = 2;
 			break;
 		}
@@ -1076,7 +1076,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	if (mode == 0) {
 		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
 		else {
-			if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
+			/*if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
 				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
@@ -1085,7 +1085,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
 				else return mov(setto.first, setto.second, destination[Avoidnum]);
 			}
-			else return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[Avoidnum]);
 		}
 	}
 	else {
@@ -1138,7 +1138,7 @@ pair<double, double> Car::mov(int desk_num)
 		if (Reach)
 			return make_pair(0.0, 0.0);
 		else {
-			if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
+			/*if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
 				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
@@ -1147,7 +1147,7 @@ pair<double, double> Car::mov(int desk_num)
 				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
 				else return mov(setto.first, setto.second, destination[Avoidnum]);
 			}
-			else return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[Avoidnum]);
 		}
 	}
 	else if (FindAvoid == 1)
@@ -1179,8 +1179,8 @@ pair<double, double> Car::mov(int desk_num)
 
 		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 &&
 			Dot(Sub(des[i], make_pair(car[i].x, car[i].y)), Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
-			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04) ||
-				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04))) {
+			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
+				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.03))) {
 			if (!ChooseAvoider(i)) {
 				FindAvoid = 1;
 				Reach = false;
@@ -1203,7 +1203,7 @@ pair<double, double> Car::mov(int desk_num)
 		if (Reach)
 			return make_pair(0.0, 0.0);
 		else {
-			if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
+			/*if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
 				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
@@ -1212,7 +1212,7 @@ pair<double, double> Car::mov(int desk_num)
 				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
 				else return mov(setto.first, setto.second, destination[Avoidnum]);
 			}
-			else return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[Avoidnum]);
 		}
 	}
 
