@@ -1060,7 +1060,18 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 	if (mode == 0) {
 		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 	else {
 		if (FindAvoid == 1)return make_pair(StaPo.first, StaPo.second);
@@ -1110,7 +1121,18 @@ pair<double, double> Car::mov(int desk_num)
 	if (FindAvoid > 1) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 	else if (FindAvoid == 1)
 		return Static_Avoidance(destination[Avoidnum], 0);
@@ -1164,7 +1186,18 @@ pair<double, double> Car::mov(int desk_num)
 	if (FindAvoid) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
-		else return mov(setto.first, setto.second, destination[Avoidnum]);
+		else {
+			if ((fabs(x - setto.first) > 0.05 && fabs(y - setto.second) > 0.05)) {
+				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
+				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
+				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
+				else return mov(setto.first, setto.second, destination[Avoidnum]);
+			}
+			else return mov(setto.first, setto.second, destination[Avoidnum]);
+		}
 	}
 
 
@@ -1175,14 +1208,16 @@ pair<double, double> Car::mov(int desk_num)
 }
 void calc() {
 	for (int i = 0; i < 4; i++) {
-		if (car[i].FindAvoid == 1)
-			car[i].Dynamic_Avoidance(0);
 		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.05)
 			car[i].Reach = true;
 		if (car[i].FindAvoid == 2 && Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) <= 4)
 			car[i].FindAvoid = 3;
 		if (car[i].FindAvoid == 3 && (Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) > 4 || car[i].goodsrec != car[car[i].Avoidnum].goods))
 			car[i].FindAvoid = 0;
+	}
+	for (int i = 0; i < 4; i++) {
+		if (car[i].FindAvoid == 1)
+			car[i].Dynamic_Avoidance(0);
 	}
 	t = 0;
 	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
