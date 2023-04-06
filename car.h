@@ -29,29 +29,36 @@ struct Car
 	double timerate, hitrate;                                       // 时间价值系数，碰撞价值系数
 	double vx, vy, w;                                               // 二维线速度向量，角速度
 	double ang, x, y;                                               // 朝向角度，坐标
+	int FindAvoid, Avoidnum;                                        // 是否处于正在寻找回避点的状态（1表示正在回避，2表示已经回避好，3表示被回避小车进入范围，4表示被回避小车离开范围），正在回避的小车编号
+	bool Reach;                                                      // 小车是否抵达目标点
+	pair<double, double> setto;                                     // 小车在动态回避二阶段应去的点
+	pair<double, double>lassta, lassta2, lassta3;                   // 在动态避障中上一次要去的点
 
 	//小车
-	int Carry(int);                                                 // 判断当前小车是否持有物品
-	double GetR(int);                                               // 根据是否持有物品返回当前半径
-	double CalcAng(double, double);                                 // 计算当前朝向与目标点的偏向角
-	double CalcRotate(double, double, double);                      // 根据偏向角计算角速度
-	double CalcForward(double, double, double);                     // 根据偏向角计算前进速度
-	bool ObCheck(double, double, double, double, int, double, bool);// 碰撞检测（包含最小容忍宽度）
-	void DFS(pair<int, int>, pair<double, double>, int, double);    // 搜索一定范围的格子并判断是否是障碍物
-	bool Search(double, double, int, double);                       // 判断一定范围内是否有障碍物（半径不宜过大）
+	int Carry(int);                                                           // 判断当前小车是否持有物品
+	double GetR(int);                                                         // 根据是否持有物品返回当前半径
+	double CalcAng(double, double);                                           // 计算当前朝向与目标点的偏向角
+	double CalcRotate(double, double, int, double);                           // 根据偏向角计算角速度
+	double CalcForward(double, double, double);                               // 根据偏向角计算前进速度
+	bool ObCheck(double, double, double, double, int, double, bool);          // 碰撞检测（包含最小容忍宽度）
+	void DFS(pair<int, int>, pair<double, double>, int, double);              // 搜索一定范围的格子并判断是否是障碍物
+	bool Search(double, double, int, double);                                 // 判断一定范围内是否有障碍物（半径不宜过大）
 
 	//避障
-	void MarginCheck(double&);                                      // 地图边界避障
-	void CarCrashCheck(double&, double&);                           // 仅小车避障
+	void MarginCheck(double&, int);                                           // 地图边界避障
+	void CarCrashCheck(double&, double&, int);                                // 仅小车避障
 
-	bool ChooseAvoider(int);                                        // 判断当前情况下是否应该由另一小车避让
-	bool accessjudge(int, double, double);                          // 判断当前角度一定距离是否可以通行
-	pair<double, double> Static_Avoidance(int, int);                // 静态避障（仅考虑障碍物避障）
-	pair<double, double> Dynamic_Avoidance(int);                    // 动态避障（小车+障碍物避障）
+	bool ChooseAvoider(int);                                                  // 判断当前情况下是否应该由另一小车避让
+	bool accessjudge(int, double, double, double);                            // 判断当前角度一定距离是否可以通行
+	pair<double, double> Static_Avoidance(int, int);                          // 静态避障（仅考虑障碍物避障）
+	void DFSAccess(pair<int, int>, pair<double, double>, int, int, double);   // 判断以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
+	bool SearchAccess(pair<int, int>, pair<double, double>, int, int, double);// 判断以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
+	bool AvoidCheck(double, double, double&);                                 // 判断走到某位置是否能实现对另一小车的避让
+	pair<double, double> Dynamic_Avoidance();                                 // 动态避障（小车+障碍物避障）
 
 	//移动决策输出
-	pair<double, double> mov(double, double);                       // 将小车向目标点移动（坐标形式，仅有小车避障）
-	pair<double, double> mov(int);                                  // 将小车向目标点移动（目标点编号形式，加入障碍物避障）
+	pair<double, double> mov(double, double, int);                            // 将小车向目标点移动（坐标形式，仅有小车避障）
+	pair<double, double> mov(int);                                            // 将小车向目标点移动（目标点编号形式，加入障碍物避障）
 };
 extern Car car[5];
 
