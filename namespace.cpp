@@ -289,7 +289,7 @@ void map_n::get_dis(int type)
 			for (int j = 0; j <= 101; j++)
 				dis[type][k][i][j] = MAXN;
 
-	for (int k = 0; k < desk_n::cnt_desk; k++)																																																									
+	for (int k = 0; k < desk_n::cnt_desk; k++)
 		dij(k, type);
 
 	/*
@@ -307,7 +307,7 @@ void map_n::get_dis(int type)
 	}
 	output << endl;
 	*/
-	
+
 
 
 }
@@ -413,6 +413,14 @@ bool assist_n::check_spare_7(int type)		//当前是否有空闲的 7 号工作�
 		}
 	}
 	return false;
+}
+
+static int assist_n::check_times[15] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+
+void assist_n::check_jump_frame(int num)
+{
+	if (check_times[num]++ % 8000000 == 0)
+		output << "now is " << num << endl << endl;
 }
 
 void command_n::Sel(int car_num, int desk_num, int Check)

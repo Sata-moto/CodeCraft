@@ -91,6 +91,8 @@ namespace assist_n
 	extern bool full_6(int desk_num, int goods); //当前物品送到后，判断 4-6 号工作台是不是已经满了
 	extern bool full_7(int dest, int goods);	 //当前物品送到后，判断 7 号工作台是不是已经满了
 	extern bool check_spare_7(int type);		//当前是否有空闲的 7 号工作台
+	extern void check_jump_frame(int num);
+	extern int check_times[15];
 }
 
 namespace command_n
