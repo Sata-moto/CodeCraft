@@ -884,7 +884,10 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	double maxlen, l, r, mid;
 	bool dircheck;
 	pair<double, double>lsta2 = lassta2, lsta3 = lassta3;
-	pair<double, double>StaPo = Static_Avoidance(destination[Avoidnum], 1);
+
+	int numm = Avoidnum;
+	while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
+	pair<double, double>StaPo = Static_Avoidance(destination[numm], 1);
 	pair<int, int>newnum = math_n::ztoe(StaPo.first, StaPo.second);
 	pair<int, int>s1 = math_n::ztoe(lassta.first, lassta.second);
 	pair<int, int>s2 = math_n::ztoe(lassta2.first, lassta2.second);
@@ -1132,16 +1135,15 @@ pair<double, double> Car::mov(int desk_num)
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
 
-		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 &&
+		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 &&
+			Dot(Sub(des[i], make_pair(car[i].x, car[i].y)), Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
 			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04))) {
 			if (!ChooseAvoider(i)) {
 				FindAvoid = 1;
 				Reach = false;
 				lassta3 = lassta2 = lassta = make_pair(car[i].x, car[i].y);
-				int numm = i;
-				while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
-				Avoidnum = numm;
+				Avoidnum = i;
 				goodsrec = car[Avoidnum].goods;
 			}
 		}
@@ -1156,7 +1158,7 @@ pair<double, double> Car::mov(int desk_num)
 	if (FindAvoid == 3 && (Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4 || goodsrec != car[Avoidnum].goods))
 		FindAvoid = 0;
 	if (FindAvoid) {
-		if(Reach)
+		if (Reach)
 			return make_pair(0.0, 0.0);
 		else return mov(setto.first, setto.second, destination[Avoidnum]);
 	}
