@@ -30,7 +30,8 @@ struct Car
 	double vx, vy, w;                                               // 二维线速度向量，角速度
 	double ang, x, y;                                               // 朝向角度，坐标
 	int FindAvoid, Avoidnum;                                        // 是否处于正在寻找回避点的状态（1表示正在回避，2表示已经回避好，3表示被回避小车进入范围，4表示被回避小车离开范围），正在回避的小车编号
-	bool Reach;                                                      // 小车是否抵达目标点
+	bool Reach;                                                     // 小车是否抵达目标点
+	int goodsrec;                                                   // 记录被回避小车的商品情况
 	pair<double, double> setto;                                     // 小车在动态回避二阶段应去的点
 	pair<double, double>lassta, lassta2, lassta3;                   // 在动态避障中上一次要去的点
 

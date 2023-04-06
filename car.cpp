@@ -513,8 +513,8 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
 	double checkforwar = forwar;
 
-	//	if (desk[desk_num].x != nx || desk[desk_num].y != ny)
-			//MarginCheck(forwar);
+	if (desk[desk_num].x != nx || desk[desk_num].y != ny)
+		MarginCheck(forwar, desk_num);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -918,6 +918,12 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	output << "VecA3=" << VecA3.first << " " << VecA3.second << endl;
 	output << endl;
 
+	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
+		VecA3 = VecA;
+
+	if (Dot(VecA, VecA3) <= 0)
+		return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+
 	while (startang < endang) {
 		Vecp = getVec(startang);
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
@@ -1070,6 +1076,7 @@ pair<double, double> Car::mov(int desk_num)
 	//步骤一：判断当前小车是否处于回避模式/是否需要进入动态回避模式
 	for (int i = 0; i < 4; i++) {
 		if (numID == i)continue;
+		if (!car[i].FindAvoid)continue;
 		if (car[i].Avoidnum != numID)continue;
 		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0))
 			return make_pair(0.0, 0.0);
@@ -1084,11 +1091,11 @@ pair<double, double> Car::mov(int desk_num)
 	
 	if (FindAvoid == 1)
 		return Dynamic_Avoidance();
-	if (Dist(x, y, setto.first, setto.second) < 0.02)
+	if (Dist(x, y, setto.first, setto.second) < 0.05)
 		Reach = true;
 	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
 		FindAvoid = 3;
-	if (FindAvoid == 3 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4)
+	if (FindAvoid == 3 && (Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4 || goodsrec != car[Avoidnum].goods))
 		FindAvoid = 0;
 	if (FindAvoid) {
 		if (Reach)
@@ -1130,6 +1137,7 @@ pair<double, double> Car::mov(int desk_num)
 				int numm = i;
 				while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
 				Avoidnum = numm;
+				goodsrec = car[Avoidnum].goods;
 			}
 		}
 	}
@@ -1140,7 +1148,7 @@ pair<double, double> Car::mov(int desk_num)
 		Reach = true;
 	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
 		FindAvoid = 3;
-	if (FindAvoid == 3 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4)
+	if (FindAvoid == 3 && (Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4 || goodsrec != car[Avoidnum].goods))
 		FindAvoid = 0;
 	if (FindAvoid) {
 		if(Reach)
