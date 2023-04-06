@@ -542,18 +542,18 @@ bool Car::ChooseAvoider(int Cnum) {
 			break;
 		}
 	}
-	int numm = Cnum;
-	bool Chw;
-	if (!car[Cnum].FindAvoid) 
-		Chw = true;
-	else {
-		Chw = (car[numm].Avoidnum == numID);
+
+	if (car[Cnum].FindAvoid) {
+		int numm = Cnum;
+		bool Chw = (car[numm].Avoidnum == numID);
 		while (car[numm].FindAvoid) {
 			numm = car[numm].Avoidnum;
 			Chw |= (car[numm].Avoidnum == numID);
 		}
+		if (Chw)return true;
 	}
-	if (Chw && (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
+
+	if (!car[Cnum].FindAvoid && (goods > car[Cnum].goods || (goods == car[Cnum].goods && numID > Cnum)))
 		return true;
 	return false;
 }
