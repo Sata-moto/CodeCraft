@@ -498,7 +498,8 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	output << "rotate=" << rot << endl;
 	output << endl;
 	*/
-	CarCrashCheck(forwar, rot, desk_num);
+	if(!FindAvoid)
+		CarCrashCheck(forwar, rot, desk_num);
 	//边界碰撞判定
 
 	//粗糙补丁（前往工作台的小车不需要减速）
@@ -1099,7 +1100,10 @@ pair<double, double> Car::mov(int desk_num)
 		if (numID == i)continue;
 		if (!car[i].FindAvoid)continue;
 		if (car[i].Avoidnum != numID)continue;
-		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0))
+		int numm = numID;
+		while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
+		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0) &&
+			Dot(des[numm], make_pair(car[i].x - x, car[i].y - y)) > 0)
 			return make_pair(0.0, 0.0);
 	}
 
