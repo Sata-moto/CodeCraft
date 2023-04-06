@@ -875,7 +875,7 @@ bool Car::AvoidCheck(double sx, double sy, double& len) {
 	if (!tot) return false;
 	return !SearchAccess(xid, make_pair(sx, sy), p1, p2, GetR(goods) + 2 * GetR(car[Avoidnum].goods));
 }
-pair<double, double> Car::Dynamic_Avoidance() {
+pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	pair<double, double>Vecp;
 	double startang = -Pi, endang = Pi, deltaang = Pi / 4;
 	pair<int, int>xzb = math_n::ztoe(x, y);
@@ -921,8 +921,11 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
 		VecA3 = VecA;
 
-	if (Dot(VecA, VecA3) <= 0)
-		return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+	if (Dot(VecA, VecA3) <= 0) {
+		if (mode == 0)
+			return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+		else return make_pair(StaPo.first, StaPo.second);
+	}
 
 	while (startang < endang) {
 		Vecp = getVec(startang);
@@ -1050,8 +1053,15 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
-	if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
-	else return mov(setto.first, setto.second, destination[Avoidnum]);
+
+	if (mode == 0) {
+		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+		else return mov(setto.first, setto.second, destination[Avoidnum]);
+	}
+	else {
+		if (FindAvoid == 1)return make_pair(StaPo.first, StaPo.second);
+		else return make_pair(setto.first, setto.second);
+	}
 }
 pair<double, double> Car::mov(int desk_num)
 {
@@ -1073,6 +1083,14 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
+	output << numID << "--------------------------------------------" << endl;
+	output << "FindAvoid=" << FindAvoid << endl;
+	output << "Avoidnum=" << Avoidnum << endl;
+	output << "Reach=" << Reach << endl;
+	output << endl;
+
+
+
 	//步骤一：判断当前小车是否处于回避模式/是否需要进入动态回避模式
 	for (int i = 0; i < 4; i++) {
 		if (numID == i)continue;
@@ -1082,26 +1100,13 @@ pair<double, double> Car::mov(int desk_num)
 			return make_pair(0.0, 0.0);
 	}
 
-	output << numID << "--------------------------------------------" << endl;
-	output << "FindAvoid=" << FindAvoid << endl;
-	output << "Avoidnum=" << Avoidnum << endl;
-	output << "setto=" << setto.first << " " << setto.second << endl;
-	output << endl;
-
-	
-	if (FindAvoid == 1)
-		return Dynamic_Avoidance();
-	if (Dist(x, y, setto.first, setto.second) < 0.05)
-		Reach = true;
-	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
-		FindAvoid = 3;
-	if (FindAvoid == 3 && (Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) > 4 || goodsrec != car[Avoidnum].goods))
-		FindAvoid = 0;
-	if (FindAvoid) {
+	if (FindAvoid > 1) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
 		else return mov(setto.first, setto.second, destination[Avoidnum]);
 	}
+	else if (FindAvoid == 1)
+		return Static_Avoidance(destination[Avoidnum], 0);
 
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
@@ -1128,7 +1133,7 @@ pair<double, double> Car::mov(int desk_num)
 			uy *= -1, vecuy *= -1;
 
 		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(des[i], make_pair(car[i].x, car[i].y))) < 0 &&
-			Dist(x, y, car[i].x, car[i].y) < AlertRange / 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04) ||
+			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.04) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.04))) {
 			if (!ChooseAvoider(i)) {
 				FindAvoid = 1;
@@ -1143,8 +1148,8 @@ pair<double, double> Car::mov(int desk_num)
 	}
 
 	if (FindAvoid == 1)
-		return Dynamic_Avoidance();
-	if (Dist(x, y, setto.first, setto.second) < 0.02)
+		return Dynamic_Avoidance(0);
+	if (FindAvoid && Dist(x, y, setto.first, setto.second) < 0.05)
 		Reach = true;
 	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
 		FindAvoid = 3;
@@ -1163,6 +1168,16 @@ pair<double, double> Car::mov(int desk_num)
 	return mov(desk[desk_num].x, desk[desk_num].y, desk_num);
 }
 void calc() {
+	for (int i = 0; i < 4; i++) {
+		if (car[i].FindAvoid == 1)
+			car[i].Dynamic_Avoidance(0);
+		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.05)
+			car[i].Reach = true;
+		if (car[i].FindAvoid == 2 && Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) <= 4)
+			car[i].FindAvoid = 3;
+		if (car[i].FindAvoid == 3 && (Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) > 4 || car[i].goodsrec != car[car[i].Avoidnum].goods))
+			car[i].FindAvoid = 0;
+	}
 	t = 0;
 	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
 	des[0] = car[0].Static_Avoidance(destination[0], 1);

@@ -55,7 +55,7 @@ struct Car
 	void DFSAccess(pair<int, int>, pair<double, double>, int, int, double);   // 判断以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
 	bool SearchAccess(pair<int, int>, pair<double, double>, int, int, double);// 判断以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
 	bool AvoidCheck(double, double, double&);                                 // 判断走到某位置是否能实现对另一小车的避让
-	pair<double, double> Dynamic_Avoidance();                                 // 动态避障（小车+障碍物避障）
+	pair<double, double> Dynamic_Avoidance(int);                              // 动态避障（小车+障碍物避障）
 
 	//移动决策输出
 	pair<double, double> mov(double, double, int);                            // 将小车向目标点移动（坐标形式，仅有小车避障）
