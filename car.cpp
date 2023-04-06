@@ -1236,6 +1236,7 @@ void calc() {
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
 	des[2] = car[2].Static_Avoidance(destination[2], 1);
 	des[3] = car[3].Static_Avoidance(destination[3], 1);
+
 	/*
 	output << "frame_number is " << frame_number << endl;
 	output << des[3].first << ' ' << des[3].second << endl;
