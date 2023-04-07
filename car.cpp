@@ -1160,7 +1160,8 @@ pair<double, double> Car::mov(int desk_num)
 		if (car[i].Avoidnum != numID)continue;
 		int numm = numID;
 		while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
-		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0))
+		if ((!car[i].Reach) && Dist(x, y, car[i].x, car[i].y) <= 4 && ObCheck(x, y, car[i].x, car[i].y, 51, 0, 0) &&
+			Dot(car[i].x - x, car[i].y - y, des[numm].first, des[numm].second) > 0)
 			return make_pair(0.0, 0.0);
 	}
 
@@ -1222,8 +1223,8 @@ pair<double, double> Car::mov(int desk_num)
 		if (Dot(vec1, Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 && Dot(vec2, Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
 			PointToLine(make_pair(x, y), make_pair(car[i].x, car[i].y), vec2) < GetR(goods) + GetR(car[i].goods) &&
 			PointToLine(make_pair(car[i].x, car[i].y), make_pair(x, y), vec1) < GetR(goods) + GetR(car[i].goods) &&
-			Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0 && Dot(v2x, v2y, x - car[i].x, y - car[i].y) > 0 &&
-			Dot(v1x, v1y, v2x, v2y) < 0 && fabs(v) > eps && fabs(v2) > eps &&
+			/*Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0 && Dot(v2x, v2y, x - car[i].x, y - car[i].y) > 0 &&*/
+			/*Dot(v1x, v1y, v2x, v2y) < 0 && fabs(v) > eps && fabs(v2) > eps &&*/
 			Dist(x, y, car[i].x, car[i].y) < 3 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.03))) {
 			if (!ChooseAvoider(i)) {
@@ -1268,6 +1269,13 @@ pair<double, double> Car::mov(int desk_num)
 	return mov(desk[desk_num].x, desk[desk_num].y, desk_num);
 }
 void calc() {
+
+	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
+	des[0] = car[0].Static_Avoidance(destination[0], 1);
+	des[1] = car[1].Static_Avoidance(destination[1], 1);
+	des[2] = car[2].Static_Avoidance(destination[2], 1);
+	des[3] = car[3].Static_Avoidance(destination[3], 1);
+
 	//提前更新状态
 	for (int i = 0; i < 4; i++) {
 		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.4)
@@ -1308,11 +1316,6 @@ void calc() {
 
 
 	t = 0;
-	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
-	des[0] = car[0].Static_Avoidance(destination[0], 1);
-	des[1] = car[1].Static_Avoidance(destination[1], 1);
-	des[2] = car[2].Static_Avoidance(destination[2], 1);
-	des[3] = car[3].Static_Avoidance(destination[3], 1);
 
 	/*
 	output << "frame_number is " << frame_number << endl;
