@@ -363,7 +363,7 @@ void Car::CarCrashCheck(double& forwar, double& rot, int desk_num) {
 	if (Sign(Cross(car[numi].x - x, car[numi].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 		uy *= -1, vecuy *= -1;
 	//另一小车与当前小车同向行驶
-	if (vecux >= 0.15) {//没速度当成对撞进行避让※※※※※※※※※※※※※※※※※
+	if (vecux >= 0.15) {
 		if (Dist(x, y, car[numi].x, car[numi].y) > AlertRange / 2)return;
 		//补丁：两个小车均在对方前方180度范围内
 		if (Sign(Dot(car[numi].x - x, car[numi].y - y, v1x, v1y)) >= 0 && Sign(Dot(x - car[numi].x, y - car[numi].y, v2x, v2y)) >= 0) {
@@ -1110,9 +1110,9 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1 && check2)return mov(setto.first, setto.second, destination[numm]);
 				if (check1)return mov(setto.first, y, destination[numm]);
 				if (check2)return mov(x, setto.second, destination[numm]);
-				else return mov(setto.first, setto.second, destination[numm]);
 			}
 			else return mov(setto.first, setto.second, destination[numm]);
 		}
@@ -1176,9 +1176,9 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1 && check2)return mov(setto.first, setto.second, destination[firstnum]);
 				if (check1)return mov(setto.first, y, destination[firstnum]);
 				if (check2)return mov(x, setto.second, destination[firstnum]);
-				else return mov(setto.first, setto.second, destination[firstnum]);
 			}
 			else return mov(setto.first, setto.second, destination[firstnum]);
 		}
@@ -1252,9 +1252,9 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
+				if (check1 && check2)return mov(setto.first, setto.second, destination[firstnum]);
 				if (check1)return mov(setto.first, y, destination[firstnum]);
 				if (check2)return mov(x, setto.second, destination[firstnum]);
-				else return mov(setto.first, setto.second, destination[firstnum]);
 			}
 			else return mov(setto.first, setto.second, destination[firstnum]);
 		}
