@@ -70,9 +70,13 @@ int main()
 
 	while (scanf("%d %d", &frame_number, &money))
 	{
+
+		
 		output << "--------------------------------------------" << endl;
 		output << "framenumber=" << frame_number << endl;
 		output << endl;
+		
+
 		reload_occupied();
 		printf("%d\n", frame_number);
 		scanf("%d", &cnt_desk);
