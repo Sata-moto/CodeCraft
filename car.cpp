@@ -282,11 +282,20 @@ void Car::CarCrashCheck(double& forwar, double& rot, int desk_num) {
 	for (int i = 0; i < 4; i++) {
 		//判定是否是同一辆车
 		if (i == numID)continue;
-		if (car[i].FindAvoid == 3 && car[i].Avoidnum == numID)continue;
 		//判定该小车是否进入警戒范围
 		if (Dist(car[i].x, car[i].y, x, y) > AlertRange)continue;
 		//判断两个小车之间是否有障碍物
 		if (!ObCheck(x, y, car[i].x, car[i].y, desk_num, 0, 0))continue;
+
+		int numm = i;
+		bool Checkw = false;
+		while (car[numm].FindAvoid) {
+			Checkw |= (car[numm].Avoidnum == numID);
+			numm = car[numm].Avoidnum;
+		}
+
+		if (car[i].FindAvoid == 3 && Checkw)continue;
+
 		//计算两小车速度方向单位向量、速度向量以及距离
 		Vecp = getVec(ang);
 		vecv = CombineV(Vecp); v = CombineV(vx, vy);
@@ -898,7 +907,15 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	bool dircheck;
 	pair<double, double>lsta2 = lassta2, lsta3 = lassta3;
 
-	int numm = Avoidnum;
+	int numID = -1;
+	for (int i = 0; i < 4; i++) {
+		if (x == car[i].x && y == car[i].y) {
+			numID = i;
+			break;
+		}
+	}
+
+	int numm = numID;
 	while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
 	pair<double, double>StaPo = Static_Avoidance(destination[numm], 1);
 	pair<int, int>newnum = math_n::ztoe(StaPo.first, StaPo.second);
@@ -943,7 +960,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 	if (Dot(VecA, VecA3) <= 0 || Dot(VecA, dir) <= 0 || Dot(VecA3, dir) <= 0) {
 		if (mode == 0)
-			return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+			return mov(StaPo.first, StaPo.second, destination[numm]);
 		else return make_pair(StaPo.first, StaPo.second);
 	}
 
@@ -969,7 +986,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				continue;
 			}
 			//可能需要加入连续性判断
-			if (ObCheck(sx, sy, tx, ty, destination[Avoidnum], GetR(goods), 1))maxlen = mid, l = mid;
+			if (ObCheck(sx, sy, tx, ty, destination[numm], GetR(goods), 1))maxlen = mid, l = mid;
 			else r = mid;
 		}
 
@@ -1026,7 +1043,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				l = mid;
 				continue;
 			}
-			if (ObCheck(sx, sy, tx, ty, destination[Avoidnum], GetR(goods), 1))maxlen = mid, l = mid;
+			if (ObCheck(sx, sy, tx, ty, destination[numm], GetR(goods), 1))maxlen = mid, l = mid;
 			else r = mid;
 		}
 
@@ -1056,7 +1073,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 				}
 			}
 			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
-			if (dis[Carry(goods)][destination[Avoidnum]][S.first][S.second] <= dis[Carry(goods)][destination[Avoidnum]][nx][ny]) {
+			if (dis[Carry(goods)][destination[numm]][S.first][S.second] <= dis[Carry(goods)][destination[numm]][nx][ny]) {
 				goodPoint = CrossPoint(realS, realT, p[Crossnum], p[Crossnum + 1]);
 				break;
 			}
@@ -1081,18 +1098,18 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 
 	if (mode == 0) {
-		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[Avoidnum]);
+		if (FindAvoid == 1)return mov(StaPo.first, StaPo.second, destination[numm]);
 		else {
 			/*if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
 				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
-				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
-				else return mov(setto.first, setto.second, destination[Avoidnum]);
+				if (check1)return mov(po1.first, po1.second, destination[numm]);
+				if (check2)return mov(po2.first, po2.second, destination[numm]);
+				else return mov(setto.first, setto.second, destination[numm]);
 			}
-			else */return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[numm]);
 		}
 	}
 	else {
@@ -1140,6 +1157,9 @@ pair<double, double> Car::mov(int desk_num)
 			return make_pair(0.0, 0.0);
 	}
 
+	int firstnum = numID;
+	while (car[firstnum].FindAvoid)firstnum = car[firstnum].Avoidnum;
+
 	if (FindAvoid > 1) {
 		if (Reach)
 			return make_pair(0.0, 0.0);
@@ -1149,21 +1169,21 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
-				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
-				else return mov(setto.first, setto.second, destination[Avoidnum]);
+				if (check1)return mov(po1.first, po1.second, destination[numm]);
+				if (check2)return mov(po2.first, po2.second, destination[numm]);
+				else return mov(setto.first, setto.second, destination[numm]);
 			}
-			else */return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[firstnum]);
 		}
 	}
 	else if (FindAvoid == 1)
-		return Static_Avoidance(destination[Avoidnum], 0);
+		return Static_Avoidance(destination[firstnum], 0);
 
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
 		if (!ObCheck(x, y, car[i].x, car[i].y, desk_num, 0, 0))continue;
 
-		/*
+		
 		Vecp = getVec(ang);
 		vecv = CombineV(Vecp); v = CombineV(vx, vy);
 		v1x = Vecp.first; v1y = Vecp.second;
@@ -1185,7 +1205,7 @@ pair<double, double> Car::mov(int desk_num)
 
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
-		*/
+		
 
 		int numm = i;
 		while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
@@ -1195,6 +1215,7 @@ pair<double, double> Car::mov(int desk_num)
 		if (Dot(vec1, Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 && Dot(vec2, Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
 			PointToLine(make_pair(x, y), make_pair(car[i].x, car[i].y), vec2) < GetR(goods) + GetR(car[i].goods) &&
 			PointToLine(make_pair(car[i].x, car[i].y), make_pair(x, y), vec1) < GetR(goods) + GetR(car[i].goods) &&
+			Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0 && Dot(v2x, v2y, x - car[i].x, y - car[i].y) > 0 && Dot(v1x, v1y, v2x, v2y) < 0 &&
 			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.03))) {
 			if (!ChooseAvoider(i)) {
@@ -1209,7 +1230,7 @@ pair<double, double> Car::mov(int desk_num)
 
 	if (FindAvoid == 1)
 		return Dynamic_Avoidance(0);
-	if (FindAvoid && Dist(x, y, setto.first, setto.second) < 0.05)
+	if (FindAvoid && Dist(x, y, setto.first, setto.second) < 0.1)
 		Reach = true;
 	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
 		FindAvoid = 3;
@@ -1224,11 +1245,11 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[Avoidnum]);
-				if (check2)return mov(po2.first, po2.second, destination[Avoidnum]);
-				else return mov(setto.first, setto.second, destination[Avoidnum]);
+				if (check1)return mov(po1.first, po1.second, destination[numm]);
+				if (check2)return mov(po2.first, po2.second, destination[numm]);
+				else return mov(setto.first, setto.second, destination[numm]);
 			}
-			else */return mov(setto.first, setto.second, destination[Avoidnum]);
+			else */return mov(setto.first, setto.second, destination[firstnum]);
 		}
 	}
 
@@ -1241,7 +1262,7 @@ pair<double, double> Car::mov(int desk_num)
 void calc() {
 	//提前更新状态
 	for (int i = 0; i < 4; i++) {
-		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.05)
+		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.1)
 			car[i].Reach = true;
 		if (car[i].FindAvoid == 2 && Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) <= 4)
 			car[i].FindAvoid = 3;
@@ -1262,7 +1283,7 @@ void calc() {
 				continue;
 			int numm = i, len = 0;
 			st[len = 1] = numm;
-			while (car[numm].Avoidnum) {
+			while (car[numm].FindAvoid) {
 				numm = car[numm].Avoidnum;
 				st[++len] = numm;
 			}
