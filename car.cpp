@@ -1285,7 +1285,7 @@ void calc() {
 		if (((car[i].FindAvoid && !car[i].Reach) || (!car[i].FindAvoid)) &&
 			((fabs(car[i].lasx - car[i].x) < 0.1 && fabs(car[i].lasy - car[i].y) < 0.1) || (fabs(car[i].vx) < 1 && fabs(car[i].vy) < 1) || Check)) {
 			if (!set0[i])set0[i] = frame_number;
-			if (frame_number - set0[i] >= 150) {
+			if ((frame_number - set0[i] >= 150) && set0[i]) {
 				set0[i] = 0;
 				car[i].FindAvoid = 0;
 			}
