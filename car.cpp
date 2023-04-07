@@ -143,13 +143,17 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 	else if (DeltaAng < 0 && w > 0) res = -Pi;
 	return res;
 }
-double Car::CalcForward(double nx, double ny, double DeltaAng) {
+double Car::CalcForward(double nx, double ny, int desk_num, double DeltaAng) {
 
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	double diss = Dist(nx, ny, x, y);
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
+
+	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
+		return res;
+			
 
 	double l = 0, r = 6, mid, resv = 0;
 	while (r - l >= 0.01) {
@@ -500,7 +504,7 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	//计算当前朝向与目标点的偏向角
 	double DeltaAng = CalcAng(nx, ny);
 	//计算角速度与速度的设定值
-	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, DeltaAng);
+	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, desk_num, DeltaAng);
 	//小车碰撞判定
 
 	/*
@@ -514,7 +518,6 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 		CarCrashCheck(forwar, rot, desk_num);
 	//边界碰撞判定
 
-	//粗糙补丁（前往工作台的小车不需要减速）
 
 	/*
 	output << "CarCrashCheck---------------" << endl;
@@ -526,7 +529,9 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
 	double checkforwar = forwar;
 
-	MarginCheck(forwar, desk_num);
+
+	if (goods >= 4 || (fabs(desk[desk_num].x - nx) < eps && fabs(desk[desk_num].y - ny) < eps))
+		MarginCheck(forwar, desk_num);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -939,7 +944,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	pair<double, double>VecA2 = Sub(xx, math_n::ztoe(lassta2.first, lassta2.second));
 	pair<double, double>VecA3 = Sub(math_n::ztoe(lassta3.first, lassta3.second), xx);
 
-	/*
+	
 	output << "x=" << x << " y=" << y << endl;
 	output << "lassta=" << math_n::ztoe(lassta.first, lassta.second).first << " " << math_n::ztoe(lassta.first, lassta.second).second << endl;
 	output << "map=" << map[math_n::ztoe(lassta.first, lassta.second).first][math_n::ztoe(lassta.first, lassta.second).second] << endl;
@@ -954,7 +959,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	output << "VecA2=" << VecA2.first << " " << VecA2.second << endl;
 	output << "VecA3=" << VecA3.first << " " << VecA3.second << endl;
 	output << endl;
-	*/
+	
 
 	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
 		VecA3 = VecA;
@@ -1000,14 +1005,14 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 			continue;
 		}
 
-		/*
+		
 		output << endl;
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
 		output << "realS=" << x << " " << y << endl;
 		output << "realT=" << sx + maxlen * cos(startang) << " " << sy + maxlen * sin(startang) << endl;
 		output << endl;
-		*/
+		
 
 		//不能选择工作台做避让点，0.4为容忍参数
 		if (Dist(sx + maxlen * cos(startang), sy + maxlen * sin(startang), desk[destination[numm]].x, desk[destination[numm]].y) < 0.4) {
@@ -1085,14 +1090,14 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 			S = make_pair(nx, ny);
 		}
 
-		/*
+		
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
 		output << "realS=" << realS.first << " " << realS.second << endl;
 		output << "realT=" << realT.first << " " << realT.second << endl;
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
-		*/
+		
 
 		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
 			setto = make_pair(x + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * cos(startang),
@@ -1144,14 +1149,14 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
-	/*
+	
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
 	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
-	*/
+	
 	
 
 

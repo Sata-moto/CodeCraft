@@ -41,7 +41,7 @@ struct Car
 	double GetR(int);                                                         // 根据是否持有物品返回当前半径
 	double CalcAng(double, double);                                           // 计算当前朝向与目标点的偏向角
 	double CalcRotate(double, double, int, double);                           // 根据偏向角计算角速度
-	double CalcForward(double, double, double);                               // 根据偏向角计算前进速度
+	double CalcForward(double, double, int, double);                          // 根据偏向角计算前进速度
 	bool ObCheck(double, double, double, double, int, double, bool);          // 碰撞检测（包含最小容忍宽度）
 	void DFS(pair<int, int>, pair<double, double>, int, double);              // 搜索一定范围的格子并判断是否是障碍物
 	bool Search(double, double, int, double);                                 // 判断一定范围内是否有障碍物（半径不宜过大）
