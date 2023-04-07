@@ -1107,11 +1107,11 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		else {
 			if ((fabs(x - setto.first) > 0.01 && fabs(y - setto.second) > 0.01)) {
 				pair<double, double>vecx = make_pair(setto.first - x, 0), vecy = make_pair(0, setto.second - y);
-				UnitV(vecx); UnitV(vecy); multi(vecx, 0.5); multi(vecy, 0.5);
+				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[numm]);
-				if (check2)return mov(po2.first, po2.second, destination[numm]);
+				if (check1)return mov(setto.first, y, destination[numm]);
+				if (check2)return mov(x, setto.second, destination[numm]);
 				else return mov(setto.first, setto.second, destination[numm]);
 			}
 			else return mov(setto.first, setto.second, destination[numm]);
@@ -1176,8 +1176,8 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[firstnum]);
-				if (check2)return mov(po2.first, po2.second, destination[firstnum]);
+				if (check1)return mov(setto.first, y, destination[firstnum]);
+				if (check2)return mov(x, setto.second, destination[firstnum]);
 				else return mov(setto.first, setto.second, destination[firstnum]);
 			}
 			else return mov(setto.first, setto.second, destination[firstnum]);
@@ -1252,8 +1252,8 @@ pair<double, double> Car::mov(int desk_num)
 				UnitV(vecx); UnitV(vecy); multi(vecx, 0.02); multi(vecy, 0.02);
 				pair<double, double>po1 = Add(make_pair(x, y), vecx), po2 = Add(make_pair(x, y), vecy);
 				bool check1 = !Search(po1.first, po1.second, 51, GetR(goods)), check2 = !Search(po2.first, po2.second, 51, GetR(goods));
-				if (check1)return mov(po1.first, po1.second, destination[firstnum]);
-				if (check2)return mov(po2.first, po2.second, destination[firstnum]);
+				if (check1)return mov(setto.first, y, destination[firstnum]);
+				if (check2)return mov(x, setto.second, destination[firstnum]);
 				else return mov(setto.first, setto.second, destination[firstnum]);
 			}
 			else return mov(setto.first, setto.second, destination[firstnum]);
