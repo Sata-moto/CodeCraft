@@ -145,16 +145,14 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 }
 double Car::CalcForward(double nx, double ny, int desk_num, double DeltaAng) {
 
-	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
+	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
+		return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
+
+	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 5 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	double diss = Dist(nx, ny, x, y);
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-
-	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
-		return res;
-			
-
 	double l = 0, r = 6, mid, resv = 0;
 	while (r - l >= 0.01) {
 		mid = (l + r) / 2;
@@ -530,6 +528,8 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	double checkforwar = forwar;
 
 
+
+	//可以考虑删除资本家系统观察表现是否更优（CalcForward内也有）⭐⭐⭐⭐⭐
 	if (goods >= 4 || (fabs(desk[desk_num].x - nx) < eps && fabs(desk[desk_num].y - ny) < eps))
 		MarginCheck(forwar, desk_num);
 
@@ -960,6 +960,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	output << "VecA3=" << VecA3.first << " " << VecA3.second << endl;
 	output << endl;
 	
+	
 
 	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
 		VecA3 = VecA;
@@ -1013,6 +1014,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		output << "realT=" << sx + maxlen * cos(startang) << " " << sy + maxlen * sin(startang) << endl;
 		output << endl;
 		
+		
 
 		//不能选择工作台做避让点，0.4为容忍参数
 		if (Dist(sx + maxlen * cos(startang), sy + maxlen * sin(startang), desk[destination[numm]].x, desk[destination[numm]].y) < 0.4) {
@@ -1034,7 +1036,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 	while (startang < endang) {
 		Vecp = getVec(startang);
-		//output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
+		output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
 			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
 				startang += deltaang;
@@ -1097,6 +1099,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 		output << "realT=" << realT.first << " " << realT.second << endl;
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
+		
 		
 
 		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
@@ -1278,6 +1281,8 @@ pair<double, double> Car::mov(int desk_num)
 }
 void calc() {
 
+
+	//等待的小车或许也可以清？但是可能会干扰原来的逻辑
 	for (int i = 0; i < 4; i++) {
 		bool Check = false;
 		for (int j = 0; j < 4; j++) {
