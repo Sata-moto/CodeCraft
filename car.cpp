@@ -1142,14 +1142,14 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
-	/*
+	
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
 	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
-	*/
+	
 
 
 
@@ -1222,8 +1222,9 @@ pair<double, double> Car::mov(int desk_num)
 		if (Dot(vec1, Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 && Dot(vec2, Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
 			PointToLine(make_pair(x, y), make_pair(car[i].x, car[i].y), vec2) < GetR(goods) + GetR(car[i].goods) &&
 			PointToLine(make_pair(car[i].x, car[i].y), make_pair(x, y), vec1) < GetR(goods) + GetR(car[i].goods) &&
-			Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0 && Dot(v2x, v2y, x - car[i].x, y - car[i].y) > 0 && Dot(v1x, v1y, v2x, v2y) < 0 &&
-			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
+			Dot(v1x, v1y, car[i].x - x, car[i].y - y) > 0 && Dot(v2x, v2y, x - car[i].x, y - car[i].y) > 0 &&
+			Dot(v1x, v1y, v2x, v2y) < 0 && fabs(v) > eps && fabs(v2) > eps &&
+			Dist(x, y, car[i].x, car[i].y) < 3 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.03))) {
 			if (!ChooseAvoider(i)) {
 				FindAvoid = 1;
