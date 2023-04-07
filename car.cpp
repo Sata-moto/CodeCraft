@@ -13,6 +13,9 @@ static int vis[N][N], t;
 static int st[5];
 static bool obfind;
 pair<double, double>des[4] = { make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1) };
+int set0[4];
+
+
 
 //几何/数学
 pair<double, double> getVec(double NowAng) {
@@ -140,21 +143,24 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 	else if (DeltaAng < 0 && w > 0) res = -Pi;
 	return res;
 }
-double Car::CalcForward(double nx, double ny, double DeltaAng) {
+double Car::CalcForward(double nx, double ny, int desk_num, double DeltaAng) {
 
-	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
+	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
+		return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
+
+	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 5 ? 0 : 6);
 	double Cv = CombineV(vx, vy), M = pow(GetR(goods), 2) * Pi * 20, A = 250.0 / M;
 	double diss = Dist(nx, ny, x, y);
 	pair<int, int>s = math_n::ztoe(x, y), t = math_n::ztoe(nx, ny);
 	pair<double, double>reals = math_n::etoz(s.first, s.second), realt = math_n::etoz(t.first, t.second);
-
 	double l = 0, r = 6, mid, resv = 0;
 	while (r - l >= 0.01) {
 		mid = (l + r) / 2;
 		if (mid * mid / A * 0.5 > diss)r = mid;
 		else {
 			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
-			if (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0.02)resv = mid, l = mid;//注意这里的参数调整
+			if (((diss - mid * mid / A * 0.5) > 0) && (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0.02))
+				resv = mid, l = mid;//注意这里的参数调整
 			else r = mid;
 		}
 	}
@@ -496,7 +502,7 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	//计算当前朝向与目标点的偏向角
 	double DeltaAng = CalcAng(nx, ny);
 	//计算角速度与速度的设定值
-	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, DeltaAng);
+	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, desk_num, DeltaAng);
 	//小车碰撞判定
 
 	/*
@@ -510,7 +516,6 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 		CarCrashCheck(forwar, rot, desk_num);
 	//边界碰撞判定
 
-	//粗糙补丁（前往工作台的小车不需要减速）
 
 	/*
 	output << "CarCrashCheck---------------" << endl;
@@ -522,7 +527,11 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
 	double checkforwar = forwar;
 
-	MarginCheck(forwar, desk_num);
+
+
+	//可以考虑删除资本家系统观察表现是否更优（CalcForward内也有）⭐⭐⭐⭐⭐
+	if (goods >= 4 || (fabs(desk[desk_num].x - nx) < eps && fabs(desk[desk_num].y - ny) < eps))
+		MarginCheck(forwar, desk_num);
 
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
@@ -935,7 +944,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	pair<double, double>VecA2 = Sub(xx, math_n::ztoe(lassta2.first, lassta2.second));
 	pair<double, double>VecA3 = Sub(math_n::ztoe(lassta3.first, lassta3.second), xx);
 
-	/*
+	
 	output << "x=" << x << " y=" << y << endl;
 	output << "lassta=" << math_n::ztoe(lassta.first, lassta.second).first << " " << math_n::ztoe(lassta.first, lassta.second).second << endl;
 	output << "map=" << map[math_n::ztoe(lassta.first, lassta.second).first][math_n::ztoe(lassta.first, lassta.second).second] << endl;
@@ -950,7 +959,8 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 	output << "VecA2=" << VecA2.first << " " << VecA2.second << endl;
 	output << "VecA3=" << VecA3.first << " " << VecA3.second << endl;
 	output << endl;
-	*/
+	
+	
 
 	if (fabs(VecA3.first) < eps && fabs(VecA3.second) < eps)
 		VecA3 = VecA;
@@ -996,14 +1006,15 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 			continue;
 		}
 
-		/*
+		
 		output << endl;
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
 		output << "realS=" << x << " " << y << endl;
 		output << "realT=" << sx + maxlen * cos(startang) << " " << sy + maxlen * sin(startang) << endl;
 		output << endl;
-		*/
+		
+		
 
 		//不能选择工作台做避让点，0.4为容忍参数
 		if (Dist(sx + maxlen * cos(startang), sy + maxlen * sin(startang), desk[destination[numm]].x, desk[destination[numm]].y) < 0.4) {
@@ -1025,7 +1036,7 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 
 	while (startang < endang) {
 		Vecp = getVec(startang);
-		//output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
+		output << "Vecp=" << Vecp.first << " " << Vecp.second << endl;
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
 			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
 				startang += deltaang;
@@ -1081,14 +1092,15 @@ pair<double, double> Car::Dynamic_Avoidance(int mode) {
 			S = make_pair(nx, ny);
 		}
 
-		/*
+		
 		output << "nowang=" << startang << endl;
 		output << "maxlen=" << maxlen << endl;
 		output << "realS=" << realS.first << " " << realS.second << endl;
 		output << "realT=" << realT.first << " " << realT.second << endl;
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
-		*/
+		
+		
 
 		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
 			setto = make_pair(x + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * cos(startang),
@@ -1140,14 +1152,15 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
-	/*
+	
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
 	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
-	*/
+	
+	
 
 
 
@@ -1268,6 +1281,31 @@ pair<double, double> Car::mov(int desk_num)
 }
 void calc() {
 
+
+	//等待的小车或许也可以清？但是可能会干扰原来的逻辑
+	for (int i = 0; i < 4; i++) {
+		bool Check = false;
+		for (int j = 0; j < 4; j++) {
+			if (i == j)continue;
+			if (Dist(car[i].x, car[i].y, car[j].x, car[j].y) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + eps) {
+				Check = true;
+				break;
+			}
+		}
+		if (((car[i].FindAvoid && !car[i].Reach) || (!car[i].FindAvoid)) &&
+			((fabs(car[i].lasx - car[i].x) < 0.1 && fabs(car[i].lasy - car[i].y) < 0.1) || (fabs(car[i].vx) < 1 && fabs(car[i].vy) < 1) || Check)) {
+			if (!set0[i])set0[i] = frame_number;
+			if ((frame_number - set0[i] >= 150) && set0[i]) {
+				set0[i] = 0;
+				car[i].FindAvoid = 0;
+			}
+		}
+		else set0[i] = 0;
+		car[i].lasx = car[i].x;
+		car[i].lasy = car[i].y;
+	}
+
+
 	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
 	des[0] = car[0].Static_Avoidance(destination[0], 1);
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
@@ -1314,10 +1352,4 @@ void calc() {
 
 
 	t = 0;
-
-	/*
-	output << "frame_number is " << frame_number << endl;
-	output << des[3].first << ' ' << des[3].second << endl;
-	output << endl;
-	*/
 }

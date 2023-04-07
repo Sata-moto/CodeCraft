@@ -29,6 +29,7 @@ struct Car
 	double timerate, hitrate;                                       // 时间价值系数，碰撞价值系数
 	double vx, vy, w;                                               // 二维线速度向量，角速度
 	double ang, x, y;                                               // 朝向角度，坐标
+	double lasx, lasy;
 	int FindAvoid, Avoidnum;                                        // 是否处于正在寻找回避点的状态（1表示正在回避，2表示已经回避好，3表示被回避小车进入范围，4表示被回避小车离开范围），正在回避的小车编号
 	bool Reach;                                                     // 小车是否抵达目标点
 	int goodsrec;                                                   // 记录被回避小车的商品情况
@@ -40,7 +41,7 @@ struct Car
 	double GetR(int);                                                         // 根据是否持有物品返回当前半径
 	double CalcAng(double, double);                                           // 计算当前朝向与目标点的偏向角
 	double CalcRotate(double, double, int, double);                           // 根据偏向角计算角速度
-	double CalcForward(double, double, double);                               // 根据偏向角计算前进速度
+	double CalcForward(double, double, int, double);                          // 根据偏向角计算前进速度
 	bool ObCheck(double, double, double, double, int, double, bool);          // 碰撞检测（包含最小容忍宽度）
 	void DFS(pair<int, int>, pair<double, double>, int, double);              // 搜索一定范围的格子并判断是否是障碍物
 	bool Search(double, double, int, double);                                 // 判断一定范围内是否有障碍物（半径不宜过大）
