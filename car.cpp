@@ -14,8 +14,6 @@ static int st[5];
 static bool obfind;
 pair<double, double>des[4] = { make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1) };
 
-
-
 //几何/数学
 pair<double, double> getVec(double NowAng) {
 	return make_pair(cos(NowAng), sin(NowAng));
@@ -1142,14 +1140,14 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
-	
+	/*
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
 	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
-	
+	*/
 
 
 

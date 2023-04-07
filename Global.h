@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
+#include <cstring>
 #include <algorithm>
 
 using namespace std;

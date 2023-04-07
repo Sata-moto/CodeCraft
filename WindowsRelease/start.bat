@@ -1,2 +1,0 @@
-java RunAllMap.java
-pause
