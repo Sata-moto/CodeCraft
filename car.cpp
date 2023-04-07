@@ -13,6 +13,7 @@ static int vis[N][N], t;
 static int st[5];
 static bool obfind;
 pair<double, double>des[4] = { make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1),make_pair(-1,-1) };
+int set0[4];
 
 
 
@@ -156,7 +157,8 @@ double Car::CalcForward(double nx, double ny, double DeltaAng) {
 		if (mid * mid / A * 0.5 > diss)r = mid;
 		else {
 			//这边可以加入mid与当前CombineV(vx,vy)大小的判断
-			if (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0.02)resv = mid, l = mid;//注意这里的参数调整
+			if (((diss - mid * mid / A * 0.5) > 0) && (mid / A + (diss - mid * mid / A * 0.5) / mid >= 0.02))
+				resv = mid, l = mid;//注意这里的参数调整
 			else r = mid;
 		}
 	}
@@ -1142,13 +1144,14 @@ pair<double, double> Car::mov(int desk_num)
 	output << endl;
 	*/
 
-	
+	/*
 	output << numID << "--------------------------------------------" << endl;
 	output << "FindAvoid=" << FindAvoid << endl;
 	output << "Avoidnum=" << Avoidnum << endl;
 	output << "setto=" << setto.first << " " << setto.second << endl;
 	output << "Reach=" << Reach << endl;
 	output << endl;
+	*/
 	
 
 
@@ -1270,6 +1273,29 @@ pair<double, double> Car::mov(int desk_num)
 }
 void calc() {
 
+	for (int i = 0; i < 4; i++) {
+		bool Check = false;
+		for (int j = 0; j < 4; j++) {
+			if (i == j)continue;
+			if (Dist(car[i].x, car[i].y, car[j].x, car[j].y) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + eps) {
+				Check = true;
+				break;
+			}
+		}
+		if (((car[i].FindAvoid && !car[i].Reach) || (!car[i].FindAvoid)) &&
+			((fabs(car[i].lasx - car[i].x) < 0.1 && fabs(car[i].lasy - car[i].y) < 0.1) || (fabs(car[i].vx) < 1 && fabs(car[i].vy) < 1) || Check)) {
+			if (!set0[i])set0[i] = frame_number;
+			if (frame_number - set0[i] >= 150) {
+				set0[i] = 0;
+				car[i].FindAvoid = 0;
+			}
+		}
+		else set0[i] = 0;
+		car[i].lasx = car[i].x;
+		car[i].lasy = car[i].y;
+	}
+
+
 	//复杂度优化：当某个点在动态回避时这里也许不需要计算静态回避※※※※※※※※※※※
 	des[0] = car[0].Static_Avoidance(destination[0], 1);
 	des[1] = car[1].Static_Avoidance(destination[1], 1);
@@ -1316,10 +1342,4 @@ void calc() {
 
 
 	t = 0;
-
-	/*
-	output << "frame_number is " << frame_number << endl;
-	output << des[3].first << ' ' << des[3].second << endl;
-	output << endl;
-	*/
 }
