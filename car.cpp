@@ -1230,7 +1230,7 @@ pair<double, double> Car::mov(int desk_num)
 
 	if (FindAvoid == 1)
 		return Dynamic_Avoidance(0);
-	if (FindAvoid && Dist(x, y, setto.first, setto.second) < 0.1)
+	if (FindAvoid && Dist(x, y, setto.first, setto.second) < 0.3)
 		Reach = true;
 	if (FindAvoid == 2 && Dist(x, y, car[Avoidnum].x, car[Avoidnum].y) <= 4)
 		FindAvoid = 3;
@@ -1262,7 +1262,7 @@ pair<double, double> Car::mov(int desk_num)
 void calc() {
 	//提前更新状态
 	for (int i = 0; i < 4; i++) {
-		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.1)
+		if (car[i].FindAvoid && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.3)
 			car[i].Reach = true;
 		if (car[i].FindAvoid == 2 && Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) <= 4)
 			car[i].FindAvoid = 3;
