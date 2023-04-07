@@ -1162,6 +1162,8 @@ pair<double, double> Car::mov(int desk_num)
 	for (int i = 0; i < 4; i++) {
 		if (i == numID)continue;
 		if (!ObCheck(x, y, car[i].x, car[i].y, desk_num, 0, 0))continue;
+
+		/*
 		Vecp = getVec(ang);
 		vecv = CombineV(Vecp); v = CombineV(vx, vy);
 		v1x = Vecp.first; v1y = Vecp.second;
@@ -1180,15 +1182,19 @@ pair<double, double> Car::mov(int desk_num)
 		vecux = vecv2 * CosAng;
 		vecuy = vecv2 * SinAng;
 
+
 		if (Sign(Cross(car[i].x - x, car[i].y - y, v1x, v1y)) * Sign(Cross(v1x, v1y, v2x, v2y)) <= 0)
 			uy *= -1, vecuy *= -1;
+		*/
 
 		int numm = i;
 		while (car[numm].FindAvoid)numm = car[numm].Avoidnum;
 		pair<double, double>tr = car[i].Static_Avoidance(destination[numm], 1);
+		pair<double, double>vec1 = Sub(des[numID], make_pair(x, y)), vec2 = Sub(tr, make_pair(car[i].x, car[i].y));
 
-		if (Dot(Sub(des[numID], make_pair(x, y)), Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 &&
-			Dot(Sub(tr, make_pair(car[i].x, car[i].y)), Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
+		if (Dot(vec1, Sub(make_pair(car[i].x, car[i].y), make_pair(x, y))) > 0 && Dot(vec2, Sub(make_pair(x, y), make_pair(car[i].x, car[i].y))) > 0 &&
+			PointToLine(make_pair(x, y), make_pair(car[i].x, car[i].y), vec2) < GetR(goods) + GetR(car[i].goods) &&
+			PointToLine(make_pair(car[i].x, car[i].y), make_pair(x, y), vec1) < GetR(goods) + GetR(car[i].goods) &&
 			Dist(x, y, car[i].x, car[i].y) < 1.5 && (Search(x, y, desk_num, GetR(goods) + 2.0 * GetR(car[i].goods) + 0.03) ||
 				Search(car[i].x, car[i].y, desk_num, 2.0 * GetR(goods) + GetR(car[i].goods) + 0.03))) {
 			if (!ChooseAvoider(i)) {
