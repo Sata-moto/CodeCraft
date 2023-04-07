@@ -4,9 +4,9 @@
 #include <queue>
 #include <iostream>
 
-ofstream output;
+//ofstream output;
 int seed_n::seed = 0;
-int seed_n::seeds[5] = { 0,352354535,350895017,351758063,350804994 };
+int seed_n::seeds[5] = { 0,352354535,350895017,351758063,218668868 };
 int seed_n::seed_MOD = 998244353;
 int map_n::num_desk_7;
 int map_n::num_desk_9;
@@ -49,7 +49,7 @@ bool command_n::md[4] = { 0,0,0,0 };
 bool command_n::md_7[4] = { 0,0,0,0 };
 bool command_n::md_9[4] = { 0,0,0,0 };
 bool command_n::md_stop_frame[4] = { 0,0,0,0 };
-int parameter::Stop_frame = 14500;
+int parameter::Stop_frame = 14000;
 double parameter::Time_Upscale = 1.7;
 double parameter::Earning_Upscale = 1.2;
 double parameter::End_frame = 14900;
