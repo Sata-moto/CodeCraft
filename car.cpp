@@ -3,6 +3,7 @@
 #include "desk.h"
 #include "namespace.h"
 
+
 using namespace std;
 static const int Carnum = 4;
 static const double eps = 1e-2;
