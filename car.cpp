@@ -49,7 +49,7 @@ void CheckRunningCrash() {
 		bool Check = false;
 		for (int j = 0; j < 4; j++) {
 			if (i == j)continue;
-			if (Dist(car[i].x, car[i].y, car[j].x, car[j].y) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + eps) {
+			if (Dist(car[i].x, car[i].y, car[j].x, car[j].y) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + 0.03) {
 				Check = true;
 				break;
 			}
@@ -154,8 +154,8 @@ void CalculateTrueDestination() {
 		}
 	}
 
-
-	//加入被避让小车的停止考虑（利用dash接口实现对需要停下的小车的mov截断）
+	/*
+	//加入被避让小车的停止考虑
 	for (int i = 0; i < 4; i++)
 		revAvoid[i][0] = 0;
 	for (int i = 0; i < 4; i++)
@@ -165,6 +165,7 @@ void CalculateTrueDestination() {
 	for (int i = 0; i < 4; i++)
 		if (CheckAvoidTree(i, i))
 			des[i] = make_pair(car[i].x, car[i].y);
+	*/
 }
 void IntoDynamicCheckAndUpdate() {
 
@@ -282,8 +283,10 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 }
 double Car::CalcForward(double nx, double ny, int desk_num, double DeltaAng) {
 
+	
 	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
 		return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
+	
 
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 5 ? 0 : 6);
 
@@ -647,8 +650,20 @@ int Car::ChooseCrashCar(int numID, int desk_num) {
 
 		PreCalc(i);
 
-		//正向180度内是否有需要回避的小车
-		if (Dot(car[i].x - x, car[i].y - y, v1x, v1y) / (vecv * CombineV(car[i].x - x, car[i].y - y)) < 0)continue;
+		//正向180度内是否有需要回避的小车（注意小车的半径）
+		pair<double, double>decv = multi(make_pair(v1x, v1y), -GetR(goods));
+		pair<double, double>newpos = Add(make_pair(x, y), decv);
+
+		if (numID == 2 && i == 1) {
+			output << "v1=" << v1x << " " << v1y << endl;
+			output << "decv=" << decv.first << " " << decv.second << endl;
+			output << "newpos=" << newpos.first << " " << newpos.second << endl;
+			output << "vec=" << car[i].x - newpos.first << " " << car[i].y - newpos.second << endl;
+			output << endl;
+		}
+
+		if (Dot(car[i].x - newpos.first, car[i].y - newpos.second, v1x, v1y) / (vecv * CombineV(car[i].x - newpos.first, car[i].y - newpos.second)) < 0)
+			continue;
 
 		//判定当前小车行驶方向直线是否经过对面小车，或对面小车在警戒时间内到达这条直线
 		if ((d >= GetR(goods) + GetR(car[i].goods) + 0.5 && uy < eps) ||
@@ -760,9 +775,16 @@ void Car::SetRforInactive(int numID, int Choosenum, double& forwar, double& rot)
 }
 void Car::SetRforActive(int numID, int Choosenum, double& forwar, double& rot) {
 
+
+	output << numID << " is in SetRforActive" << endl;
+	output << endl;
+
 	if ((FindAvoid && !car[Choosenum].FindAvoid) ||
 		(!(FindAvoid ^ car[Choosenum].FindAvoid) && (goods > car[Choosenum].goods || (goods == car[Choosenum].goods && numID > Choosenum))))
 		return;
+
+	output << numID << " is avoiding " << Choosenum << endl;
+	output << endl;
 
 	pair<double, double>Vecp;
 	double AddAng, PredAng1, PredAng2, PredAng3, newd1, newd2, newd3;
@@ -817,7 +839,8 @@ void Car::SetRforActive(int numID, int Choosenum, double& forwar, double& rot) {
 void Car::SetRFforCrash(int numID, int Choosenum, double& forwar, double& rot) {
 
 	//为什么删掉后半截就不会正向回避损失速度?※※※※
-	if (d > GetR(goods) + GetR(car[Choosenum].goods) /* && ((uy > eps && (d - GetR(goods) - GetR(car[Choosenum].goods)) / uy >= CheckTime) || uy <= eps)*/)
+	//减去的0.05是当小车挨在一起时很难做到d大于两车半径相加
+	if (d > GetR(goods) + GetR(car[Choosenum].goods) - 0.05 /* && ((uy > eps && (d - GetR(goods) - GetR(car[Choosenum].goods)) / uy >= CheckTime) || uy <= eps)*/)
 		forwar = 6;
 	//forwar是否需要乘进速度夹角参数?※※※※
 	else forwar = 6 * cos((1 - max(Dist(x, y, car[Choosenum].x, car[Choosenum].y) - GetR(goods) - GetR(car[Choosenum].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[Choosenum].goods))) * (Pi / 2));
@@ -834,6 +857,8 @@ void Car::CarCrashCheck(double& forwar, double& rot, int desk_num) {
 
 	int numID = FindnumID(), Choosenum = ChooseCrashCar(numID, desk_num);
 	if (Choosenum == -1)return;
+
+	output << "have chosen a number" << endl << endl;
 
 	//另一小车与当前小车同向行驶且不为停在避让点的小车
 	if (vecux >= 0.15 && !(car[Choosenum].FindAvoid && car[Choosenum].Reach)) {
@@ -955,6 +980,12 @@ pair<double, double> Car::Dynamic_Avoidance() {
 
 	int numID = FindnumID();
 	int firstnum = Findfirstnum(numID);
+
+	output << "numID=" << numID << endl;
+	output << "firstnum=" << firstnum << endl;
+	output << endl;
+
+
 	pair<double, double>StaPo = Static_Avoidance(destination[firstnum], 1);
 
 	Updatelas(StaPo);
@@ -1047,6 +1078,8 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		}
 		if (maxlen == -1) { startang += deltaang; continue; }
 
+		output << "maxlen=" << maxlen << endl;
+
 		//不能选择工作台做避让点，0.4为容忍参数
 		if (Dist(sx + maxlen * cos(startang), sy + maxlen * sin(startang), desk[destination[firstnum]].x, desk[destination[firstnum]].y) < 0.4) {
 			startang += deltaang;
@@ -1077,12 +1110,20 @@ pair<double, double> Car::Dynamic_Avoidance() {
 			}
 
 			int nx = S.first + dx[Crossnum - 1], ny = S.second + dy[Crossnum - 1];
-			if (dis[Carry(goods)][destination[firstnum]][S.first][S.second] <= dis[Carry(goods)][destination[firstnum]][nx][ny]) {
+			if (dis[Carry(car[firstnum].goods)][destination[firstnum]][S.first][S.second] <= dis[Carry(car[firstnum].goods)][destination[firstnum]][nx][ny]) {
 				goodPoint = CrossPoint(realS, realT, p[Crossnum], p[Crossnum + 1]);
 				break;
 			}
 			S = make_pair(nx, ny);
 		}
+
+		output << "realS=" << realS.first << " " << realS.second << endl;
+		output << "realT=" << realT.first << " " << realT.second << endl;
+		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
+		output << "setto=" << setto.first << " " << setto.second << endl;
+		output << endl;
+
+
 		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
 			setto = make_pair(x + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * cos(startang),
 				y + (Dist(realS, goodPoint) + 2.0 * GetR(car[Avoidnum].goods) + 0.03) * sin(startang));
@@ -1148,7 +1189,7 @@ pair<double, double> Car::mov(int desk_num) {
 	int numID = FindnumID();
 	int firstnum = Findfirstnum(numID);
 
-	if (fabs(des[numID].first - x) < eps && fabs(des[numID].second - y) < eps)
+	if (des[numID].first == x && des[numID].second == y)
 		return make_pair(0.0, 0.0);
 	else return mov(des[numID].first, des[numID].second, destination[firstnum]);
 }
@@ -1181,6 +1222,7 @@ void calc() {
 		output << "Reach=" << car[i].Reach << endl;
 		output << endl;
 	}
+
 	output << "------------------------------------" << endl;
 	output << endl;
 
