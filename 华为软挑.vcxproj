@@ -142,11 +142,13 @@
     <ClInclude Include="car.h" />
     <ClInclude Include="decision.h" />
     <ClInclude Include="desk.h" />
+    <ClInclude Include="geometry.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="namespace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="car.cpp" />
+    <ClCompile Include="geometry.cpp" />
     <ClCompile Include="main.cpp">
       <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SDLCheck>
     </ClCompile>

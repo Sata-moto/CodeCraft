@@ -1,29 +1,6 @@
 #pragma once
 
 
-//几何/数学
-pair<double, double> getVec(double);                                                                                   // 得到指向对应角度的单位向量
-double Sign(double);                                                                                                   // 提取输入参数的符号
-double Dot(double, double, double, double);                                                                            // 点积（点对形式）
-double Dot(pair<double, double>, pair<double, double>);                                                                // 点积（向量形式）
-double Cross(double, double, double, double);                                                                          // 叉积（点对形式）
-double Cross(pair<double, double>, pair<double, double>);                                                              // 叉积（向量形式）
-pair<double, double> Rotate(pair<double, double>, double);                                                             // 旋转向量
-pair<double, double> multi(pair<double, double>, double);                                                              // 向量乘标量
-pair<double, double> Add(pair<double, double>, pair<double, double>);                                                  // 向量加向量
-pair<double, double> Sub(pair<double, double>, pair<double, double>);                                                  // 向量减向量
-double Dist(double, double, double, double);                                                                           // 计算两个点之间的距离（double点对形式）
-double Dist(pair<double, double>, pair<double, double>);                                                               // 计算两个点之间的距离（pair形式）
-double PointToLine(pair<double, double>, pair<double, double>, pair<double, double>);                                  // 计算点到直线距离
-double PointToSegment(pair<double, double>, pair<double, double>, pair<double, double>);                               // 计算点到线段距离
-bool SegmentCross(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);             // 判断线段是否相交
-pair<double,double> CrossPoint(pair<double, double>, pair<double, double>, pair<double, double>, pair<double, double>);// 直线求交点
-void AdjuAng(double&);                                                                                                 // 调整角度范围使其落在-Pi到Pi之间
-double CombineV(double, double);                                                                                       // 计算合速度（点对形式，非负）
-double CombineV(pair<double, double>);                                                                                 // 计算合速度（向量形式，非负）
-void UnitV(pair<double, double>&);                                                                                     // 单位化向量
-
-
 //状态更新及不经过障碍物的路径目标点计算
 bool CheckAvoidTree(int, int);                   // 检查小车避让树
 void CheckRunningCrash();                        // 死机判断
@@ -62,14 +39,22 @@ struct Car
 	bool accessjudge(int, double, double, double);                            // 判断当前角度一定距离是否可以通行
 	pair<double, double> Static_Avoidance(int, int);                          // 静态避障
 
-	//动态避障（小车避障）
+	//动态避障1（有足够避让空间的小车避障）
+	void PreCalc(int);                                                        // 预处理动态避障1所需要用到的变量
+	int ChooseCrashCar(int, int);                                             // 选择将要避让的小车
+	void SetFforChase(int, int, double&, double&);                            // mov时对正在追及小车的避让（不考虑障碍物）
+	void SetRforInactive(int, int, double&, double&);                         // 1.mov时对停在避让点小车的避让（不考虑障碍物）
+	void SetRforActive(int, int, double&, double&);                           // 2.mov时对对向行驶小车的避让（不考虑障碍物）
+	void SetRFforCrash(int, int, double&, double&);                           // mov时对将要碰撞的小车的避让，由1，2组成（不考虑障碍物）
+	void CarCrashCheck(double&, double&, int);                                // 动态避障1：有足够避让空间
+
+	//动态避障2（无足够避让空间的小车避障）
 	bool ChooseAvoider(int);                                                  // 判断当前情况下是否应该由另一小车避让
 	void DFSAccess(pair<int, int>, pair<double, double>, int, int, double);   // 搜索以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
 	bool SearchAccess(pair<int, int>, pair<double, double>, int, int, double);// 判断以某一点为圆心r为半径的1/2圆或1/4圆中有无障碍物
 	bool AvoidSituation1Check(double, double);                                // 判断动态避障情形1下寻找的避让点是否合法
 	void Updatelas(pair<double, double>);                                     // 更新三个lassta数据成员（用小车经过的点以及静态避障或未找到避障点的动态避障下将要去的点尝试描绘小车路径）
-	void CarCrashCheck(double&, double&, int);                                // 动态避障：有足够避让空间
-	pair<double, double> Dynamic_Avoidance();                                 // 动态避障：物足够避让空间
+	pair<double, double> Dynamic_Avoidance();                                 // 动态避障2：无足够避让空间
 
 	//移动决策输出
 	pair<double, double> mov(double, double, int);                            // 将小车向目标点移动（坐标形式，仅有小车避障）
