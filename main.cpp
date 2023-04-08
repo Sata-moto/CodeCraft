@@ -50,7 +50,7 @@ void init()
 
 int main()
 {
-//	output.open("test.txt", ios::out);
+	output.open("test.txt", ios::out);
 	for (int k = 1; k <= 101; k++)
 		scanf("%s", &map[k][1]);
 	for (int k = 1; k <= 100; k++)
@@ -70,11 +70,11 @@ int main()
 	while (scanf("%d %d", &frame_number, &money))
 	{
 
-		/*
-		output << "--------------------------------------------" << endl;
+		
+		output << "============================================" << endl;
 		output << "framenumber=" << frame_number << endl;
 		output << endl;
-		*/
+		
 
 		reload_occupied();
 		printf("%d\n", frame_number);
@@ -154,6 +154,6 @@ int main()
 	}
 
 	//fdebug.close();
-	//output.close();
+	output.close();
 	return 0;
 }
