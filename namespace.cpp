@@ -9,7 +9,6 @@ int seed_n::seed = 0;
 int seed_n::seeds[5] = { 0,352354535,350895017,351758063,218668868 };
 int seed_n::seed_MOD = 998244353;
 int map_n::num_desk_7;
-int map_n::num_desk_8;
 int map_n::num_desk_9;
 char map_n::map[N][N];							// 地图
 double map_n::dis[2][52][N][N];

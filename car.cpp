@@ -83,17 +83,45 @@ void DynamicStatusUpdate() {
 
 	//一般情况下的动态避让状态转移
 	for (int i = 0; i < 4; i++) {
+		if (!car[i].FindAvoid)continue;
+		if (car[i].FindAvoid == 1) {
+			int firstnum = i;
+			while (car[firstnum].FindAvoid) {
+				firstnum = car[firstnum].Avoidnum;
+				if (car[i].ObCheck(car[firstnum].x, car[firstnum].y, car[i].x, car[i].y, 51, 0, 0) &&
+					Dot(car[firstnum].x - car[i].x, car[firstnum].y - car[i].y, des[i].first, des[i].second) >= 0) {
+					car[i].FindAvoid = 0;
+					car[i].Reach = false;
+					car[i].lassta3 = car[i].lassta2 = car[i].lassta = make_pair(0.0, 0.0);
+					car[i].Avoidnum = -1;
+					car[i].goodsrec = -1;
+					break;
+				}
+			}
+		}
 		if (car[i].FindAvoid >= 2 && Dist(car[i].x, car[i].y, car[i].setto.first, car[i].setto.second) < 0.4)
 			car[i].Reach = true;
-		if (car[i].FindAvoid == 2 && Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) <= 4)
-			car[i].FindAvoid = 3;
-		if (car[i].FindAvoid == 3 && (Dist(car[i].x, car[i].y, car[car[i].Avoidnum].x, car[car[i].Avoidnum].y) > 4 || car[i].goodsrec != car[car[i].Avoidnum].goods)) {
-			car[i].FindAvoid = 0;
-			car[i].Reach = false;
-			car[i].lassta3 = car[i].lassta2 = car[i].lassta = make_pair(0.0, 0.0);
-			car[i].Avoidnum = -1;
-			car[i].goodsrec = -1;
+
+
+
+		if (car[i].FindAvoid >= 2) {
+			int firstnum = car[i].Findfirstnum(i);
+			pair<int, int>ss = math_n::ztoe(car[i].x, car[i].y), tt = math_n::ztoe(car[car[i].Avoidnum].x, car[car[i].Avoidnum].y);
+			double diss = fabs(dis[car[firstnum].Carry(firstnum)][destination[firstnum]][ss.first][ss.second] -
+				dis[car[firstnum].Carry(firstnum)][destination[firstnum]][tt.first][tt.second]);
+
+			if (car[i].FindAvoid == 2 && car[i].Reach && diss <= 4)
+				car[i].FindAvoid = 3;
+			if (car[i].FindAvoid == 3 && diss > 4 || car[i].goodsrec != car[car[i].Avoidnum].goods) {
+				car[i].FindAvoid = 0;
+				car[i].Reach = false;
+				car[i].lassta3 = car[i].lassta2 = car[i].lassta = make_pair(0.0, 0.0);
+				car[i].Avoidnum = -1;
+				car[i].goodsrec = -1;
+			}
 		}
+
+
 	}
 
 
@@ -165,7 +193,7 @@ void CalculateTrueDestination() {
 		*/
 	}
 
-	
+
 	//加入被避让小车的停止考虑
 	for (int i = 0; i < 4; i++)
 		revAvoid[i][0] = 0;
@@ -176,7 +204,7 @@ void CalculateTrueDestination() {
 	for (int i = 0; i < 4; i++)
 		if (CheckAvoidTree(i, i))
 			des[i] = make_pair(car[i].x, car[i].y);
-	
+
 }
 void IntoDynamicCheckAndUpdate() {
 
@@ -221,11 +249,11 @@ void IntoDynamicCheckAndUpdate() {
 
 
 			//遇到不停在避让点且正对着的小车且没有避让空间时考虑动态避让
-			bool check1 = (!car[j].FindAvoid || (car[j].FindAvoid && !car[j].Reach))&&
+			bool check1 = (!car[j].FindAvoid || (car[j].FindAvoid && !car[j].Reach)) &&
 				Dot(vec1, Sub(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y))) > 0 &&
 				Dot(vec2, Sub(make_pair(car[i].x, car[i].y), make_pair(car[j].x, car[j].y))) > 0 &&
 				(PointToLine(make_pair(car[i].x, car[i].y), make_pair(car[j].x, car[j].y), vec2) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) ||
-				PointToLine(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y), vec1) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods)) &&
+					PointToLine(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y), vec1) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods)) &&
 				/*Dot(v1x, v1y, car[j].x - car[i].x, car[j].y - car[i].y) > 0 && Dot(v2x, v2y, car[i].x - car[j].x, car[i].y - car[j].y) > 0 &&*/
 				/*Dot(v1x, v1y, v2x, v2y) < 0 && fabs(v) > eps && fabs(v2) > eps &&*/
 				Dist(car[i].x, car[i].y, car[j].x, car[j].y) < 3 &&
@@ -279,7 +307,7 @@ double Car::CalcAng(double nx, double ny) {
 	return res;
 }
 double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
-	
+
 	//计算转动惯量、角加速度和距离目标点的距离
 	double I = 0.5 * pow(GetR(goods), 4) * Pi * 20, B = 50.0 / I, diss = Dist(nx, ny, x, y);
 
@@ -287,7 +315,7 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 	bool Check = (fabs(DeltaAng) < 1.56) && (tan(fabs(DeltaAng)) * diss <= 0.01) &&
 		ObCheck(x, y, x + diss * cos(ang), y + diss * sin(ang), desk_num, GetR(goods), 0);
 	//这里需要修※※※（影响过隧道抖动&过墙角判断）
-	
+
 	//根据当前偏向角和角速度决定加速旋转或减速旋转
 	double res = 0;
 	if (Check)
@@ -306,10 +334,10 @@ double Car::CalcRotate(double nx, double ny, int desk_num, double DeltaAng) {
 }
 double Car::CalcForward(double nx, double ny, int desk_num, double DeltaAng) {
 
-	
+
 	if (goods < 4 && (fabs(desk[desk_num].x - nx) > eps || fabs(desk[desk_num].y - ny) > eps))
 		return cos(DeltaAng) * (fabs(DeltaAng) > Pi / 2 ? 0 : 6);
-	
+
 
 	double res = cos(DeltaAng) * (fabs(DeltaAng) > Pi / 5 ? 0 : 6);
 
@@ -425,14 +453,14 @@ bool Car::ObCheck(double x1, double y1, double x2, double y2, int desk_num, doub
 		realT = q.front(); q.pop();
 		if (realS.first < 0 || realS.first>50 || realS.second < 0 || realS.second>50)return false;
 		if (realT.first < 0 || realT.first>50 || realT.second < 0 || realT.second>50)return false;
-		
+
 		S = math_n::ztoe(realS.first, realS.second);
 		T = math_n::ztoe(realT.first, realT.second);
 
 		int Crossnum = 1;
-		
+
 		while (S != T) {
-			
+
 			if (dis[Carry(goods)][desk_num][S.first][S.second] == 1e9 || map[S.first][S.second] == '#')
 				return false;
 
@@ -494,7 +522,7 @@ pair<double, double> Car::Static_Avoidance(int desk_num, int mode) {
 			if (accessjudge(desk_num, startang, mid, 0.02))maxlen = mid, l = mid;
 			else r = mid;
 		}
-		if (maxlen == -1) {startang += Delt;continue;}
+		if (maxlen == -1) { startang += Delt; continue; }
 
 
 		s = make_pair(x, y); t = make_pair(x + maxlen * cos(startang), y + maxlen * sin(startang));
@@ -817,10 +845,39 @@ void Car::SetRFforActive(int numID, int Choosenum, double& forwar, double& rot) 
 	output << numID << " is in SetRforActive" << endl;
 	output << endl;
 	*/
+	//特殊情況：如果遇到正在回避的小車，若該小車回避的是我，則我優先級更高；反之他優先級更高
+	//如果遇到不是正在回避的小車，若該小車是我回避的，則他優先級更高，反之我優先級更高
 
-	if ((FindAvoid && !car[Choosenum].FindAvoid) ||
-		(!(FindAvoid ^ car[Choosenum].FindAvoid) && (goods > car[Choosenum].goods || (goods == car[Choosenum].goods && numID > Choosenum))))
-		return;
+	if (car[numID].FindAvoid) {
+		if (car[Choosenum].FindAvoid) {
+			if (goods > car[Choosenum].goods || (goods == car[Choosenum].goods && numID > Choosenum))
+				return;
+		}
+		else {
+			int firstnum = numID;
+			bool Check = false;
+			while (car[firstnum].FindAvoid) {
+				firstnum = car[firstnum].Avoidnum;
+				Check |= (firstnum == Choosenum);
+			}
+			if (!Check)return;
+		}
+	}
+	if (car[Choosenum].FindAvoid) {
+		if (car[numID].FindAvoid) {
+			if (goods > car[Choosenum].goods || (goods == car[Choosenum].goods && numID > Choosenum))
+				return;
+		}
+		else {
+			int firstnum = Choosenum;
+			bool Check = false;
+			while (car[firstnum].FindAvoid) {
+				firstnum = car[firstnum].Avoidnum;
+				Check |= (firstnum == numID);
+			}
+			if (Check)return;
+		}
+	}
 
 	/*
 	output << numID << " is avoiding " << Choosenum << endl;
@@ -1013,12 +1070,6 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	int numID = FindnumID();
 	int firstnum = Findfirstnum(numID);
 
-	/*
-	output << "numID=" << numID << endl;
-	output << "firstnum=" << firstnum << endl;
-	output << endl;
-	*/
-
 	pair<double, double>StaPo = Static_Avoidance(destination[firstnum], 1);
 
 	Updatelas(StaPo);
@@ -1062,8 +1113,8 @@ pair<double, double> Car::Dynamic_Avoidance() {
 			mid = (l + r) / 2;
 			double tx = sx + mid * cos(startang), ty = sy + mid * sin(startang);
 			pair<int, int>tt = math_n::ztoe(tx, ty);
-			if (tx < 0 || tx>50 || ty < 0 || ty>50) {r = mid;continue;}
-			if (fabs(xzb.first - tt.first) < eps && fabs(xzb.second - tt.second) < eps) {l = mid;continue;}
+			if (tx < 0 || tx>50 || ty < 0 || ty>50) { r = mid; continue; }
+			if (fabs(xzb.first - tt.first) < eps && fabs(xzb.second - tt.second) < eps) { l = mid; continue; }
 			if (ObCheck(sx, sy, tx, ty, destination[firstnum], GetR(goods), 1))maxlen = mid, l = mid;
 			else r = mid;
 		}
@@ -1086,12 +1137,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
-	/*
-	output << "Calculate " << numID << " Dynamic Avoidance Situation 1 Done" << endl << endl;
-	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
-	*/
 
-	
 	//情形2：长直通道（共四个方向）
 	startang = -Pi; deltaang = Pi / 2;
 
@@ -1101,8 +1147,8 @@ pair<double, double> Car::Dynamic_Avoidance() {
 
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
 			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir)) > eps)) {
-				startang += deltaang;
-				continue;
+			startang += deltaang;
+			continue;
 		}
 
 		l = 0; r = 50; maxlen = -1;
@@ -1112,8 +1158,8 @@ pair<double, double> Car::Dynamic_Avoidance() {
 			mid = (l + r) / 2;
 			double tx = sx + mid * cos(startang), ty = sy + mid * sin(startang);
 			pair<int, int>tt = math_n::ztoe(tx, ty);
-			if (tx < 0 || tx>50 || ty < 0 || ty>50) {r = mid;continue;}
-			if (fabs(xzb.first - tt.first) < eps && fabs(xzb.second - tt.second) < eps) {l = mid;continue;}
+			if (tx < 0 || tx>50 || ty < 0 || ty>50) { r = mid; continue; }
+			if (fabs(xzb.first - tt.first) < eps && fabs(xzb.second - tt.second) < eps) { l = mid; continue; }
 			if (ObCheck(sx, sy, tx, ty, destination[firstnum], GetR(goods), 1))maxlen = mid, l = mid;
 			else r = mid;
 		}
@@ -1126,7 +1172,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 			startang += deltaang;
 			continue;
 		}
-		
+
 		pair<double, double>realS = make_pair(x, y), realT = make_pair(sx + maxlen * cos(startang), sy + maxlen * sin(startang));
 		pair<int, int>S = math_n::ztoe(realS.first, realS.second), T = math_n::ztoe(realT.first, realT.second);
 		pair<double, double>p[6], goodPoint = make_pair(-1.0, -1.0);
@@ -1176,10 +1222,6 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
-	/*
-	output << "Calculate " << numID << " Dynamic Avoidance Situation 2 Done" << endl << endl;
-	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
-	*/
 
 
 	//判定小车回避状态并返回对应目标点（已处理过，是可以不经过障碍物而到达的点）
@@ -1197,10 +1239,6 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		else return make_pair(setto.first, setto.second);
 	}
 
-	/*
-	output << "Calculate " << numID << " Dynamic Avoidance Done" << endl << endl;
-	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
-	*/
 
 }
 
@@ -1208,10 +1246,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 //移动决策输出
 pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
-	/*
-	output << "numID=" << FindnumID() << endl;
-	output << endl;
-	*/
+
 
 	//计算当前朝向与目标点的偏向角
 	double DeltaAng = CalcAng(nx, ny);
@@ -1219,20 +1254,11 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	//计算角速度与速度的设定值
 	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, desk_num, DeltaAng);
 
-	/*
-	output << "Calcforwar=" << forwar << endl;
-	output << "Calcrot=" << rot << endl;
-	output << endl;
-	*/
+
 
 	//小车碰撞判定
 	CarCrashCheck(forwar, rot, desk_num);
 
-	/*
-	output << "CarCrashforwar=" << forwar << endl;
-	output << "CarCrashrot=" << rot << endl;
-	output << endl;
-	*/
 
 	//边界碰撞判定
 	double checkforwar = forwar;
@@ -1244,17 +1270,6 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
 
-	/*
-	output << "Marginforwar=" << forwar << endl;
-	output << "Marginrot=" << rot << endl;
-	output << endl;
-	*/
-
-	/*
-	output << FindnumID() << " Done" << endl;
-	output << "-----------------------------------------" << endl;
-	output << endl;
-	*/
 
 	return pair<double, double>(forwar, rot);
 }
@@ -1274,52 +1289,17 @@ void calc() {
 	CheckRunningCrash();
 	//检查是否死机
 
-	/*
-	output << "CheckRunningCrash Done" << endl << endl;
-	output << "------------------------------------------" << endl << endl;
-	*/
 
 	DynamicStatusUpdate();
 	//所有小车动态回避状态更新
 	//状态更新包括：1.正常流程下的状态更新；2.到达终点情况下的状态倒置
 	//注意：各小车状态更新的顺序
 
-	/*
-	output << "DynamicStatusUpdate Done" << endl << endl;
-	output << "-----------------------------------------" << endl << endl;
-	*/
-
 	CalculateTrueDestination();
 	//在前面两个工作的基础上计算当前小车的目标点
 	//目标点包括：1.静态避障下的目标点；2.动态避障时未找到避让点的前进方向（最先被避让的小车在静态避障下的目标点）；3.动态避障找到避让点时的前进方向
 
-	/*
-	output << "CalculateTrueDestination Done" << endl << endl;
-	output << "-----------------------------------------" << endl << endl;
-	*/
-
 	IntoDynamicCheckAndUpdate();
 	//检查未进入动态避障的小车是否可以进入动态避障状态，若可以进入则进入并更新信息
-
-	/*
-	output << "IntoDynamicCheckAndUpdate Done" << endl << endl;
-	output << "-----------------------------------------" << endl << endl;
-	*/
-
-	/*
-	for (int i = 0; i < 4; i++) {
-		output << "numID=" << i << endl;
-		output << "pos=" << car[i].x << " " << car[i].y << endl;
-		output << "des=" << des[i].first << " " << des[i].second << endl;
-		output << "FindAvoid=" << car[i].FindAvoid << endl;
-		output << "Avoidnum=" << car[i].Avoidnum << endl;
-		output << "setto=" << car[i].setto.first << " " << car[i].setto.second << endl;
-		output << "Reach=" << car[i].Reach << endl;
-		output << endl;
-	}
-
-	output << "------------------------------------" << endl;
-	output << endl;
-	*/
 
 }
