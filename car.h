@@ -43,8 +43,8 @@ struct Car
 	void PreCalc(int);                                                        // 预处理动态避障1所需要用到的变量
 	int ChooseCrashCar(int, int);                                             // 选择将要避让的小车
 	void SetFforChase(int, int, double&, double&);                            // mov时对正在追及小车的避让（不考虑障碍物）
-	void SetRforInactive(int, int, double&, double&);                         // 1.mov时对停在避让点小车的避让（不考虑障碍物）
-	void SetRforActive(int, int, double&, double&);                           // 2.mov时对对向行驶小车的避让（不考虑障碍物）
+	void SetRFforInactive(int, int, double&, double&);                         // 1.mov时对停在避让点小车的避让（不考虑障碍物）
+	void SetRFforActive(int, int, double&, double&);                           // 2.mov时对对向行驶小车的避让（不考虑障碍物）
 	void SetRFforCrash(int, int, double&, double&);                           // mov时对将要碰撞的小车的避让，由1，2组成（不考虑障碍物）
 	void CarCrashCheck(double&, double&, int);                                // 动态避障1：有足够避让空间
 

@@ -64,7 +64,7 @@ void CheckRunningCrash() {
 				car[i].Avoidnum = -1;
 				car[i].goodsrec = -1;
 			}
-			if ((car[i].FindAvoid && car[i].Reach) && (frame_number - set0[i] >= 500) && set0[i]) {
+			if ((car[i].FindAvoid && car[i].Reach) && (frame_number - set0[i] >= 400) && set0[i]) {
 				set0[i] = 0;
 				car[i].FindAvoid = 0;
 				car[i].Reach = false;
@@ -726,11 +726,18 @@ void Car::SetFforChase(int numID, int Choosenum, double& forwar, double& rot) {
 		forwar = max(ux - 3, 0.0);//追及问题可以调参（速度较小影响运送时间，速度较大影响运送碰撞）
 
 }
-void Car::SetRforInactive(int numID, int Choosenum, double& forwar, double& rot) {
+void Car::SetRFforInactive(int numID, int Choosenum, double& forwar, double& rot) {
+
+	if (d > GetR(goods) + GetR(car[Choosenum].goods) - 0.05 /* && ((uy > eps && (d - GetR(goods) - GetR(car[Choosenum].goods)) / uy >= CheckTime) || uy <= eps)*/)
+		forwar = 6;
+	else forwar = 6 * cos((1 - max(Dist(x, y, car[Choosenum].x, car[Choosenum].y) - GetR(goods) - GetR(car[Choosenum].goods + 0.5), 0.0) / (AlertRange - GetR(goods) - GetR(car[Choosenum].goods))) * (Pi / 2));
 
 	//先判断当前小车直行至目标点是否会撞到完成避让的小车
 	double d = PointToSegment(make_pair(car[Choosenum].x, car[Choosenum].y), make_pair(x, y), des[numID]);
-	if (d > GetR(goods) + GetR(car[Choosenum].goods) - 0.03)return;//忽略较小程度的碰撞
+	if (d > GetR(goods) + GetR(car[Choosenum].goods) + 0.03 || Dist(x, y, car[Choosenum].x, car[Choosenum].y) > GetR(goods) + GetR(car[Choosenum].goods) + 0.3)return;
+
+	if (numID == 3)
+		output << "I'm adjusting my direction" << endl << endl;
 
 	//定位完成避让小车两个两端可以通过的点
 	pair<double, double>Vecp = make_pair(x - car[Choosenum].x, y - car[Choosenum].y);
@@ -741,7 +748,7 @@ void Car::SetRforInactive(int numID, int Choosenum, double& forwar, double& rot)
 	pair<double, double>newpo1 = Add(make_pair(car[Choosenum].x, car[Choosenum].y), vec1);
 	pair<double, double>newpo2 = Add(make_pair(car[Choosenum].x, car[Choosenum].y), vec2);
 
-	//checknewpo1表示当前小车右转（rot=-Pi），checknewpo2表示当前小车左转（rot=Pi）
+	//checknewpo1表示当前小车需要前往右侧（rot=-Pi），checknewpo2表示当前小车需要前往左侧（rot=Pi）
 	bool checknewpo1 = false, checknewpo2 = false;
 	if (!car[Choosenum].Search(newpo1.first, newpo1.second, 51, GetR(goods)))
 		checknewpo1 = true;
@@ -760,21 +767,27 @@ void Car::SetRforInactive(int numID, int Choosenum, double& forwar, double& rot)
 	output << "newpo1=" << newpo1.first << " " << newpo1.second << " check=" << checknewpo1 << endl;
 	output << "newpo2=" << newpo2.first << " " << newpo2.second << " check=" << checknewpo2 << endl;
 
+	//前往右侧
 	if (checknewpo1) {
 		UnitV(vec1);
-		vec1 = multi(vec1, GetR(goods) + GetR(car[Choosenum].goods) + 0.03);
-		newpo1 = Add(make_pair(car[Choosenum].x, car[Choosenum].y), vec1);
+		newpo1 = Add(make_pair(x, y), vec1);
 		rot = CalcRotate(newpo1.first, newpo1.second, 51, CalcAng(newpo1.first, newpo1.second));
 	}
+	//前往左侧
 	else {
 		UnitV(vec2);
-		vec2 = multi(vec2, GetR(goods) + GetR(car[Choosenum].goods) + 0.03);
-		newpo2 = Add(make_pair(car[Choosenum].x, car[Choosenum].y), vec2);
+		newpo2 = Add(make_pair(x, y), vec2);
 		rot = CalcRotate(newpo2.first, newpo2.second, 51, CalcAng(newpo2.first, newpo2.second));
 	}
 }
-void Car::SetRforActive(int numID, int Choosenum, double& forwar, double& rot) {
+void Car::SetRFforActive(int numID, int Choosenum, double& forwar, double& rot) {
 
+	//为什么删掉后半截就不会正向回避损失速度?※※※※
+	//减去的0.05是当小车挨在一起时很难做到d大于两车半径相加
+	if (d > GetR(goods) + GetR(car[Choosenum].goods) - 0.05 /* && ((uy > eps && (d - GetR(goods) - GetR(car[Choosenum].goods)) / uy >= CheckTime) || uy <= eps)*/)
+		forwar = 6;
+	//forwar是否需要乘进速度夹角参数?※※※※
+	else forwar = 6 * cos((1 - max(Dist(x, y, car[Choosenum].x, car[Choosenum].y) - GetR(goods) - GetR(car[Choosenum].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[Choosenum].goods))) * (Pi / 2));
 
 	output << numID << " is in SetRforActive" << endl;
 	output << endl;
@@ -838,18 +851,11 @@ void Car::SetRforActive(int numID, int Choosenum, double& forwar, double& rot) {
 }
 void Car::SetRFforCrash(int numID, int Choosenum, double& forwar, double& rot) {
 
-	//为什么删掉后半截就不会正向回避损失速度?※※※※
-	//减去的0.05是当小车挨在一起时很难做到d大于两车半径相加
-	if (d > GetR(goods) + GetR(car[Choosenum].goods) - 0.05 /* && ((uy > eps && (d - GetR(goods) - GetR(car[Choosenum].goods)) / uy >= CheckTime) || uy <= eps)*/)
-		forwar = 6;
-	//forwar是否需要乘进速度夹角参数?※※※※
-	else forwar = 6 * cos((1 - max(Dist(x, y, car[Choosenum].x, car[Choosenum].y) - GetR(goods) - GetR(car[Choosenum].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[Choosenum].goods))) * (Pi / 2));
-
 	if (car[Choosenum].FindAvoid && car[Choosenum].Reach)
-		SetRforInactive(numID, Choosenum, forwar, rot);
+		SetRFforInactive(numID, Choosenum, forwar, rot);
 	else {
 		PreCalc(Choosenum);
-		SetRforActive(numID, Choosenum, forwar, rot);
+		SetRFforActive(numID, Choosenum, forwar, rot);
 	}
 
 }
@@ -1059,7 +1065,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		Vecp = getVec(startang);
 
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
-			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
+			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir)) > eps)) {
 				startang += deltaang;
 				continue;
 		}
@@ -1164,8 +1170,20 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	//计算角速度与速度的设定值
 	double rot = CalcRotate(nx, ny, desk_num, DeltaAng), forwar = CalcForward(nx, ny, desk_num, DeltaAng);
 
+	/*
+	output << "Calcforwar=" << forwar << endl;
+	output << "Calcrot=" << rot << endl;
+	output << endl;
+	*/
+
 	//小车碰撞判定
 	CarCrashCheck(forwar, rot, desk_num);
+
+	/*
+	output << "CarCrashforwar=" << forwar << endl;
+	output << "CarCrashrot=" << rot << endl;
+	output << endl;
+	*/
 
 	//边界碰撞判定
 	double checkforwar = forwar;
@@ -1177,10 +1195,11 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	if (fabs(checkforwar) > eps && fabs(forwar) < eps && fabs(w) < eps && fabs(rot) < eps)
 		forwar = checkforwar;
 
-	output << "forwar=" << forwar << endl;
-	output << "rot=" << rot << endl;
+	/*
+	output << "Marginforwar=" << forwar << endl;
+	output << "Marginrot=" << rot << endl;
 	output << endl;
-
+	*/
 
 	return pair<double, double>(forwar, rot);
 }
