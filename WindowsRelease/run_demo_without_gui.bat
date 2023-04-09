@@ -1,0 +1,1 @@
+robot.exe Demo\SimpleDemo.exe -f -m maps\2.txt

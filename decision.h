@@ -555,8 +555,8 @@ void decision_before_stop_frame_without_7(int k)
 			printf("sell %d\n", k);
 			if (car[k].goods >= 4 && car[k].goods <= 6)
 				occupied_goods[car[k].goods]--;
-			if (occupied_goods[car[k].goods] < 0)
-				exit(-1);
+			//if (occupied_goods[car[k].goods] < 0)
+			//	exit(-1);
 			//错误跳出点 1
 		}
 		if (desk[destination[k]].type <= 3 && !desk[destination[k]].output_status)
