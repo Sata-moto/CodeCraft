@@ -734,7 +734,7 @@ void Car::SetRFforInactive(int numID, int Choosenum, double& forwar, double& rot
 
 	//先判断当前小车直行至目标点是否会撞到完成避让的小车
 	double d = PointToSegment(make_pair(car[Choosenum].x, car[Choosenum].y), make_pair(x, y), des[numID]);
-	if (d > GetR(goods) + GetR(car[Choosenum].goods) + 0.03 || Dist(x, y, car[Choosenum].x, car[Choosenum].y) > GetR(goods) + GetR(car[Choosenum].goods) + 0.3)return;
+	if (d > GetR(goods) + GetR(car[Choosenum].goods) + 0.03 || Dist(x, y, car[Choosenum].x, car[Choosenum].y) > GetR(goods) + GetR(car[Choosenum].goods) + 0.15)return;
 
 	if (numID == 3)
 		output << "I'm adjusting my direction" << endl << endl;
@@ -1020,7 +1020,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		Vecp = getVec(startang);
 
 		if ((Dot(Vecp, VecA) < 0 && fabs(Dot(Vecp, VecA)) > eps) || (Dot(Vecp, VecA2) < 0 && fabs(Dot(Vecp, VecA2)) > eps) ||
-			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir) > eps))) {
+			(Dot(Vecp, VecA3) < 0 && fabs(Dot(Vecp, VecA3)) > eps) || (Dot(Vecp, cardir) < 0 && fabs(Dot(Vecp, cardir)) > eps)) {
 			startang += deltaang;
 			continue;
 		}
