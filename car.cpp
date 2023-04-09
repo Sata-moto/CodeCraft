@@ -32,7 +32,8 @@ static double v1x, v1y, v2x, v2y;
 bool CheckAvoidTree(int now, int id) {
 	for (int i = 1; i <= revAvoid[now][0]; i++) {
 		int numm = revAvoid[now][i];
-		bool Check = (!car[numm].Reach) && Dist(car[id].x, car[id].y, car[numm].x, car[numm].y) <= 4 &&
+		//判定距离大于2但小于4时等待回避自己的小车找到回避点；若距离小于2则尝试回避正在回避自己的小车
+		bool Check = (!car[numm].Reach) && Dist(car[id].x, car[id].y, car[numm].x, car[numm].y) <= 4 && Dist(car[id].x, car[id].y, car[numm].x, car[numm].y) >= 2 &&
 			car[id].ObCheck(car[id].x, car[id].y, car[numm].x, car[numm].y, 51, 0, 0) &&
 			Dot(car[numm].x - car[id].x, car[numm].y - car[id].y, des[id].first, des[id].second) > 0;
 		if (Check)return true;
@@ -152,9 +153,12 @@ void CalculateTrueDestination() {
 				}
 			}
 		}
+
+		output << "Calculate True Destination " << i << " Done" << endl << endl;
+		output << "*********************************" << endl << endl;
 	}
 
-	/*
+	
 	//加入被避让小车的停止考虑
 	for (int i = 0; i < 4; i++)
 		revAvoid[i][0] = 0;
@@ -165,7 +169,7 @@ void CalculateTrueDestination() {
 	for (int i = 0; i < 4; i++)
 		if (CheckAvoidTree(i, i))
 			des[i] = make_pair(car[i].x, car[i].y);
-	*/
+	
 }
 void IntoDynamicCheckAndUpdate() {
 
@@ -208,15 +212,27 @@ void IntoDynamicCheckAndUpdate() {
 			pair<double, double> vec1 = Sub(des[i], make_pair(car[i].x, car[i].y));
 			pair<double, double> vec2 = Sub(des[j], make_pair(car[j].x, car[j].y));
 
-			//进入动态避障的判定还需要修改
-			if (Dot(vec1, Sub(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y))) > 0 &&
+
+			//遇到不停在避让点且正对着的小车且没有避让空间时考虑动态避让
+			bool check1 = (!car[j].FindAvoid || (car[j].FindAvoid && !car[j].Reach))&&
+				Dot(vec1, Sub(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y))) > 0 &&
 				Dot(vec2, Sub(make_pair(car[i].x, car[i].y), make_pair(car[j].x, car[j].y))) > 0 &&
-				PointToLine(make_pair(car[i].x, car[i].y), make_pair(car[j].x, car[j].y), vec2) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) &&
-				PointToLine(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y), vec1) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) &&
+				(PointToLine(make_pair(car[i].x, car[i].y), make_pair(car[j].x, car[j].y), vec2) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) ||
+				PointToLine(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y), vec1) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods)) &&
 				/*Dot(v1x, v1y, car[j].x - car[i].x, car[j].y - car[i].y) > 0 && Dot(v2x, v2y, car[i].x - car[j].x, car[i].y - car[j].y) > 0 &&*/
 				/*Dot(v1x, v1y, v2x, v2y) < 0 && fabs(v) > eps && fabs(v2) > eps &&*/
 				Dist(car[i].x, car[i].y, car[j].x, car[j].y) < 3 &&
-				(car[i].Search(car[i].x, car[i].y, 51, car[i].GetR(car[i].goods) + 2.0 * car[j].GetR(car[j].goods) + 0.03) || car[j].Search(car[j].x, car[j].y, 51, 2.0 * car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + 0.03))) {
+				(car[i].Search(car[i].x, car[i].y, 51, car[i].GetR(car[i].goods) + 2.0 * car[j].GetR(car[j].goods) + 0.03) || car[j].Search(car[j].x, car[j].y, 51, 2.0 * car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + 0.03));
+
+			//遇到停在避让点的小车且没有避让空间时考虑动态避让
+			bool check2 = (car[j].FindAvoid && car[j].Reach) &&
+				Dot(vec1, Sub(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y))) > 0 &&
+				PointToLine(make_pair(car[j].x, car[j].y), make_pair(car[i].x, car[i].y), vec1) < car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) &&
+				Dist(car[i].x, car[i].y, car[j].x, car[j].y) < 3 &&
+				(car[i].Search(car[i].x, car[i].y, 51, car[i].GetR(car[i].goods) + 2.0 * car[j].GetR(car[j].goods) + 0.03) || car[j].Search(car[j].x, car[j].y, 51, 2.0 * car[i].GetR(car[i].goods) + car[j].GetR(car[j].goods) + 0.03));
+
+			//进入动态避障的判定还需要修改
+			if (check1 || check2) {
 				if (!car[i].ChooseAvoider(j)) {
 					car[i].FindAvoid = 1;
 					car[i].Reach = false;
@@ -736,9 +752,6 @@ void Car::SetRFforInactive(int numID, int Choosenum, double& forwar, double& rot
 	double d = PointToSegment(make_pair(car[Choosenum].x, car[Choosenum].y), make_pair(x, y), des[numID]);
 	if (d > GetR(goods) + GetR(car[Choosenum].goods) + 0.03 || Dist(x, y, car[Choosenum].x, car[Choosenum].y) > GetR(goods) + GetR(car[Choosenum].goods) + 0.15)return;
 
-	if (numID == 3)
-		output << "I'm adjusting my direction" << endl << endl;
-
 	//定位完成避让小车两个两端可以通过的点
 	pair<double, double>Vecp = make_pair(x - car[Choosenum].x, y - car[Choosenum].y);
 	UnitV(Vecp);
@@ -863,8 +876,6 @@ void Car::CarCrashCheck(double& forwar, double& rot, int desk_num) {
 
 	int numID = FindnumID(), Choosenum = ChooseCrashCar(numID, desk_num);
 	if (Choosenum == -1)return;
-
-	output << "have chosen a number" << endl << endl;
 
 	//另一小车与当前小车同向行驶且不为停在避让点的小车
 	if (vecux >= 0.15 && !(car[Choosenum].FindAvoid && car[Choosenum].Reach)) {
@@ -1056,6 +1067,9 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
+	output << "Calculate " << numID << " Dynamic Avoidance Situation 1 Done" << endl << endl;
+	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
+
 	
 	//情形2：长直通道（共四个方向）
 	startang = -Pi; deltaang = Pi / 2;
@@ -1126,7 +1140,6 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		output << "realS=" << realS.first << " " << realS.second << endl;
 		output << "realT=" << realT.first << " " << realT.second << endl;
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
-		output << "setto=" << setto.first << " " << setto.second << endl;
 		output << endl;
 
 
@@ -1139,6 +1152,9 @@ pair<double, double> Car::Dynamic_Avoidance() {
 
 		startang += deltaang;
 	}
+
+	output << "Calculate " << numID << " Dynamic Avoidance Situation 2 Done" << endl << endl;
+	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
 
 
 	//判定小车回避状态并返回对应目标点（已处理过，是可以不经过障碍物而到达的点）
@@ -1155,6 +1171,9 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		}
 		else return make_pair(setto.first, setto.second);
 	}
+	output << "Calculate " << numID << " Dynamic Avoidance Done" << endl << endl;
+	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
+
 }
 
 
@@ -1201,6 +1220,10 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	output << endl;
 	*/
 
+	output << FindnumID() << " Done" << endl;
+	output << "-----------------------------------------" << endl;
+	output << endl;
+
 	return pair<double, double>(forwar, rot);
 }
 pair<double, double> Car::mov(int desk_num) {
@@ -1219,17 +1242,29 @@ void calc() {
 	CheckRunningCrash();
 	//检查是否死机
 
+	output << "CheckRunningCrash Done" << endl << endl;
+	output << "------------------------------------------" << endl << endl;
+
 	DynamicStatusUpdate();
 	//所有小车动态回避状态更新
 	//状态更新包括：1.正常流程下的状态更新；2.到达终点情况下的状态倒置
 	//注意：各小车状态更新的顺序
 
+	output << "DynamicStatusUpdate Done" << endl << endl;
+	output << "-----------------------------------------" << endl << endl;
+
 	CalculateTrueDestination();
 	//在前面两个工作的基础上计算当前小车的目标点
 	//目标点包括：1.静态避障下的目标点；2.动态避障时未找到避让点的前进方向（最先被避让的小车在静态避障下的目标点）；3.动态避障找到避让点时的前进方向
 
+	output << "CalculateTrueDestination Done" << endl << endl;
+	output << "-----------------------------------------" << endl << endl;
+
 	IntoDynamicCheckAndUpdate();
 	//检查未进入动态避障的小车是否可以进入动态避障状态，若可以进入则进入并更新信息
+
+	output << "IntoDynamicCheckAndUpdate Done" << endl << endl;
+	output << "-----------------------------------------" << endl << endl;
 
 	for (int i = 0; i < 4; i++) {
 		output << "numID=" << i << endl;
