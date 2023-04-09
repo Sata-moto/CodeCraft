@@ -13,6 +13,7 @@ namespace seed_n
 namespace map_n
 {
 	extern int num_desk_7;
+	extern int num_desk_8;
 	extern int num_desk_9;
 	extern char map[N][N];							// 地图
 	extern double dis[2][52][N][N];

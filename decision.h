@@ -286,17 +286,20 @@ void decision_before_stop_frame(int k)
 		else if (check[k] == 2 && !wait_until_spare_sell[k])
 		{
 			sol_occupied[destination[k]][car[k].goods] = 1;
-			//如果有输出了，就拿走
-			if (desk[destination[k]].output_status)
+			if (map_n::num_desk_8 != 0 || map_n::num_desk_9 != 0)
 			{
-				printf("buy %d\n", k);
-				md_9[k] = 1;
-				wait[k] = 0;
+				//如果有输出了，就拿走
+				if (desk[destination[k]].output_status)
+				{
+					printf("buy %d\n", k);
+					md_9[k] = 1;
+					wait[k] = 0;
+				}
+				//如果正在做并且输入填满了，要等待输出
+				else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
+					wait[k] = 1;
+				//否则就是刚填完一组，那么接触占用自己去做决策。
 			}
-			//如果正在做并且输入填满了，要等待输出
-			else if (desk[destination[k]].remain_time != -1 && full_7(destination[k], car[k].goods))
-				wait[k] = 1;
-			//否则就是刚填完一组，那么接触占用自己去做决策。
 		}
 		//如果当前买了之后有一个 check 请求，就会 check 当前工作台有没有 output
 		//如果有 output，那就决策把这个送到哪去
