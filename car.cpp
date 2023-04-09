@@ -159,8 +159,10 @@ void CalculateTrueDestination() {
 			}
 		}
 
+		/*
 		output << "Calculate True Destination " << i << " Done" << endl << endl;
 		output << "*********************************" << endl << endl;
+		*/
 	}
 
 	
@@ -675,6 +677,7 @@ int Car::ChooseCrashCar(int numID, int desk_num) {
 		pair<double, double>decv = multi(make_pair(v1x, v1y), -GetR(goods));
 		pair<double, double>newpos = Add(make_pair(x, y), decv);
 
+		/*
 		if (numID == 2 && i == 1) {
 			output << "v1=" << v1x << " " << v1y << endl;
 			output << "decv=" << decv.first << " " << decv.second << endl;
@@ -682,6 +685,7 @@ int Car::ChooseCrashCar(int numID, int desk_num) {
 			output << "vec=" << car[i].x - newpos.first << " " << car[i].y - newpos.second << endl;
 			output << endl;
 		}
+		*/
 
 		if (Dot(car[i].x - newpos.first, car[i].y - newpos.second, v1x, v1y) / (vecv * CombineV(car[i].x - newpos.first, car[i].y - newpos.second)) < 0)
 			continue;
@@ -782,8 +786,10 @@ void Car::SetRFforInactive(int numID, int Choosenum, double& forwar, double& rot
 		else checknewpo1 = false;
 	}
 
+	/*
 	output << "newpo1=" << newpo1.first << " " << newpo1.second << " check=" << checknewpo1 << endl;
 	output << "newpo2=" << newpo2.first << " " << newpo2.second << " check=" << checknewpo2 << endl;
+	*/
 
 	//前往右侧
 	if (checknewpo1) {
@@ -807,15 +813,19 @@ void Car::SetRFforActive(int numID, int Choosenum, double& forwar, double& rot) 
 	//forwar是否需要乘进速度夹角参数?※※※※
 	else forwar = 6 * cos((1 - max(Dist(x, y, car[Choosenum].x, car[Choosenum].y) - GetR(goods) - GetR(car[Choosenum].goods), 0.0) / (AlertRange - GetR(goods) - GetR(car[Choosenum].goods))) * (Pi / 2));
 
+	/*
 	output << numID << " is in SetRforActive" << endl;
 	output << endl;
+	*/
 
 	if ((FindAvoid && !car[Choosenum].FindAvoid) ||
 		(!(FindAvoid ^ car[Choosenum].FindAvoid) && (goods > car[Choosenum].goods || (goods == car[Choosenum].goods && numID > Choosenum))))
 		return;
 
+	/*
 	output << numID << " is avoiding " << Choosenum << endl;
 	output << endl;
+	*/
 
 	pair<double, double>Vecp;
 	double AddAng, PredAng1, PredAng2, PredAng3, newd1, newd2, newd3;
@@ -1003,10 +1013,11 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	int numID = FindnumID();
 	int firstnum = Findfirstnum(numID);
 
+	/*
 	output << "numID=" << numID << endl;
 	output << "firstnum=" << firstnum << endl;
 	output << endl;
-
+	*/
 
 	pair<double, double>StaPo = Static_Avoidance(destination[firstnum], 1);
 
@@ -1026,7 +1037,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	pair<double, double>cardir = make_pair(x - car[Avoidnum].x, y - car[Avoidnum].y);
 	if (!ObCheck(x, y, car[Avoidnum].x, car[Avoidnum].y, 51, 0, 0))cardir = make_pair(0.0, 0.0);
 
-	output << "cardir=" << cardir.first << " " << cardir.second << endl << endl;
+	//output << "cardir=" << cardir.first << " " << cardir.second << endl << endl;
 
 
 	//情形1：墙角或靠边（共八个方向）
@@ -1075,8 +1086,10 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
+	/*
 	output << "Calculate " << numID << " Dynamic Avoidance Situation 1 Done" << endl << endl;
 	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
+	*/
 
 	
 	//情形2：长直通道（共四个方向）
@@ -1106,7 +1119,7 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		}
 		if (maxlen == -1) { startang += deltaang; continue; }
 
-		output << "maxlen=" << maxlen << endl;
+		//output << "maxlen=" << maxlen << endl;
 
 		//不能选择工作台做避让点，0.4为容忍参数
 		if (Dist(sx + maxlen * cos(startang), sy + maxlen * sin(startang), desk[destination[firstnum]].x, desk[destination[firstnum]].y) < 0.4) {
@@ -1145,10 +1158,12 @@ pair<double, double> Car::Dynamic_Avoidance() {
 			S = make_pair(nx, ny);
 		}
 
+		/*
 		output << "realS=" << realS.first << " " << realS.second << endl;
 		output << "realT=" << realT.first << " " << realT.second << endl;
 		output << "goodPoint=" << goodPoint.first << " " << goodPoint.second << endl;
 		output << endl;
+		*/
 
 
 		if (fabs(goodPoint.first + 1) > eps && Dist(goodPoint, realT) > 2.0 * GetR(car[Avoidnum].goods) + 0.03) {
@@ -1161,8 +1176,10 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		startang += deltaang;
 	}
 
+	/*
 	output << "Calculate " << numID << " Dynamic Avoidance Situation 2 Done" << endl << endl;
 	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
+	*/
 
 
 	//判定小车回避状态并返回对应目标点（已处理过，是可以不经过障碍物而到达的点）
@@ -1179,8 +1196,11 @@ pair<double, double> Car::Dynamic_Avoidance() {
 		}
 		else return make_pair(setto.first, setto.second);
 	}
+
+	/*
 	output << "Calculate " << numID << " Dynamic Avoidance Done" << endl << endl;
 	output << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl << endl;
+	*/
 
 }
 
@@ -1188,8 +1208,10 @@ pair<double, double> Car::Dynamic_Avoidance() {
 //移动决策输出
 pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 
+	/*
 	output << "numID=" << FindnumID() << endl;
 	output << endl;
+	*/
 
 	//计算当前朝向与目标点的偏向角
 	double DeltaAng = CalcAng(nx, ny);
@@ -1228,9 +1250,11 @@ pair<double, double> Car::mov(double nx, double ny, int desk_num) {
 	output << endl;
 	*/
 
+	/*
 	output << FindnumID() << " Done" << endl;
 	output << "-----------------------------------------" << endl;
 	output << endl;
+	*/
 
 	return pair<double, double>(forwar, rot);
 }
@@ -1250,30 +1274,39 @@ void calc() {
 	CheckRunningCrash();
 	//检查是否死机
 
+	/*
 	output << "CheckRunningCrash Done" << endl << endl;
 	output << "------------------------------------------" << endl << endl;
+	*/
 
 	DynamicStatusUpdate();
 	//所有小车动态回避状态更新
 	//状态更新包括：1.正常流程下的状态更新；2.到达终点情况下的状态倒置
 	//注意：各小车状态更新的顺序
 
+	/*
 	output << "DynamicStatusUpdate Done" << endl << endl;
 	output << "-----------------------------------------" << endl << endl;
+	*/
 
 	CalculateTrueDestination();
 	//在前面两个工作的基础上计算当前小车的目标点
 	//目标点包括：1.静态避障下的目标点；2.动态避障时未找到避让点的前进方向（最先被避让的小车在静态避障下的目标点）；3.动态避障找到避让点时的前进方向
 
+	/*
 	output << "CalculateTrueDestination Done" << endl << endl;
 	output << "-----------------------------------------" << endl << endl;
+	*/
 
 	IntoDynamicCheckAndUpdate();
 	//检查未进入动态避障的小车是否可以进入动态避障状态，若可以进入则进入并更新信息
 
+	/*
 	output << "IntoDynamicCheckAndUpdate Done" << endl << endl;
 	output << "-----------------------------------------" << endl << endl;
+	*/
 
+	/*
 	for (int i = 0; i < 4; i++) {
 		output << "numID=" << i << endl;
 		output << "pos=" << car[i].x << " " << car[i].y << endl;
@@ -1287,5 +1320,6 @@ void calc() {
 
 	output << "------------------------------------" << endl;
 	output << endl;
+	*/
 
 }
