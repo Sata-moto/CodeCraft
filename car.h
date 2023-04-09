@@ -16,6 +16,7 @@ struct Car
 	double vx, vy, w;                                               // 二维线速度向量，角速度
 	double ang, x, y;                                               // 朝向角度，坐标
 	double lasx, lasy;                                              // 记录前一帧的坐标以用于死机判断
+	int lasgoods;                                                   // 記錄前一幀的物品信息
 	int FindAvoid, Avoidnum;                                        // 是否处于正在寻找回避点的状态（1表示正在回避，2表示已经回避好，3表示被回避小车进入范围，4表示被回避小车离开范围），正在回避的小车编号
 	bool Reach;                                                     // 小车是否抵达目标点
 	int goodsrec;                                                   // 记录被回避小车的商品情况

@@ -55,9 +55,9 @@ void CheckRunningCrash() {
 				break;
 			}
 		}
-		if ((fabs(car[i].lasx - car[i].x) < 0.1 && fabs(car[i].lasy - car[i].y) < 0.1) || (fabs(car[i].vx) < 1 && fabs(car[i].vy) < 1) || Check) {
+		if ((fabs(car[i].lasx - car[i].x) < 0.1 && fabs(car[i].lasy - car[i].y) < 0.1) || (fabs(car[i].vx) < 0.3 && fabs(car[i].vy) < 0.3) || Check) {
 			if (!set0[i])set0[i] = frame_number;
-			if (((car[i].FindAvoid && !car[i].Reach) || (!car[i].FindAvoid)) && (frame_number - set0[i] >= 150) && set0[i]) {
+			if (((car[i].FindAvoid && !car[i].Reach) || (!car[i].FindAvoid)) && (frame_number - set0[i] >= 250) && set0[i]) {
 				set0[i] = 0;
 				car[i].FindAvoid = 0;
 				car[i].Reach = false;
@@ -103,8 +103,8 @@ void DynamicStatusUpdate() {
 		if (car[i].FindAvoid == 1) {
 			int tt = car[i].Avoidnum;
 			while (car[tt].FindAvoid)tt = car[tt].Avoidnum;
-			if (car[i].workbench != destination[tt])
-				continue;
+			if (car[i].workbench != destination[tt])continue;
+			if ((car[i].goods || car[i].lasgoods) && car[i].goods == car[i].lasgoods)continue;
 			int numm = i, len = 0;
 			st[len = 1] = numm;
 			while (car[numm].FindAvoid) {
@@ -121,6 +121,11 @@ void DynamicStatusUpdate() {
 			}
 		}
 	}
+
+	for (int i = 0; i < 4; i++) {
+		car[i].lasgoods = car[i].goods;
+	}
+
 }
 void CalculateTrueDestination() {
 
@@ -1020,6 +1025,9 @@ pair<double, double> Car::Dynamic_Avoidance() {
 	//与被回避小车的相对方向
 	pair<double, double>cardir = make_pair(x - car[Avoidnum].x, y - car[Avoidnum].y);
 	if (!ObCheck(x, y, car[Avoidnum].x, car[Avoidnum].y, 51, 0, 0))cardir = make_pair(0.0, 0.0);
+
+	output << "cardir=" << cardir.first << " " << cardir.second << endl << endl;
+
 
 	//情形1：墙角或靠边（共八个方向）
 	double startang = -Pi, endang = Pi, deltaang = Pi / 4;
